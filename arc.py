@@ -1,14 +1,30 @@
 import sys
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+
+import time
+import locale
 
 import re
 
-saldo_files = sys.argv[1:]
+total, r_sub, r_sen, t_em_anual, t_em_senior_anual, g_period, pmt_proper, despesas, *saldo_files = sys.argv[1:]
 
-flux_evolution = {}
+total = float(total)
+r_sub = float(r_sub)
+r_sen = float(r_sen)
+t_em_anual = float(t_em_anual)
+t_em_senior_anual = float(t_em_senior_anual)
+g_period = float(g_period)
+pmt_proper = float(pmt_proper) / 100
+despesas = float(despesas)
 
+t_em_anual /= 100
+t_em_senior_anual /= 100
+
+t_em_mensal = (1 + t_em_anual) ** (1/12) - 1
+t_em_senior_mensal = (1 + t_em_senior_anual) ** (1/12) - 1
+
+locale.setlocale(locale.LC_TIME, 'pt_BR')
 re_date = re.compile('^\s*[A-Z][a-z]{2}/\d{4}\s*$')
 
 def parse_frame(df):
@@ -17,33 +33,130 @@ def parse_frame(df):
     evolution = []
     for col in range(w):
         if re_date.match(df.iloc[0, col]):
-            evolution.append((
-                df.iloc[0, col],
-                df.iloc[h - 1, col]
-            ))
+            month = df.iloc[0, col]
+            parsed_month = time.strptime(month, '%b/%Y')
+
+            if not parsed_month < time.localtime():
+                evolution.append((
+                    month,
+                    df.iloc[h - 1, col]
+                ))
 
     return evolution
 
-evolution = {}
+fluxo = {}
 for file in saldo_files:
     df = pd.read_excel(file)
     parsed_df = parse_frame(df)
     for m in parsed_df:
         date, val = m
-        if date in evolution:
-            evolution[date].append(val)
+        if date in fluxo:
+            fluxo[date].append(val)
         else:
-            evolution[date] = [val]
+            fluxo[date] = [val]
 
-total_evolution = [sum(evolution[m]) for m in evolution]
-months = np.array([m for m in evolution])
+flux_total = [sum(fluxo[m]) for m in fluxo]
+months = [m for m in fluxo]
 
-fig, ax = plt.subplots(figsize=(20, 5))
+nz_index = flux_total.index(next(i for i in flux_total if i != 0))
+flux_total = flux_total[nz_index:]
+months = months[nz_index:]
 
-ax.plot(np.arange(len(months)), total_evolution)
-ax.grid()
+for i in range(len(flux_total) - 1, -1, -1):
+    if flux_total[i] == 0:
+        flux_total.pop()
+        months.pop()
+    else:
+        break
 
-x = np.arange(0, len(months), 3)
-plt.xticks(x, months[x], rotation='vertical')
+saldo_sub = total * r_sub / 100
+saldo_sen = total * r_sen / 100
 
-plt.tight_layout()
+saldo_sub_evol      = []
+despesas_sub_evol   = []
+juros_sub_evol      = []
+amort_sub_evol      = []
+pmt_sub_evol        = []
+amort_perc_sub_evol = []
+
+saldo_sen_evol      = []
+juros_sen_evol      = []
+amort_sen_evol      = []
+pmt_sen_evol        = []
+amort_perc_sen_evol = []
+
+sub_finished = False
+sen_finished = False
+
+for m in range(len(months)):
+    if sub_finished:
+        break
+
+    juros_sub = saldo_sub * t_em_mensal
+
+    if not sen_finished:
+        amort_sub = 0
+
+        juros_sen = saldo_sen * t_em_senior_mensal
+
+        if m > g_period - 1:
+            pmt_sub = juros_sub + despesas
+            pmt_sen = flux_total[m - 1] * pmt_proper - pmt_sub
+            amort_sen = pmt_sen - juros_sen
+            amort_perc_sen = amort_sen / saldo_sen
+        else:
+            pmt_sub = pmt_sen = amort_sen = amort_perc_sen = 0
+
+        saldo_sen = saldo_sen + juros_sen - pmt_sen
+    else:
+        juros_sen = pmt_sen = amort_sen = saldo_sen = 0
+
+        pmt_sub = flux_total[m - 1] * pmt_proper
+        amort_sub = pmt_sub - juros_sub - despesas
+
+    amort_perc_sub = amort_sub / saldo_sub
+
+    if amort_perc_sen >= 1 and not sen_finished:
+        pmt_sub = flux_total[m - 1] * pmt_proper - pmt_sen
+        sen_finished = True
+
+    if amort_perc_sub >= 1:
+        sub_finished = True
+
+    saldo_sub = saldo_sub + despesas + juros_sub - pmt_sub
+
+    saldo_sub_evol.append(max(0, saldo_sub))
+    despesas_sub_evol.append(despesas)
+    juros_sub_evol.append(juros_sub)
+    amort_sub_evol.append(amort_sub)
+    pmt_sub_evol.append(pmt_sub)
+    amort_perc_sub_evol.append(min(100, amort_perc_sub * 100))
+
+    saldo_sen_evol.append(saldo_sen)
+    juros_sen_evol.append(juros_sen)
+    amort_sen_evol.append(amort_sen)
+    pmt_sen_evol.append(pmt_sen)
+    amort_perc_sen_evol.append(min(100, amort_perc_sen * 100))
+
+def print_data():
+    for i, m in enumerate(months):
+        if i >= len(saldo_sen_evol):
+            break
+
+        print(f'\n--- {m} ---')
+        print('SUB')
+        print('Saldo', saldo_sub_evol[i])
+        print('Despesas', despesas_sub_evol[i])
+        print('Juros', juros_sub_evol[i])
+        print('Amort.', amort_sub_evol[i])
+        print('PMT', pmt_sub_evol[i])
+        print('Amort. %', amort_perc_sub_evol[i])
+
+        print('\nSEN')
+        print('Saldo', saldo_sen_evol[i])
+        print('Juros', juros_sen_evol[i])
+        print('Amort.', amort_sen_evol[i])
+        print('PMT', pmt_sen_evol[i])
+        print('Amort. %', amort_perc_sen_evol[i])
+
+print_data()
