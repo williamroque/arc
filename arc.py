@@ -7,16 +7,18 @@ import locale
 
 import re
 
-total, r_sub, r_sen, t_em_anual, t_em_senior_anual, g_period, pmt_proper, despesas, *saldo_files = sys.argv[1:]
+total, r_sub, r_sen, target_irr, t_em_senior_anual, g_period, pmt_proper, despesas, *saldo_files = sys.argv[1:]
 
 total = float(total)
 r_sub = float(r_sub)
 r_sen = float(r_sen)
-t_em_anual = float(t_em_anual)
+target_irr = float(target_irr)
 t_em_senior_anual = float(t_em_senior_anual)
-g_period = float(g_period)
+g_period = int(g_period)
 pmt_proper = float(pmt_proper) / 100
 despesas = float(despesas)
+
+t_em_anual = t_em_senior_anual
 
 t_em_anual /= 100
 t_em_senior_anual /= 100
@@ -69,26 +71,26 @@ for i in range(len(flux_total) - 1, -1, -1):
     else:
         break
 
-saldo_sub = total * r_sub / 100
-saldo_sen = total * r_sen / 100
-
-saldo_sub_evol      = []
-despesas_sub_evol   = []
-juros_sub_evol      = []
-amort_sub_evol      = []
-pmt_sub_evol        = []
-amort_perc_sub_evol = []
-
-saldo_sen_evol      = []
-juros_sen_evol      = []
-amort_sen_evol      = []
-pmt_sen_evol        = []
-amort_perc_sen_evol = []
-
-sub_finished = False
-sen_finished = False
-
 while True:
+    saldo_sub = total * r_sub / 100
+    saldo_sen = total * r_sen / 100
+
+    saldo_sub_evol      = []
+    despesas_sub_evol   = []
+    juros_sub_evol      = []
+    amort_sub_evol      = []
+    pmt_sub_evol        = []
+    amort_perc_sub_evol = []
+
+    saldo_sen_evol      = []
+    juros_sen_evol      = []
+    amort_sen_evol      = []
+    pmt_sen_evol        = []
+    amort_perc_sen_evol = []
+
+    sub_finished = False
+    sen_finished = False
+
     for m in range(len(months)):
         if sub_finished:
             break
@@ -151,49 +153,51 @@ while True:
         pmt_sen_evol.append(pmt_sen)
         amort_perc_sen_evol.append(min(100, amort_perc_sen * 100))
 
+    inv_flux = [-total] + [sum(x) for x in list(zip(amort_sub_evol,
+                                                    juros_sub_evol,
+                                                    amort_sen_evol,
+                                                    juros_sen_evol))[g_period:]]
+
+    irr = ((1 + np.irr(inv_flux)) ** 12 - 1) * 100
+
     if not sub_finished:
-        saldo_sub = total * r_sub / 100
-        saldo_sen = total * r_sen / 100
-
-        saldo_sub_evol      = []
-        despesas_sub_evol   = []
-        juros_sub_evol      = []
-        amort_sub_evol      = []
-        pmt_sub_evol        = []
-        amort_perc_sub_evol = []
-
-        saldo_sen_evol      = []
-        juros_sen_evol      = []
-        amort_sen_evol      = []
-        pmt_sen_evol        = []
-        amort_perc_sen_evol = []
-
-        sub_finished = False
-        sen_finished = False
-
         pmt_proper = int((pmt_proper + .01) * 100) / 100
     else:
-        break
+        if abs(target_irr - irr) > .04:
+            t_em_anual *= (target_irr / irr)
+            t_em_mensal = (1 + t_em_anual) ** (1/12) - 1
+        else:
+            break
+
+col_width = 30
+row_format = lambda x, y: '{0:<{2}} | {1:<{2}}'.format('{:,.2f} R$'.format(x),
+                                                       '{:,.2f} R$'.format(y),
+                                                       col_width)
 
 def print_data():
+    print('{0:^{2}} | {1:^{2}}'.format('SEN', 'SUB', col_width))
+
     for i, m in enumerate(months):
         if i >= len(saldo_sen_evol):
             break
 
-        print(f'\n--- {m} ---')
-        print('SUB')
-        print('Saldo', saldo_sub_evol[i])
-        print('Despesas', despesas_sub_evol[i])
-        print('Juros', juros_sub_evol[i])
-        print('Amort.', amort_sub_evol[i])
-        print('PMT', pmt_sub_evol[i])
-        print('Amort. %', amort_perc_sub_evol[i])
+        print('\n{0:^{1}}'.format(m, 2 * col_width + 3))
 
-        print('\nSEN')
-        print('Saldo', saldo_sen_evol[i])
-        print('Juros', juros_sen_evol[i])
-        print('Amort.', amort_sen_evol[i])
-        print('PMT', pmt_sen_evol[i])
-        print('Amort. %', amort_perc_sen_evol[i])
+        print('{} : Saldo'.format(row_format(saldo_sen_evol[i],
+                                             saldo_sub_evol[i])))
+
+        print('{} : Juros'.format(row_format(juros_sen_evol[i],
+                                             juros_sub_evol[i])))
+
+        print('{} : Amort.'.format(row_format(amort_sen_evol[i],
+                                              amort_sub_evol[i])))
+
+        print('{} : PMT'.format(row_format(pmt_sen_evol[i],
+                                           pmt_sub_evol[i])))
+
+        print('{0:<{2}} | {1:<{2}} : Amort. %'\
+              .format('{:,.4f}%'.format(amort_perc_sen_evol[i]),
+                      '{:,.4f}%'.format(amort_perc_sub_evol[i]),
+                      col_width))
 
 print_data()
