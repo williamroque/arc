@@ -201,3 +201,4 @@ def print_data():
                       col_width))
 
 print_data()
+print('\n', t_em_anual, pmt_proper)
