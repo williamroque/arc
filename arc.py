@@ -7,7 +7,7 @@ import locale
 
 import re
 
-total, r_sub, r_sen, target_irr, t_em_senior_anual, g_period, pmt_proper, despesas, *saldo_files = sys.argv[1:]
+output_path, total, r_sub, r_sen, target_irr, t_em_senior_anual, g_period, pmt_proper, despesas, *saldo_files = sys.argv[1:]
 
 total = float(total)
 r_sub = float(r_sub)
@@ -153,17 +153,17 @@ while True:
         pmt_sen_evol.append(pmt_sen)
         amort_perc_sen_evol.append(min(100, amort_perc_sen * 100))
 
-    inv_flux = [-total] + [sum(x) for x in list(zip(amort_sub_evol,
-                                                    juros_sub_evol,
-                                                    amort_sen_evol,
-                                                    juros_sen_evol))[g_period:]]
+    inv_flux = [-total, *np.zeros(g_period)] + [sum(x) for x in list(zip(amort_sub_evol,
+                                                                         juros_sub_evol,
+                                                                         amort_sen_evol,
+                                                                         juros_sen_evol))[g_period:]]
 
     irr = ((1 + np.irr(inv_flux)) ** 12 - 1) * 100
 
     if not sub_finished:
         pmt_proper = int((pmt_proper + .01) * 100) / 100
     else:
-        if abs(target_irr - irr) > .04:
+        if abs(target_irr - irr) > .004:
             t_em_anual *= (target_irr / irr)
             t_em_mensal = (1 + t_em_anual) ** (1/12) - 1
         else:
@@ -201,4 +201,6 @@ def print_data():
                       col_width))
 
 print_data()
-print('\n', t_em_anual, pmt_proper)
+print('\n', t_em_anual * 100, pmt_proper * 100, irr)
+
+
