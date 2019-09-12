@@ -3,7 +3,9 @@ const fileContainer = document.querySelector('#file-container');
 
 const messagePrompt = document.querySelector('#message-prompt');
 
-const buildButton = document.querySelector('build');
+const buildButton = document.querySelector('#build');
+
+let addButton;
 
 const form = {
     form: [
@@ -137,6 +139,8 @@ function catalyzeBuild() {
 
     formContainer.childNodes.forEach(row => {
         row.childNodes.forEach(col => {
+            if (col.classList.contains('form-col-list')) return;
+
             const input = col.childNodes[1];
             values.push([
                 input.value,
@@ -158,6 +162,7 @@ function catalyzeBuild() {
             });
             inputs.inputFiles = inputFiles;
             inputs.outputFile = requestSaveDialog();
+            inputs.mesostrata = addButton ? [JSON.parse(addButton.getAttribute('data-value'))] : [];
 
             requestRunScript(inputs);
         }
@@ -185,32 +190,33 @@ function createInput(type, id, label, formCol, isList=false) {
     formCol.appendChild(inputLabel);
 
     input.addEventListener('keydown', e => {
-        const target = e.currentTarget;
-        const type = target.getAttribute('data-type');
+        const t = e.currentTarget;
+        const type = t.getAttribute('data-type');
 
-        const labelElem = target.parentNode.firstChild;
-        const pSymElem = target.parentNode.childNodes[2];
+        const labelElem = t.parentNode.firstChild;
+        const pSymElem = t.parentNode.childNodes[2];
 
         if (e.key === 'Enter') {
             catalyzeBuild();
         } else if (e.key.length < 2) {
             e.preventDefault();
 
-            const value = target.value + e.key;
+            const value = t.value + e.key;
             if (
                 type === 'string' && /^[A-z]+$/.test(value) ||
                 type === 'int' && /^\d+$/.test(value)       ||
                 (type === 'percentage' || type === 'float') && /^((\d*\.\d+)|(\d+\.?))$/.test(value)
             ) {
-                const cursorPos = target.selectionStart;
-                let nValue = target.value.split('');
+                const cursorPos = t.selectionStart;
+                let nValue = t.value.split('');
                 nValue.splice(cursorPos, 0, e.key);
-                target.value = nValue.join('');
-                target.setSelectionRange(cursorPos + 1, cursorPos + 1);
+                t.value = nValue.join('');
+                t.setSelectionRange(cursorPos + 1, cursorPos + 1);
             }
         }
 
-        if (target.value) {
+        const vLength = t.value.length;
+        if (t.value && !(e.key === 'Backspace' && t.selectionStart === vLength && vLength < 2)) {
             labelElem.classList.add('text-input-label-active');
 
             if (type === 'percentage') {
@@ -268,7 +274,7 @@ function renderForm(form) {
                 const listWrapper = document.createElement('DIV');
                 listWrapper.classList.add('list-wrapper');
 
-                const addButton = document.createElement('BUTTON');
+                addButton = document.createElement('BUTTON');
                 addButton.classList.add('add-button');
                 addButton.setAttribute('id', id);
                 addButton.setAttribute('data-type', 'list');
@@ -290,6 +296,7 @@ function renderForm(form) {
                         inputRow.addEventListener('click', e => {
                             if (dblWindow === e.currentTarget) {
                                 e.currentTarget.remove();
+                                addButton.setAttribute('data-value', '[]');
                                 mesostrataCount--;
                             }
                         });
@@ -423,6 +430,6 @@ const finalRegEx = {
     percentage: /^((\d+\.\d*)|(\.?\d+))$/
 };
 
-build.addEventListener('click', catalyzeBuild, false);
+buildButton.addEventListener('click', catalyzeBuild, false);
 
 renderForm(form);

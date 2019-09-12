@@ -50,6 +50,10 @@ function runScript(input) {
         console.log(err.toString());
     });
 
+    subprocess.stdout.on('data', data => {
+        console.log(data.toString());
+    });
+
     return new Promise(resolve => {
         subprocess.on('close', () => {
             resolve(0);
@@ -97,12 +101,6 @@ function attemptUpdate(path) {
 
     if (packageData.hasOwnProperty('script')) {
         fs.writeFileSync(`${scriptPath}/arc.py`, packageData.script);
-    }
-
-    if (packageData.hasOwnProperty('forms')) {
-        packageData.forms.forEach(form => {
-            fs.writeFileSync(`${formPath}/${form.id}.json`, JSON.stringify(form));
-        });
     }
 
     return 0;

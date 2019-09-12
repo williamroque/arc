@@ -28,6 +28,12 @@ r_sub = inputs['r-sub']
 
 # (mesostrata = intermediary layers)
 mesostrata = inputs['mesostrata']
+if not mesostrata or not mesostrata[0]:
+    mesostrata = []
+
+for layer in mesostrata:
+    layer[1] = int(layer[1])
+    layer[2] = float(layer[2])
 
 target_irr = inputs['target-irr']
 t_em_senior_anual = inputs['t-em-senior-anual']
@@ -123,7 +129,10 @@ for i in range(len(flux_total) - 1, -1, -1):
 
 # CURVE CALCULATION
 
+iteration = 0
 while True:
+
+    iteration += 1
     dynamic_despesas = despesas
 
     saldo_sen             = total * r_sen / 100
@@ -193,7 +202,7 @@ while True:
                 pmt_mesostrata[layer_i] = juros_mesostrata[layer_i] = amort_mesostrata[layer_i] = 0
         if saldo_sen <= 0:
             pmt_sen = juros_sen = amort_sen = 0
-        print(i, m, saldo_sub, saldo_mesostrata, saldo_sen, pmt_sub, pmt_mesostrata, pmt_sen, juros_sub, juros_mesostrata, juros_sen, flux_total[i - 1])
+        #print(i, m, saldo_sub, saldo_mesostrata, saldo_sen, pmt_sub, pmt_mesostrata, pmt_sen, juros_sub, juros_mesostrata, juros_sen, flux_total[i - 1])
 
         saldo_sub = saldo_sub + dynamic_despesas + juros_sub - pmt_sub
         saldo_mesostrata = [saldo_mesostrata[layer_i] + juros_mesostrata[layer_i] - pmt_mesostrata[layer_i] for layer_i, layer in enumerate(mesostrata)]
@@ -239,13 +248,19 @@ while True:
     irr = ((1 + np.irr(inv_flux)) ** 12 - 1) * 100
 
     print('IRR -- PMT_PROPER -- TARGET_IRR / IRR -- T_EM_MENSAL')
-    print( '------', irr, pmt_proper, target_irr / irr, t_em_anual, '------')
+    print( '------', iteration, irr, pmt_proper, target_irr / irr, t_em_anual, '------')
 
     if saldo_sub_evol[-1] > 0:
         pmt_proper += .01
     else:
-        if abs(target_irr - irr) > .04:
-            t_em_anual *= (target_irr / irr) ** (len(mesostrata) + 1)
+        d_irr = abs(target_irr - irr)
+        if d_irr > .004:
+            if d_irr > .04:
+                t_em_anual *= (target_irr / irr) ** (len(mesostrata) + 1)
+            else:
+                universal_constant = 1 / (iteration % 100 + 1)
+                pmt_proper = pmt_proper - .2
+                t_em_anual += ((target_irr - irr) / abs(target_irr - irr)) * universal_constant
             t_em_mensal = (1 + t_em_anual) ** (1/12) - 1
         else:
             break
@@ -467,9 +482,10 @@ write_prelude_section(3, 21, 'Subordinado', [
 ])
 
 tranche_width = 7
+financial_flux_column = 25 + tranche_width * (len(mesostrata) + 1) + len(mesostrata)
 write_prelude_section(4, 21, 'TIR', [
-    ('=IRR({}:{})'.format(get_relative_cell(flux_y_offset - 1, 26 + tranche_width * (len(mesostrata) + 1), 0, 0),
-                          get_relative_cell(flux_y_offset - 1, 26 + tranche_width * (len(mesostrata) + 1), len(saldo_sub_evol), 0)), prelude_percentage_2_format),
+    ('=IRR({}:{})'.format(get_relative_cell(flux_y_offset - 1, financial_flux_column, 0, 0),
+                          get_relative_cell(flux_y_offset - 1, financial_flux_column, len(saldo_sub_evol), 0)), prelude_percentage_2_format),
     ('=(1+E23)^12-1', prelude_percentage_2_format)
 ])
 
@@ -597,9 +613,9 @@ while saldo_sub_evol[i + 2] > 0:
         if i >= c_period:
             a_val = '=T{0}-R{0}-Q{0}'.format(current_row)
 
-            if saldo_mesostrata_evol[0][i + 1] > 0:
+            if len(mesostrata) and saldo_mesostrata_evol[0][i + 1] > 0 or saldo_sen_evol[i - 2] > 0 and not len(mesostrata):
                 pmt_val = '=Q{0}+R{0}'.format(current_row)
-            elif saldo_mesostrata_evol[0][i] > 0:
+            elif len(mesostrata) and saldo_mesostrata_evol[0][i] > 0 or saldo_sen_evol[i - 3] > 0 and not len(mesostrata):
                 pmt_val = '=K{}*H18-AB{}'.format(i + sub_y_offset + sub_y_init_offset - 3, current_row)
             else:
                 pmt_val = '=K{}*H18'.format(i + sub_y_offset + sub_y_init_offset - 3)
@@ -814,9 +830,9 @@ for i, saldo in enumerate(saldo_sen_evol):
                     get_relative_cell(current_row, saldo_col + 2, 0, -1)
                 )
                 mesostrata_pmts = '-'.join([get_relative_cell(current_row, saldo_col - (tranche_width + 1) * i, 0, -5) for i in range(len(mesostrata))])
-                pmt_val = '=K{}*H18-{}-T{}'.format(
+                pmt_val = '=K{}*H18{}-T{}'.format(
                     i + sub_y_offset - 3,
-                    mesostrata_pmts,
+                    '-{}'.format(mesostrata_pmts) if len(mesostrata) else '',
                     current_row + 1
                 )
             else:
