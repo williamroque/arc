@@ -395,6 +395,9 @@ def write_prelude_section(x, y, title, values):
     for i, (v, f) in enumerate(values):
         curve_sheet.write(y + i + 1, x, v, f)
 
+def get_relative_cell(c_r, c_c, d_r, d_c):
+    return xlsxwriter.utility.xl_rowcol_to_cell(c_r + d_r, c_c + d_c)
+
 write_prelude_section(1, 11, 'Taxa de Juros', [
     (target_irr / 100, prelude_percentage_2_format)
 ])
@@ -462,8 +465,11 @@ write_prelude_section(3, 21, 'Subordinado', [
     ('=(1+D24)^(1/12)-1', prelude_percentage_4_format),
     (t_em_anual, prelude_percentage_2_format)
 ])
+
+tranche_width = 7
 write_prelude_section(4, 21, 'TIR', [
-    ('=IRR(AG{}:AG{})'.format(flux_y_offset, flux_y_offset + len(saldo_sub_evol)), prelude_percentage_2_format),
+    ('=IRR({}:{})'.format(get_relative_cell(flux_y_offset - 1, 26 + tranche_width * (len(mesostrata) + 1), 0, 0),
+                          get_relative_cell(flux_y_offset - 1, 26 + tranche_width * (len(mesostrata) + 1), len(saldo_sub_evol), 0)), prelude_percentage_2_format),
     ('=(1+E23)^12-1', prelude_percentage_2_format)
 ])
 
@@ -483,9 +489,6 @@ write_prelude_section(1, 26, 'Período', [
     ('Mensal', prelude_text_format),
     ('Anual', prelude_text_format)
 ])
-
-def get_relative_cell(c_r, c_c, d_r, d_c):
-    return xlsxwriter.utility.xl_rowcol_to_cell(c_r + d_r, c_c + d_c)
 
 for i, layer in enumerate(mesostrata):
     col = 7 - i
@@ -625,7 +628,6 @@ while saldo_sub_evol[i + 2] > 0:
 # INTERMEDIARY TRANCHES
 
 initial_column_position = 22
-tranche_width = 7
 for layer_i, layer in enumerate(mesostrata):
     column_base_position = initial_column_position + layer_i * tranche_width + layer_i
     curve_sheet.merge_range(2, column_base_position, 3,  column_base_position + tranche_width - 1, layer[0], section_title_format)
