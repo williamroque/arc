@@ -561,7 +561,8 @@ patch_border(True, 3, 13, 4)
 patch_border(False, 4, 20, 1)
 patch_border(False, 6, 20, 2)
 
-for i, saldo in list(enumerate(saldo_sub_evol)):
+i = 0
+while saldo_sub_evol[i + 2] > 0:
     prev_row = i + sub_y_offset + sub_y_init_offset
     current_row = prev_row + 1
 
@@ -576,7 +577,7 @@ for i, saldo in list(enumerate(saldo_sub_evol)):
         'num_format': '0.0000%'
     })
 
-    if i == len(saldo_sub_evol) - 1:
+    if saldo_sub_evol[i + 3] <= 0:
         n_index_format.set_bottom(1)
         date_format.set_bottom(1)
         quantity_format.set_bottom(1)
@@ -590,13 +591,13 @@ for i, saldo in list(enumerate(saldo_sub_evol)):
     d_val = despesas
     j_val = '=P{}*D23'.format(prev_row)
 
-    if i < len(saldo_sub_evol) - 1:
+    if saldo_sub_evol[i + 3] > 0:
         if i >= c_period:
             a_val = '=T{0}-R{0}-Q{0}'.format(current_row)
 
-            if saldo_sen_evol[i] > 0:
+            if saldo_mesostrata_evol[0][i + 1] > 0:
                 pmt_val = '=Q{0}+R{0}'.format(current_row)
-            elif saldo_sen_evol[i - 1] > 0:
+            elif saldo_mesostrata_evol[0][i] > 0:
                 pmt_val = '=K{}*H18-AB{}'.format(i + sub_y_offset + sub_y_init_offset - 3, current_row)
             else:
                 pmt_val = '=K{}*H18'.format(i + sub_y_offset + sub_y_init_offset - 3)
@@ -616,6 +617,8 @@ for i, saldo in list(enumerate(saldo_sub_evol)):
     curve_sheet.write(prev_row, 18, a_val, quantity_format)
     curve_sheet.write(prev_row, 19, pmt_val, quantity_format)
     curve_sheet.write(prev_row, 20, p_val, percentage_format)
+
+    i += 1
 
 # END SECTION
 
@@ -674,7 +677,7 @@ for layer_i, layer in enumerate(mesostrata):
     patch_border(False, 6, column_base_position + tranche_width - 1, 2)
 
     i = 0
-    while saldo_mesostrata_evol[layer_i][min(i - 1, 0)] > 0:
+    while saldo_mesostrata_evol[layer_i][max(i, 0)] > 0:
         current_row = i + sub_y_offset + sub_y_init_offset
 
         n_index_format = workbook.add_format(n_index_format_template)
@@ -688,7 +691,7 @@ for layer_i, layer in enumerate(mesostrata):
             'num_format': '0.0000%'
         })
 
-        if saldo_mesostrata_evol[layer_i][i] <= 0:
+        if saldo_mesostrata_evol[layer_i][i + 1] <= 0:
             n_index_format.set_bottom(1)
             date_format.set_bottom(1)
             quantity_format.set_bottom(1)
@@ -708,7 +711,7 @@ for layer_i, layer in enumerate(mesostrata):
         )
         j_val = '={}*{}'.format(prev_saldo_cell, get_relative_cell(27, 7 - layer_i, 0, 0))
 
-        if saldo_mesostrata_evol[layer_i][i] > 0:
+        if saldo_mesostrata_evol[layer_i][i + 1] > 0:
             if i >= c_period:
                 a_val = '={}-{}'.format(
                     get_relative_cell(current_row, saldo_col, 0, 3),
@@ -804,7 +807,7 @@ for i, saldo in enumerate(saldo_sen_evol):
         j_val = '={}*C23'.format(prev_saldo_cell)
 
         if i - sub_y_init_offset >= c_period:
-            if saldo_sen_evol[i - sub_y_offset - 2] != 0:
+            if saldo_sen_evol[i - sub_y_offset - 2] > 0:
                 a_val = '={}-{}'.format(
                     get_relative_cell(current_row, saldo_col + 2, 0, 1),
                     get_relative_cell(current_row, saldo_col + 2, 0, -1)
@@ -905,7 +908,10 @@ for i, m in enumerate(months):
     if i < c_period:
         c_val = 0
     else:
-        c_val = '=R{0}+S{0}+Z{0}+AA{0}'.format(i + flux_y_offset + 4)
+        current_row = i + flux_y_offset + 3
+        c_val = '=R{0}+S{0}'.format(current_row + 1)
+        c_val += '+'.join([''] + [get_relative_cell(current_row, ultimate_intermediary_offset + 3 - (tranche_width + 1) * i, 0, 0) for i in range(len(mesostrata) + 1)])
+        c_val += '+'.join([''] + [get_relative_cell(current_row, ultimate_intermediary_offset + 3 - (tranche_width + 1) * i, 0, 1) for i in range(len(mesostrata) + 1)])
     curve_sheet.write(i + flux_y_offset, ultimate_intermediary_offset + tranche_width + 3, c_val, currency_format)
 
     curve_sheet.set_row(i + flux_y_offset, 18)
