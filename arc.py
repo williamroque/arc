@@ -233,7 +233,7 @@ def print_data():
                       '{:,.4f}%'.format(amort_perc_sub_evol[i]),
                       col_width))
 
-print('\n', t_em_anual * 100, pmt_proper * 100, irr)
+#print('\n', t_em_anual * 100, pmt_proper * 100, irr)
 print_data()
 
 workbook = xlsxwriter.Workbook(output_path)
@@ -243,7 +243,7 @@ curve_sheet.hide_gridlines(2)
 
 curve_sheet.insert_image('F2', 'logos-logo.png', {'x_scale': 0.75, 'y_scale': 0.85, 'x_offset': 10, 'y_offset': -10})
 
-COLUMN_WIDTHS = [6, 18, 15.5, 14, 17.5, 19, 12, 13.5, 8, 6, 11, 8, 4, 6, 8, 13, 10, 12, 12, 11, 9, 4, 6, 8, 13, 10, 12, 12, 11]
+COLUMN_WIDTHS = [6, 18, 15.5, 14, 17.5, 19, 12, 13.5, 8, 6, 11, 8, 4, 6, 8, 13, 10, 12, 12, 11, 10, 4, 6, 8, 13, 10, 12, 12, 11]
 for i, w in enumerate(COLUMN_WIDTHS):
     curve_sheet.set_column(i, i, w)
 
@@ -457,26 +457,51 @@ sub_y_offset = 3
 sub_y_init_offset = 5
 header_y_offset = 2
 
-for i, saldo in enumerate(saldo_sub_evol):
-    prev_row = i + sub_y_offset
+for i, h in enumerate(col_headers):
+    col_header_format = workbook.add_format({
+        'bold': True,
+        'align': 'center',
+        'font_size': 10,
+        'font_name': 'arial'
+    })
+    if i == len(col_headers) - 1:
+        col_header_format.set_right(1)
+
+    curve_sheet.write(sub_y_offset + header_y_offset, i + 15, h, col_header_format)
+
+n_index_format_template = {
+    'font_name': 'arial',
+    'font_size': 10,
+    'align': 'center',
+    'left': 1
+}
+date_format_template = {
+    'font_name': 'arial',
+    'font_size': 10,
+    'align': 'center'
+}
+quantity_format_template = {
+    'font_name': 'arial',
+    'font_size': 10,
+    'num_format': '_-* #,##0.00_-;-* #,##0.00_-;_-* "-"??_-;_-@_-'
+}
+
+n_index_format = workbook.add_format(n_index_format_template)
+date_format = workbook.add_format(date_format_template)
+quantity_format = workbook.add_format(quantity_format_template)
+
+init_row = sub_y_offset + sub_y_init_offset - 1
+curve_sheet.write(init_row, 13, 1, n_index_format)
+curve_sheet.write(init_row, 14, m_bound, date_format)
+curve_sheet.write(init_row, 15, saldo_sub, quantity_format)
+
+for i, saldo in list(enumerate(saldo_sub_evol)):
+    prev_row = i + sub_y_offset + sub_y_init_offset
     current_row = prev_row + 1
 
-    n_index_format = workbook.add_format({
-        'font_name': 'arial',
-        'font_size': 10,
-        'align': 'center',
-        'left': 1
-    })
-    date_format = workbook.add_format({
-        'font_name': 'arial',
-        'font_size': 10,
-        'align': 'center'
-    })
-    quantity_format = workbook.add_format({
-        'font_name': 'arial',
-        'font_size': 10,
-        'num_format': '_-* #,##0.00_-;-* #,##0.00_-;_-* "-"??_-;_-@_-'
-    })
+    n_index_format = workbook.add_format(n_index_format_template)
+    date_format = workbook.add_format(date_format_template)
+    quantity_format = workbook.add_format(quantity_format_template)
     percentage_format = workbook.add_format({
         'font_name': 'arial',
         'font_size': 10,
@@ -493,28 +518,29 @@ for i, saldo in enumerate(saldo_sub_evol):
 
     i_val = m_val = s_val = d_val = j_val = a_val = pmt_val = p_val = ''
 
-    if i >= sub_y_init_offset:
-        i_val = i - sub_y_init_offset + 2
-        m_val = months[i - sub_y_init_offset]
-        s_val = '=P{0}+Q{1}+R{1}-T{1}'.format(prev_row, current_row)
-        d_val = despesas
-        j_val = '=P{}*C24'.format(prev_row)
-        if i - sub_y_init_offset >= g_period:
+    i_val = i + 2
+    m_val = months[i]
+    s_val = '=P{0}+Q{1}+R{1}-T{1}'.format(prev_row, current_row)
+    d_val = despesas
+    j_val = '=P{}*C24'.format(prev_row)
+
+    if i < len(saldo_sub_evol) - 1:
+        if i >= g_period:
             a_val = '=T{0}-R{0}-Q{0}'.format(current_row)
 
-            if saldo_sen_evol[i - sub_y_init_offset] > 0:
+            if saldo_sen_evol[i] > 0:
                 pmt_val = '=Q{0}+R{0}'.format(current_row)
-            elif saldo_sen_evol[i - sub_y_init_offset - 1] > 0:
-                pmt_val = '=K{}*H18-AB{}'.format(i + sub_y_offset - 3, current_row)
+            elif saldo_sen_evol[i - 1] > 0:
+                pmt_val = '=K{}*H18-AB{}'.format(i + sub_y_offset + sub_y_init_offset - 3, current_row)
             else:
-                pmt_val = '=K{}*H18'.format(i + sub_y_offset - 3)
+                pmt_val = '=K{}*H18'.format(i + sub_y_offset + sub_y_init_offset - 3)
         else:
             a_val = pmt_val = 0
-        p_val = '=S{}/P{}'.format(current_row, prev_row)
-    elif i == sub_y_init_offset - 1:
-        i_val = i - sub_y_init_offset + 2
-        m_val = m_bound
-        s_val = saldo_sub
+    else:
+        a_val = '=P{}'.format(prev_row)
+        pmt_val = '=Q{0}+R{0}+S{0}'.format(current_row)
+
+    p_val = '=S{}/P{}'.format(current_row, prev_row)
 
     curve_sheet.write(prev_row, 13, i_val, n_index_format)
     curve_sheet.write(prev_row, 14, m_val, date_format)
@@ -525,20 +551,21 @@ for i, saldo in enumerate(saldo_sub_evol):
     curve_sheet.write(prev_row, 19, pmt_val, quantity_format)
     curve_sheet.write(prev_row, 20, p_val, percentage_format)
 
-    if i == header_y_offset:
-        for j, h in enumerate(col_headers):
-            col_header_format = workbook.add_format({
-                'bold': True,
-                'align': 'center',
-                'font_size': 10,
-                'font_name': 'arial'
-            })
-            if j == len(col_headers) - 1:
-                col_header_format.set_right(1)
-
-            curve_sheet.write(prev_row, j + 15, h, col_header_format)
-
 # END SECTION
+
+l_border_format = workbook.add_format({'left': 1})
+r_border_format = workbook.add_format({'right': 1})
+
+def patch_border(is_l, row, col, n):
+    for i in range(n):
+        if is_l:
+            curve_sheet.write(row + i, col, '', l_border_format)
+        else:
+            curve_sheet.write(row + i, col, '', r_border_format)
+
+patch_border(True, 4, 13, 3)
+patch_border(False, 4, 20, 1)
+patch_border(False, 6, 20, 2)
 
 curve_sheet.merge_range('W3:AC4', 'Tranche Sênior', section_title_format)
 col_headers = ['Saldo Devedor', 'Juros', 'Amortiz', 'PMT', '% AM']
