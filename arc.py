@@ -11,7 +11,7 @@ import re
 
 # INPUTS AND SANITATION
 
-output_path, indexador, pu_emis, total, r_sub, r_sen, target_irr, t_em_senior_anual, g_period, pmt_proper, despesas, *saldo_files = sys.argv[1:]
+output_path, indexador, pu_emis, total, r_sub, r_sen, target_irr, t_em_senior_anual, g_period, fr_previsto, pmt_proper, despesas, *saldo_files = sys.argv[1:]
 
 total = float(total)
 r_sub = float(r_sub)
@@ -21,6 +21,8 @@ t_em_senior_anual = float(t_em_senior_anual)
 g_period = int(g_period)
 pmt_proper = float(pmt_proper) / 100
 despesas = float(despesas)
+
+fr_previsto = int(fr_previsto)
 
 t_em_anual = t_em_senior_anual
 
@@ -243,8 +245,8 @@ curve_sheet.hide_gridlines(2)
 
 curve_sheet.insert_image('F2', 'logos-logo.png', {'x_scale': 0.75, 'y_scale': 0.85, 'x_offset': 10, 'y_offset': -10})
 
-COLUMN_WIDTHS = [6, 18, 15.5, 14, 17.5, 19, 12, 13.5, 8, 6, 11, 8, 4, 6, 8, 13, 10, 12, 12, 11, 10, 4, 6, 8, 13, 10, 12, 12, 11]
-for i, w in enumerate(COLUMN_WIDTHS):
+column_widths = [6, 18, 15.5, 14, 17.5, 19, 12, 13.5, 8, 6, 11, 8, 4, 6, 8, 13, 10, 12, 12, 11, 10, 4, 6, 8, 13, 10, 12, 12, 11, 4, 6, 6, 12]
+for i, w in enumerate(column_widths):
     curve_sheet.set_column(i, i, w)
 
 # GENERAL STYLING SECTION
@@ -321,11 +323,6 @@ section_title_format = workbook.add_format({
 
 # END SECTION
 
-def write_prelude_section(x, y, title, values):
-    curve_sheet.write(y, x, title, prelude_header_format)
-    for i, (v, f) in enumerate(values):
-        curve_sheet.write(y + i + 1, x, v, f)
-
 # FLUXO
 
 curve_sheet.merge_range('J3:L4', 'Fluxo de Créditos Imobiliários', section_title_format)
@@ -376,6 +373,11 @@ saldo_sub = total * r_sub / 100
 saldo_sen = total * r_sen / 100
 
 # PRELUDE SECTION
+
+def write_prelude_section(x, y, title, values):
+    curve_sheet.write(y, x, title, prelude_header_format)
+    for i, (v, f) in enumerate(values):
+        curve_sheet.write(y + i + 1, x, v, f)
 
 write_prelude_section(1, 11, 'Taxa de Juros', [
     (target_irr / 100, prelude_percentage_2_format)
@@ -432,29 +434,41 @@ write_prelude_section(7, 16, '% PMT', [
 
 # ROW
 
-write_prelude_section(1, 21, 'Série', [
-    ('Sênior', prelude_text_format),
-    ('Subordinado', prelude_text_format)
+write_prelude_section(1, 21, 'Período', [
+    ('Mensal', prelude_text_format),
+    ('Anual', prelude_text_format)
 ])
-write_prelude_section(2, 21, 'Mensal', [
-    ('=(1+D23)^(1/12)-1', prelude_percentage_4_format),
-    ('=(1+D24)^(1/12)-1', prelude_percentage_4_format)
+write_prelude_section(2, 21, 'Sênior', [
+    ('=(1+C24)^(1/12)-1', prelude_percentage_4_format),
+    (t_em_senior_anual, prelude_percentage_2_format)
 ])
-write_prelude_section(3, 21, 'Anual', [
-    (t_em_senior_anual, prelude_percentage_2_format),
-    (t_em_anual, prelude_percentage_2_format),
+write_prelude_section(3, 21, 'Subordinado', [
+    ('=(1+D24)^(1/12)-1', prelude_percentage_4_format),
+    (t_em_anual, prelude_percentage_2_format)
+])
+write_prelude_section(4, 21, 'TIR', [
+    ('=IRR(AG{}:AG{})'.format(flux_y_offset, flux_y_offset + len(saldo_sub_evol)), prelude_percentage_2_format),
+    ('=(1+E23)^12-1', prelude_percentage_2_format)
+])
+
+sub_y_offset = 3
+sub_y_init_offset = 5
+
+write_prelude_section(6, 21, 'FR 3 PMTS', [
+    ('=SUM(K{}:K{})*H18-SUM(Q{}:Q{})'.format(flux_y_offset, flux_y_offset + g_period, sub_y_offset + sub_y_init_offset, sub_y_offset + sub_y_init_offset + g_period), prelude_currency_format)
+])
+write_prelude_section(7, 21, 'FR Previsto', [
+    (fr_previsto, prelude_currency_format)
 ])
 
 # END SECTION
 
-# SUBORDINADO
+# SUBORDINATE TRANCHE
 
 curve_sheet.merge_range('N3:U4', 'Tranche Subordinado', section_title_format)
 
 col_headers = ['Saldo Devedor', 'Despesas', 'Juros', 'Amortiz', 'PMT', '% AM']
 
-sub_y_offset = 3
-sub_y_init_offset = 5
 header_y_offset = 2
 
 for i, h in enumerate(col_headers):
@@ -522,7 +536,7 @@ for i, saldo in list(enumerate(saldo_sub_evol)):
     m_val = months[i]
     s_val = '=P{0}+Q{1}+R{1}-T{1}'.format(prev_row, current_row)
     d_val = despesas
-    j_val = '=P{}*C24'.format(prev_row)
+    j_val = '=P{}*D23'.format(prev_row)
 
     if i < len(saldo_sub_evol) - 1:
         if i >= g_period:
@@ -552,6 +566,8 @@ for i, saldo in list(enumerate(saldo_sub_evol)):
     curve_sheet.write(prev_row, 20, p_val, percentage_format)
 
 # END SECTION
+
+# SENIOR TRANCHE
 
 l_border_format = workbook.add_format({'left': 1})
 r_border_format = workbook.add_format({'right': 1})
@@ -655,5 +671,52 @@ for i, saldo in enumerate(saldo_sen_evol):
 
     if is_finished:
         break
+
+# END SECTION
+
+# FINANCIAL FLUX
+curve_sheet.merge_range('AE3:AG4', 'Fluxo Financeiro', section_title_format)
+
+currency_format_template = {
+    'font_name': 'arial',
+    'font_size': 9,
+    'num_format': '_-* #,##0.00_-;-* #,##0.00_-;_-* "-"??_-;_-@_-',
+    'right': 1
+}
+
+n_index_format = workbook.add_format(n_index_format_template)
+date_format = workbook.add_format(date_format_template)
+currency_format = workbook.add_format(currency_format_template)
+
+curve_sheet.write(4, 30, 1, n_index_format)
+curve_sheet.write(4, 31, m_bound, date_format)
+curve_sheet.write(4, 32, -total, currency_format)
+
+for i, m in enumerate(months):
+    if i >= len(saldo_sub_evol):
+        break
+
+    n_index_format = workbook.add_format(n_index_format_template)
+    date_format = workbook.add_format(date_format_template)
+    currency_format = workbook.add_format(currency_format_template)
+
+    if i == len(saldo_sub_evol) - 1:
+        n_index_format.set_bottom(1)
+        date_format.set_bottom(1)
+        currency_format.set_bottom(1)
+
+    curve_sheet.write(i + flux_y_offset, 30, i + 2, n_index_format)
+    curve_sheet.write(i + flux_y_offset, 31, m, date_format)
+
+    c_val = ''
+    if i < g_period:
+        c_val = 0
+    else:
+        c_val = '=R{0}+S{0}+Z{0}+AA{0}'.format(i + flux_y_offset + 4)
+    curve_sheet.write(i + flux_y_offset, 32, c_val, currency_format)
+
+    curve_sheet.set_row(i + flux_y_offset, 18)
+
+# END SECTION
 
 workbook.close()
