@@ -1,0 +1,165 @@
+@font-face {
+    font-family: 'Material Icons';
+    font-style: normal;
+    font-weight: 400;
+    src: url(../assets/material_font.woff2) format('woff2');
+}
+
+html, body {
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+#titlebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 30px;
+    -webkit-app-region: drag;
+    z-index: 0;
+}
+
+#sidebar {
+    width: 50px;
+    height: 100%;
+    display: flex;
+    -webkit-user-select: none;
+    -webkit-app-region: no-drag;
+}
+
+#close, #build {
+    position: absolute;
+    z-index: 1;
+    font-family: 'Material Icons';
+    font-size: 23pt;
+    color: #C0B283;
+    padding: 10px;
+    align-self: flex-start;
+    cursor: pointer;
+}
+
+#build {
+    left: 8px;
+    bottom: 8px;
+    border: 2px solid #C0B283;
+    width: 25px;
+    height: 25px;
+    border-radius: 25px;
+    padding: 7px;
+    line-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18pt;
+    background: transparent;
+}
+
+#build:active {
+    background: #C0B283;
+    color: white;
+}
+
+#file-container {
+    margin: 0;
+    padding: 0;
+    float: right;
+    width: 30%;
+    height: 90%;
+    border: solid 1px transparent;
+    border-left: solid 1px #C0B283;
+    text-transform: uppercase;
+    font-family: helvetica;
+    letter-spacing: .06em;
+    font-size: 13pt;
+    font-weight: 400;
+    color: #555A;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-user-select: none;
+    box-sizing: border-box;
+    overflow-y: scroll;
+}
+
+.file-input-occupied {
+    align-items: flex-start !important;
+}
+
+#file-list {
+    list-style: none;
+    padding: 0;
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: column;
+}
+
+.file-node {
+    font-size: 8pt;
+    font-family: helvetica;
+    color: #333;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 5px 25px;
+    margin-bottom: 10px;
+    border-bottom: solid 1px #C0B283;
+}
+
+.file-node:last-child {
+    border-bottom: none;
+}
+
+.delete-node-button {
+    float: right;
+    font-family: 'Material Icons';
+    font-size: 11pt;
+    font-weight: 300;
+    cursor: pointer;
+    border: solid 1px #C0B283;
+    color: #C0B283;
+    background: transparent;
+    width: 18px;
+    height: 18px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 0;
+    transform: translateY(-4px);
+    padding: 0;
+    outline: none;
+    overflow: hidden;
+}
+
+.delete-node-button:active {
+    background: #C0B283;
+    color: white;
+}
+
+#message-prompt {
+    position: absolute;
+    bottom: 25px;
+    right: 25px;
+    font-family: helvetica;
+    font-size: 11pt;
+    letter-spacing: .07em;
+    color: white;
+    line-height: 0;
+    padding: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0A0A0A;
+    opacity: 0;
+    transition-duration: .15s;
+}
+
+.prompt-visible {
+    opacity: 1 !important;
+    transition-duration: .2s !important;
+}

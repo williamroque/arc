@@ -11,14 +11,14 @@ import re
 
 # INPUTS AND SANITATION
 
-output_path, indexador, pu_emis, total, r_sub, r_sen, target_irr, t_em_senior_anual, g_period, fr_previsto, pmt_proper, despesas, *saldo_files = sys.argv[1:]
+output_path, indexador, pu_emis, total, r_sub, r_sen, target_irr, t_em_senior_anual, c_period, fr_previsto, pmt_proper, despesas, *saldo_files = sys.argv[1:]
 
 total = float(total)
 r_sub = float(r_sub)
 r_sen = float(r_sen)
 target_irr = float(target_irr)
 t_em_senior_anual = float(t_em_senior_anual)
-g_period = int(g_period)
+c_period = int(c_period)
 pmt_proper = float(pmt_proper) / 100
 despesas = float(despesas)
 
@@ -135,7 +135,7 @@ while True:
             juros_sen = saldo_sen * t_em_senior_mensal
             sen_length += 1
 
-            if m > g_period - 1:
+            if m > c_period - 1:
                 pmt_sub = juros_sub + despesas
                 pmt_sen = flux_total[m - 1] * pmt_proper - pmt_sub
                 amort_sen = pmt_sen - juros_sen
@@ -186,10 +186,10 @@ while True:
         pmt_sen_evol.append(pmt_sen)
         amort_perc_sen_evol.append(min(100, amort_perc_sen * 100))
 
-    inv_flux = [-total, *np.zeros(g_period)] + [sum(x) for x in list(zip(amort_sub_evol,
+    inv_flux = [-total, *np.zeros(c_period)] + [sum(x) for x in list(zip(amort_sub_evol,
                                                                          juros_sub_evol,
                                                                          amort_sen_evol,
-                                                                         juros_sen_evol))[g_period:]]
+                                                                         juros_sen_evol))[c_period:]]
 
     irr = ((1 + np.irr(inv_flux)) ** 12 - 1) * 100
 
@@ -455,7 +455,7 @@ sub_y_offset = 3
 sub_y_init_offset = 5
 
 write_prelude_section(6, 21, 'FR 3 PMTS', [
-    ('=SUM(K{}:K{})*H18-SUM(Q{}:Q{})'.format(flux_y_offset, flux_y_offset + g_period, sub_y_offset + sub_y_init_offset, sub_y_offset + sub_y_init_offset + g_period), prelude_currency_format)
+    ('=SUM(K{}:K{})*H18-SUM(Q{}:Q{})'.format(flux_y_offset, flux_y_offset + c_period, sub_y_offset + sub_y_init_offset, sub_y_offset + sub_y_init_offset + c_period), prelude_currency_format)
 ])
 write_prelude_section(7, 21, 'FR Previsto', [
     (fr_previsto, prelude_currency_format)
@@ -539,7 +539,7 @@ for i, saldo in list(enumerate(saldo_sub_evol)):
     j_val = '=P{}*D23'.format(prev_row)
 
     if i < len(saldo_sub_evol) - 1:
-        if i >= g_period:
+        if i >= c_period:
             a_val = '=T{0}-R{0}-Q{0}'.format(current_row)
 
             if saldo_sen_evol[i] > 0:
@@ -624,7 +624,7 @@ for i, saldo in enumerate(saldo_sen_evol):
         s_val = '=Y{0}+Z{1}-AB{1}'.format(prev_row, current_row)
         j_val = '=Y{}*C23'.format(prev_row)
 
-        if i - sub_y_init_offset >= g_period:
+        if i - sub_y_init_offset >= c_period:
             if saldo_sen_evol[i - sub_y_offset - 2] != 0:
                 a_val = '=AB{0}-Z{0}'.format(current_row)
                 pmt_val = '=K{}*H18-T{}'.format(i + sub_y_offset - 3, current_row)
@@ -709,7 +709,7 @@ for i, m in enumerate(months):
     curve_sheet.write(i + flux_y_offset, 31, m, date_format)
 
     c_val = ''
-    if i < g_period:
+    if i < c_period:
         c_val = 0
     else:
         c_val = '=R{0}+S{0}+Z{0}+AA{0}'.format(i + flux_y_offset + 4)

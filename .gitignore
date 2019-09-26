@@ -1,3 +1,4 @@
 .DS_Store
 output.txt
 *.xlsx
+node_modules/
