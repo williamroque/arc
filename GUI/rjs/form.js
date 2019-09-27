@@ -169,12 +169,12 @@ fileContainer.addEventListener('drop', e => {
 
     let files = [...e.dataTransfer.files];
 
-    const packageFile = files.find(f => /\.apf/);
+    const packageFile = files.find(f => /\.apf$/.test(f.path));
     if (packageFile) {
-        const returnValue = requestAttemptUpdate(packageFile);
+        const returnValue = requestAttemptUpdate(packageFile.path);
 
-        if (returnValue) {
-            showPrompt('Update successful.', 1000);
+        if (returnValue === 0) {
+            showPrompt('Update successful.', 2000);
         }
     }
 
@@ -184,7 +184,7 @@ fileContainer.addEventListener('drop', e => {
 
     let fileList;
 
-    if (inputFiles.length < 1) {
+    if (inputFiles.length < 1 && files.length) {
         clearNode(fileContainer);
 
         fileContainer.classList.add('file-input-occupied');

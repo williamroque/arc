@@ -19,23 +19,8 @@ const formPath = path.join(app.getPath('userData'), 'Forms');
 
 const Window = require('./window');
 
-let configErrorScheduled = true;
-
-if (
-    fs.existsSync(path.join(scriptPath, 'arc.py')) &&
-    fs.readdirSync(formPath).some(f => /\.json$/.test(f))
-) {
-    configErrorScheduled = false;
-}
-
 const fixPath = require('fix-path');
 fixPath();
-
-function writeData(data, path) {
-    fs.writeFile(path, data, err => {
-        console.log(err);
-    });
-}
 
 function readData(path) {
     let data;
@@ -71,7 +56,28 @@ const createSaveDialog = () => dialog.showSaveDialog({
     ]
 });
 
+function requestPackage() {
+    const packagePath = dialog.showOpenDialog({
+        properties: ['openFile'],
+        filters: [
+            { name: 'Arc Package', extensions: ['apf'] }
+        ]
+    })[0];
+
+    if (packagePath) {
+        attemptUpdate(packagePath);
+    }
+}
+
 ipcMain.on('get-forms', (event, _) => {
+    if (!fs.existsSync(formPath)) {
+        fs.mkdirSync(formPath);
+    }
+
+    while (!fs.readdirSync(formPath).some(f => /\.json$/.test(f))) {
+        requestPackage();
+    }
+
     event.returnValue = fs.readdirSync(formPath)
         .filter(f => /\.json$/.test(f))
         .map(form => {
@@ -85,28 +91,34 @@ ipcMain.on('get-save-dialog', (event, _) => {
 });
 
 ipcMain.on('run-script', async (event, input) => {
-    let returnCode = 0;
-    if (!configErrorScheduled) {
-        returnCode = await runScript(JSON.stringify(input));
+    while (!fs.existsSync(`${scriptPath}/arc.py`)) {
+        requestPackage();
     }
+
+    let returnCode = 0;
+    returnCode = await runScript(JSON.stringify(input));
 
     event.returnValue = returnCode;
 });
 
-ipcMain.on('attempt-update', async (event, path) => {
+function attemptUpdate(path) {
     const packageData = JSON.parse(readData(path));
 
     if (packageData.hasOwnProperty('script')) {
-        writeData(JSON.stringify(packageData.script), path.join(scriptPath, 'arc.py'));
+        fs.writeFileSync(`${scriptPath}/arc.py`, packageData.script);
     }
 
     if (packageData.hasOwnProperty('forms')) {
         packageData.forms.forEach(form => {
-            writeData(JSON.stringify(form), form.id + '.json');
+            fs.writeFileSync(`${formPath}/${form.id}.json`, JSON.stringify(form));
         });
     }
 
-    event.returnValue = 0;
+    return 0;
+}
+
+ipcMain.on('attempt-update', (event, path) => {
+    event.returnValue = attemptUpdate(path);
 });
 
 const mainWinObject = {
@@ -133,12 +145,6 @@ const createWindow = () => {
 
     mainWin = new Window(mainWinObject);
     
-    if (configErrorScheduled) {
-        dialog.showMessageBox(null, {
-            message: 'Configuration not set.',
-        });
-    }
-
     mainWindowState.manage(mainWin.window);
 };
 

@@ -19,7 +19,7 @@ if form_dir:
     output['forms'] = []
     for path in os.listdir(form_dir):
         if is_json.search(path):
-            with open(path, 'r') as f:
+            with open(form_dir + '/' + path, 'r') as f:
                 output['forms'].append(json.loads(f.read()))
 
 with open(output_path + '.apf', 'w') as f:
