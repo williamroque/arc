@@ -61,6 +61,13 @@ input {
     padding-left: 4px;
     padding-right: 4px;
     height: 25px;
+    transition-duration: .1s;
+}
+
+input:focus,
+.text-input-label-active + input {
+    border-bottom-color: #C0B283 !important;
+    transition-duration: .1s !important;
 }
 
 .percentage-input {

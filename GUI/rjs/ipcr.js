@@ -12,7 +12,7 @@ function requestRunScript(input) {
     return ipcRenderer.sendSync('run-script', input);
 }
 
-function requestAttemptUpdate(...args) {
-    return ipcRenderer.sendSync('attempt-update', args);
+function requestAttemptUpdate(path) {
+    return ipcRenderer.sendSync('attempt-update', path);
 }
 

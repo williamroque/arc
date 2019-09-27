@@ -4,6 +4,8 @@ import pandas as pd
 import numpy as np
 import xlsxwriter
 
+import json
+
 import time
 import locale
 
@@ -11,7 +13,21 @@ import re
 
 # INPUTS AND SANITATION
 
-output_path, indexador, pu_emis, total, r_sub, r_sen, target_irr, t_em_senior_anual, c_period, fr_previsto, pmt_proper, despesas, *saldo_files = sys.argv[1:]
+inputs = json.loads(sys.stdin.readlines()[0])
+
+saldo_files = inputs['inputFiles']
+output_path = inputs['outputFile']
+indexador = inputs['indexador']
+pu_emis = inputs['pu-emis']
+total = inputs['total']
+r_sub = inputs['r-sub']
+r_sen = inputs['r-sen']
+target_irr = inputs['target-irr']
+t_em_senior_anual = inputs['t-em-senior-anual']
+c_period = inputs['c-period']
+fr_previsto = inputs['fr-previsto']
+pmt_proper = inputs['pmt-proper']
+despesas = inputs['despesas']
 
 total = float(total)
 r_sub = float(r_sub)
@@ -234,9 +250,6 @@ def print_data():
               .format('{:,.4f}%'.format(amort_perc_sen_evol[i]),
                       '{:,.4f}%'.format(amort_perc_sub_evol[i]),
                       col_width))
-
-#print('\n', t_em_anual * 100, pmt_proper * 100, irr)
-print_data()
 
 workbook = xlsxwriter.Workbook(output_path)
 workbook.set_size(1400, 1000)

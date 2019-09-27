@@ -11,8 +11,7 @@ const windowStateKeeper = require('electron-window-state');
 
 const appData = app.getPath('appData');
 
-const shell = require('shelljs');
-const nShell = require('electron').shell;
+const { spawn } = require('child_process');
 
 const appDataPath = app.getPath('userData');
 const scriptPath = path.join(app.getPath('userData'), 'Script');
@@ -48,32 +47,22 @@ function readData(path) {
     return data;
 }
 
-function runScript(args) {
+function runScript(input) {
+    const subprocess = spawn('python3', [path.join(scriptPath, 'arc.py')]);
+
+    subprocess.stdin.write(input);
+    subprocess.stdin.end();
+
+    subprocess.stderr.on('data', err => {
+        console.log(err.toString());
+    });
+
     return new Promise(resolve => {
-        if (!shell.which('python3')) {
-            console.log('Python 3 not installed');
-            resolve(1);
-        }
-
-        const spawn = require('child_process').spawn;
-        const process = spawn('python3', args);
-
-        process.stdout.on('error', err => {
-            console.log('Error:', err);
-        });
-
-        process.on('exit', () => {
+        subprocess.on('close', () => {
             resolve(0);
         });
     });
 }
-
-const createSelectDialog = () => dialog.showOpenDialog({
-    properties: ['openFile', 'multiSelections'],
-    filters: [
-        { name: 'Excel', extensions: ['xls', 'xlsx'] }
-    ]
-});
 
 const createSaveDialog = () => dialog.showSaveDialog({
     properties: ['openFile'],
@@ -91,17 +80,14 @@ ipcMain.on('get-forms', (event, _) => {
         });
 });
 
-ipcMain.on('get-open-dialog', (event, _) => {
-    event.returnValue = createSelectDialog();
+ipcMain.on('get-save-dialog', (event, _) => {
+    event.returnValue = createSaveDialog();
 });
 
-ipcMain.on('run-script', async (event, path) => {
-    const fileName = createOpenDialog();
-
+ipcMain.on('run-script', async (event, input) => {
     let returnCode = 0;
-
-    if (fileName && !configErrorScheduled) {
-        returnCode = await runScript(false, [path.join(scriptPath, 'arc.py'), path, fileName]);
+    if (!configErrorScheduled) {
+        returnCode = await runScript(JSON.stringify(input));
     }
 
     event.returnValue = returnCode;
@@ -120,7 +106,7 @@ ipcMain.on('attempt-update', async (event, path) => {
         });
     }
 
-    event.returnValue = 1;
+    event.returnValue = 0;
 });
 
 const mainWinObject = {

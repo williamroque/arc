@@ -32,6 +32,38 @@ function showPrompt(message, period) {
     }, period);
 }
 
+function catalyzeBuild() {
+    let values = [];
+
+    formContainer.childNodes.forEach(row => {
+        row.childNodes.forEach(col => {
+            const input = col.childNodes[1];
+            values.push([
+                input.value,
+                input.getAttribute('data-type'),
+                col.childNodes[0].innerText,
+                input.id
+            ]);
+        });
+    });
+
+    const firstInvalid = values.find(v => !finalRegEx[v[1]].test(v[0]));
+    if (firstInvalid) {
+        showPrompt(`Valor inválido no campo <b>${firstInvalid[2].toLowerCase()}</b>.`, 2000);
+    } else {
+        if (inputFiles.length) {
+            let inputs = {};
+            values.forEach(value => {
+                inputs[value[3]] = value[0];
+            });
+            inputs.inputFiles = inputFiles;
+            inputs.outputFile = requestSaveDialog();
+
+            requestRunScript(inputs);
+        }
+    }
+}
+
 function renderForm(form) {
     clearNode(formContainer);
 
@@ -71,39 +103,39 @@ function renderForm(form) {
 
                 input.addEventListener('keydown', e => {
                     const target = e.currentTarget;
+                    const type = target.getAttribute('data-type');
 
-                    if (e.key.length > 1) return;
-                    e.preventDefault();
-
-                    const value = target.value + e.key;
-                    if (
-                        type === 'int' && /^\d+$/.test(value) ||
-                        /^((\d*\.\d+)|(\d+\.?))$/.test(value)
-                    ) {
-                        target.value += e.key;
-                    }
-                }, false);
-
-                input.addEventListener('keyup', e => {
-                    const target = e.currentTarget;
                     const labelElem = target.parentNode.firstChild;
                     const pSymElem = target.parentNode.childNodes[2];
+
+                    if (e.key === 'Enter') {
+                        catalyzeBuild();
+                    } else if (e.key.length < 2) {
+                        e.preventDefault();
+
+                        const value = target.value + e.key;
+                        if (
+                            type === 'int' && /^\d+$/.test(value) ||
+                            /^((\d*\.\d+)|(\d+\.?))$/.test(value)
+                        ) {
+                            target.value += e.key;
+                        }
+                    }
 
                     if (target.value) {
                         labelElem.classList.add('text-input-label-active');
 
-                        if (target.getAttribute('data-type') === 'percentage') {
+                        if (type === 'percentage') {
                             pSymElem.classList.add('perc-symbol-active');
                         }
                     } else {
                         labelElem.classList.remove('text-input-label-active');
 
-                        if (target.getAttribute('data-type') === 'percentage') {
+                        if (type === 'percentage') {
                             pSymElem.classList.remove('perc-symbol-active');
                         }
                     }
-                
-                });
+                }, false);
             } 
 
             input.setAttribute('id', id);
@@ -135,9 +167,20 @@ fileContainer.addEventListener('drop', e => {
     e.preventDefault();
     e.stopPropagation();
 
-    const files = [...e.dataTransfer.files]
+    let files = [...e.dataTransfer.files];
+
+    const packageFile = files.find(f => /\.apf/);
+    if (packageFile) {
+        const returnValue = requestAttemptUpdate(packageFile);
+
+        if (returnValue) {
+            showPrompt('Update successful.', 1000);
+        }
+    }
+
+    files = files
         .map(f => f.path)
-        .filter(f => /\.xls$|\.xlsx$/.test(f));
+        .filter(f => /\.(xls|xlsx)$/.test(f));
 
     let fileList;
 
@@ -168,8 +211,6 @@ fileContainer.addEventListener('drop', e => {
         const deleteNodeButton = document.createElement('BUTTON');
         deleteNodeButton.classList.add('delete-node-button');
         deleteNodeButton.innerText = 'close';
-
-        console.log(inputFiles);
 
         deleteNodeButton.addEventListener('click', e => {
             const target = e.currentTarget;
@@ -203,37 +244,6 @@ const finalRegEx = {
     percentage: /^((\d+\.\d*)|(\.?\d+))$/
 };
 
-build.addEventListener('click', () => {
-    let values = [];
-
-    formContainer.childNodes.forEach(row => {
-        row.childNodes.forEach(col => {
-            const input = col.childNodes[1];
-            values.push([
-                input.value,
-                input.getAttribute('data-type'),
-                col.childNodes[0].innerText,
-                input.id
-            ]);
-        });
-    });
-
-    const firstInvalid = values.find(v => !finalRegEx[v[1]].test(v[0]));
-    if (firstInvalid) {
-        showPrompt(`Valor inválido no campo <b>${firstInvalid[2].toLowerCase()}</b>.`, 2000);
-    } else {
-        if (inputFiles.length) {
-            let inputs = {};
-            values.forEach(value => {
-                inputs[value[3]] = value[0];
-            });
-            inputs.inputFiles = inputFiles;
-            inputs.ouputFile = requestSaveDialog();
-
-            requestRunScript(inputs);
-        }
-    }
-}, false);
-
+build.addEventListener('click', catalyzeBuild, false);
 
 renderForm(currentForm);
