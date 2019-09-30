@@ -12,6 +12,8 @@ import locale
 
 import re
 
+import datetime
+
 # INPUTS AND SANITATION
 
 inputs = json.loads(sys.stdin.readlines()[0])
@@ -117,36 +119,6 @@ for i in range(len(flux_total) - 1, -1, -1):
 
 # CURVE CALCULATION
 
-col_width = 30
-row_format = lambda x, y: '{0:<{2}} | {1:<{2}}'.format('{:,.2f} R$'.format(x),
-                                                       '{:,.2f} R$'.format(y),
-                                                       col_width)
-def print_data():
-    print('{0:^{2}} | {1:^{2}}'.format('SEN', 'SUB', col_width))
-
-    for i, m in enumerate(months):
-        if i >= len(saldo_sen_evol):
-            break
-
-        print('\n{0:^{1}}'.format(m, 2 * col_width + 3))
-
-        print('{} : Saldo'.format(row_format(saldo_sen_evol[i],
-                                             saldo_sub_evol[i])))
-
-        print('{} : Juros'.format(row_format(juros_sen_evol[i],
-                                             juros_sub_evol[i])))
-
-        print('{} : Amort.'.format(row_format(amort_sen_evol[i],
-                                              amort_sub_evol[i])))
-
-        print('{} : PMT'.format(row_format(pmt_sen_evol[i],
-                                           pmt_sub_evol[i])))
-
-        print('{0:<{2}} | {1:<{2}} : Amort. %'\
-              .format('{:,.4f}%'.format(amort_perc_sen_evol[i]),
-                      '{:,.4f}%'.format(amort_perc_sub_evol[i]),
-                      col_width))
-
 transition_rows = []
 while True:
     current_layer = 0
@@ -162,7 +134,6 @@ while True:
     else:
         saldo_sub = total * r_sub / 100
         juros_sub = saldo_sub * t_em_mensal
-        sub_phase_started = True
 
     saldo_sen = total * r_sen / 100
 
@@ -281,12 +252,10 @@ while True:
         pmt_proper = int((pmt_proper + .01) * 100) / 100
     else:
         if abs(target_irr - irr) > .004:
-            t_em_anual *= ((target_irr / irr) ** (1 / (len(mesostrata) + 1))) * (1 - np.random.randint(5) / 100)
+            t_em_anual *= (target_irr / irr) ** (1 / (len(mesostrata) + 1))
             t_em_mensal = (1 + t_em_anual) ** (1/12) - 1
         else:
             break
-
-print_data()
 
 # OUTPUT
 
