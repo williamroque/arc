@@ -21,8 +21,9 @@ output_path = inputs['outputFile']
 indexador = inputs['indexador']
 pu_emis = inputs['pu-emis']
 total = inputs['total']
-r_sub = inputs['r-sub']
 r_sen = inputs['r-sen']
+r_sub = inputs['r-sub']
+mesostrata = inputs['mesostrata']
 target_irr = inputs['target-irr']
 t_em_senior_anual = inputs['t-em-senior-anual']
 c_period = inputs['c-period']
@@ -31,8 +32,8 @@ pmt_proper = inputs['pmt-proper']
 despesas = inputs['despesas']
 
 total = float(total)
-r_sub = float(r_sub)
 r_sen = float(r_sen)
+r_sub = float(r_sub)
 target_irr = float(target_irr)
 t_em_senior_anual = float(t_em_senior_anual)
 c_period = int(c_period)
@@ -117,33 +118,69 @@ for i in range(len(flux_total) - 1, -1, -1):
 # CURVE CALCULATION
 
 while True:
-    saldo_sub = total * r_sub / 100
+    current_layer = 0
+
+    if len(mesostrata):
+        _, r_current_layer, t_em_anual_current_layer = mesostrata[current_layer]
+        t_em_mensal_current_layer = (1 + t_em_anual_current_layer) ** (1/12) - 1
+
+        saldo_sub = total * r_current_layer / 100
+
+        sub_phase_started = False
+    else:
+        saldo_sub = total * r_sub / 100
+        juros_sub = saldo_sub * t_em_mensal
+        sub_phase_started = True
+
     saldo_sen = total * r_sen / 100
 
-    saldo_sub_evol      = []
-    despesas_sub_evol   = []
-    juros_sub_evol      = []
-    amort_sub_evol      = []
-    pmt_sub_evol        = []
-    amort_perc_sub_evol = []
+    saldo_sen_evol                = []
+    juros_sen_evol                = []
+    amort_sen_evol                = []
+    pmt_sen_evol                  = []
+    amort_perc_sen_evol           = []
 
-    saldo_sen_evol      = []
-    juros_sen_evol      = []
-    amort_sen_evol      = []
-    pmt_sen_evol        = []
-    amort_perc_sen_evol = []
+    saldo_sub_evol                = []
+    despesas_sub_evol             = []
+    juros_sub_evol                = []
+    amort_sub_evol                = []
+    pmt_sub_evol                  = []
+    amort_perc_sub_evol           = []
 
-    sub_finished = False
     sen_finished = False
+    sub_finished = False
 
-    sub_length = 0
     sen_length = 0
+    sub_length = 0
 
     for m in range(len(months)):
         if sub_finished:
-            break
+            if len(mesostrata):
+                saldo_sub_evol = []
+                despesas_sub_evol = []
+                juros_sub_evol = []
+                amort_sub_evol = []
+                pmt_sub_evol = []
+                amort_perc_sub_evol = []
+                if current_layer + 1 < len(mesostrata):
+                    t_em_mensal_current_layer = (1 + t_em_anual_current_layer) ** (1/12) - 1
+                    saldo_sub = total * r_current_layer / 100
+                    current_layer += 1
+                    _, r_current_layer, t_em_anual_current_layer = mesostrata[current_layer]
+                elif sub_phase_started:
+                    break
+                else:
+                    saldo_sub = total * r_sub / 100
+                    sub_phase_started = True
+                sub_finished = False
+            else:
+                break
 
-        juros_sub = saldo_sub * t_em_mensal
+        if current_layer < len(mesostrata):
+            juros_sub = saldo_sub * t_em_mensal_current_layer / 100
+        else:
+            juros_sub = saldo_sub * t_em_mensal
+
         sub_length += 1
 
         if not sen_finished:
@@ -186,6 +223,7 @@ while True:
         if amort_perc_sub >= 1:
             amort_sub = saldo_sub_evol[-1]
             pmt_sub = amort_sub + juros_sub + despesas
+
             sub_finished = True
 
         saldo_sub = saldo_sub + despesas + juros_sub - pmt_sub
@@ -225,32 +263,6 @@ row_format = lambda x, y: '{0:<{2}} | {1:<{2}}'.format('{:,.2f} R$'.format(x),
                                                        col_width)
 
 # OUTPUT
-
-def print_data():
-    print('{0:^{2}} | {1:^{2}}'.format('SEN', 'SUB', col_width))
-
-    for i, m in enumerate(months):
-        if i >= len(saldo_sen_evol):
-            break
-
-        print('\n{0:^{1}}'.format(m, 2 * col_width + 3))
-
-        print('{} : Saldo'.format(row_format(saldo_sen_evol[i],
-                                             saldo_sub_evol[i])))
-
-        print('{} : Juros'.format(row_format(juros_sen_evol[i],
-                                             juros_sub_evol[i])))
-
-        print('{} : Amort.'.format(row_format(amort_sen_evol[i],
-                                              amort_sub_evol[i])))
-
-        print('{} : PMT'.format(row_format(pmt_sen_evol[i],
-                                           pmt_sub_evol[i])))
-
-        print('{0:<{2}} | {1:<{2}} : Amort. %'\
-              .format('{:,.4f}%'.format(amort_perc_sen_evol[i]),
-                      '{:,.4f}%'.format(amort_perc_sub_evol[i]),
-                      col_width))
 
 workbook = xlsxwriter.Workbook(output_path)
 workbook.set_size(1400, 1000)
