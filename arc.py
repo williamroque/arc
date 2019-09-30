@@ -117,8 +117,40 @@ for i in range(len(flux_total) - 1, -1, -1):
 
 # CURVE CALCULATION
 
+col_width = 30
+row_format = lambda x, y: '{0:<{2}} | {1:<{2}}'.format('{:,.2f} R$'.format(x),
+                                                       '{:,.2f} R$'.format(y),
+                                                       col_width)
+def print_data():
+    print('{0:^{2}} | {1:^{2}}'.format('SEN', 'SUB', col_width))
+
+    for i, m in enumerate(months):
+        if i >= len(saldo_sen_evol):
+            break
+
+        print('\n{0:^{1}}'.format(m, 2 * col_width + 3))
+
+        print('{} : Saldo'.format(row_format(saldo_sen_evol[i],
+                                             saldo_sub_evol[i])))
+
+        print('{} : Juros'.format(row_format(juros_sen_evol[i],
+                                             juros_sub_evol[i])))
+
+        print('{} : Amort.'.format(row_format(amort_sen_evol[i],
+                                              amort_sub_evol[i])))
+
+        print('{} : PMT'.format(row_format(pmt_sen_evol[i],
+                                           pmt_sub_evol[i])))
+
+        print('{0:<{2}} | {1:<{2}} : Amort. %'\
+              .format('{:,.4f}%'.format(amort_perc_sen_evol[i]),
+                      '{:,.4f}%'.format(amort_perc_sub_evol[i]),
+                      col_width))
+
+transition_rows = []
 while True:
     current_layer = 0
+    transition_rows = []
 
     if len(mesostrata):
         _, r_current_layer, t_em_anual_current_layer = mesostrata[current_layer]
@@ -154,18 +186,14 @@ while True:
     sub_length = 0
 
     for m in range(len(months)):
+        pmt_adjustment = 0
         if sub_finished:
+            pmt_adjustment = pmt_sub_evol[-1]
             if len(mesostrata):
-                saldo_sub_evol = []
-                despesas_sub_evol = []
-                juros_sub_evol = []
-                amort_sub_evol = []
-                pmt_sub_evol = []
-                amort_perc_sub_evol = []
-                if current_layer + 1 < len(mesostrata):
+                current_layer += 1
+                if current_layer < len(mesostrata):
                     t_em_mensal_current_layer = (1 + t_em_anual_current_layer) ** (1/12) - 1
                     saldo_sub = total * r_current_layer / 100
-                    current_layer += 1
                     _, r_current_layer, t_em_anual_current_layer = mesostrata[current_layer]
                 elif sub_phase_started:
                     break
@@ -175,6 +203,7 @@ while True:
                 sub_finished = False
             else:
                 break
+            transition_rows.append(m)
 
         if current_layer < len(mesostrata):
             juros_sub = saldo_sub * t_em_mensal_current_layer / 100
@@ -204,7 +233,7 @@ while True:
         else:
             juros_sen = pmt_sen = amort_sen = saldo_sen = 0
 
-            pmt_sub = flux_total[m - 1] * pmt_proper
+            pmt_sub = flux_total[m - 1] * pmt_proper - pmt_adjustment
             amort_sub = pmt_sub - juros_sub - despesas
 
         amort_perc_sub = amort_sub / saldo_sub
@@ -214,6 +243,7 @@ while True:
             pmt_sen = amort_sen + juros_sen
 
             pmt_sub = flux_total[m - 1] * pmt_proper - pmt_sen
+
             amort_sub = pmt_sub - juros_sub - despesas
 
             amort_perc_sub = amort_sub / saldo_sub
@@ -223,7 +253,6 @@ while True:
         if amort_perc_sub >= 1:
             amort_sub = saldo_sub_evol[-1]
             pmt_sub = amort_sub + juros_sub + despesas
-
             sub_finished = True
 
         saldo_sub = saldo_sub + despesas + juros_sub - pmt_sub
@@ -252,15 +281,12 @@ while True:
         pmt_proper = int((pmt_proper + .01) * 100) / 100
     else:
         if abs(target_irr - irr) > .004:
-            t_em_anual *= (target_irr / irr)
+            t_em_anual *= ((target_irr / irr) ** (1 / (len(mesostrata) + 1))) * (1 - np.random.randint(5) / 100)
             t_em_mensal = (1 + t_em_anual) ** (1/12) - 1
         else:
             break
 
-col_width = 30
-row_format = lambda x, y: '{0:<{2}} | {1:<{2}}'.format('{:,.2f} R$'.format(x),
-                                                       '{:,.2f} R$'.format(y),
-                                                       col_width)
+print_data()
 
 # OUTPUT
 
