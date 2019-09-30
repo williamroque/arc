@@ -1,4 +1,5 @@
 import sys
+import os
 
 import pandas as pd
 import numpy as np
@@ -256,7 +257,7 @@ workbook.set_size(1400, 1000)
 curve_sheet = workbook.add_worksheet()
 curve_sheet.hide_gridlines(2)
 
-curve_sheet.insert_image('F2', 'logos-logo.png', {'x_scale': 0.75, 'y_scale': 0.85, 'x_offset': 10, 'y_offset': -10})
+curve_sheet.insert_image('F2', '{}/logos-logo.png'.format(os.path.dirname(os.path.abspath(__file__))), {'x_scale': 0.75, 'y_scale': 0.85, 'x_offset': 10, 'y_offset': -10})
 
 column_widths = [6, 18, 15.5, 14, 17.5, 19, 12, 13.5, 8, 6, 11, 8, 4, 6, 8, 13, 10, 12, 12, 11, 10, 4, 6, 8, 13, 10, 12, 12, 11, 4, 6, 6, 12]
 for i, w in enumerate(column_widths):

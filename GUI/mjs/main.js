@@ -22,6 +22,14 @@ const Window = require('./window');
 const fixPath = require('fix-path');
 fixPath();
 
+if (!fs.existsSync(scriptPath)) {
+    fs.mkdirSync(scriptPath);
+}
+
+if (!fs.existsSync(formPath)) {
+    fs.mkdirSync(formPath);
+}
+
 function readData(path) {
     let data;
     try  {
@@ -70,10 +78,6 @@ function requestPackage() {
 }
 
 ipcMain.on('get-forms', (event, _) => {
-    if (!fs.existsSync(formPath)) {
-        fs.mkdirSync(formPath);
-    }
-
     while (!fs.readdirSync(formPath).some(f => /\.json$/.test(f))) {
         requestPackage();
     }
