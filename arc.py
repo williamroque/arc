@@ -25,7 +25,10 @@ pu_emis = inputs['pu-emis']
 total = inputs['total']
 r_sen = inputs['r-sen']
 r_sub = inputs['r-sub']
+
+# (mesostrata = intermediary layers)
 mesostrata = inputs['mesostrata']
+
 target_irr = inputs['target-irr']
 t_em_senior_anual = inputs['t-em-senior-anual']
 c_period = inputs['c-period']
@@ -251,7 +254,7 @@ while True:
     if not sub_finished:
         pmt_proper = int((pmt_proper + .01) * 100) / 100
     else:
-        if abs(target_irr - irr) > .004:
+        if abs(target_irr - irr) > .04:
             t_em_anual *= (target_irr / irr) ** (1 / (len(mesostrata) + 1))
             t_em_mensal = (1 + t_em_anual) ** (1/12) - 1
         else:
@@ -266,7 +269,9 @@ curve_sheet.hide_gridlines(2)
 
 curve_sheet.insert_image('F2', '{}/logos-logo.png'.format(os.path.dirname(os.path.abspath(__file__))), {'x_scale': 0.75, 'y_scale': 0.85, 'x_offset': 10, 'y_offset': -10})
 
-column_widths = [6, 18, 15.5, 14, 17.5, 19, 12, 13.5, 8, 6, 11, 8, 4, 6, 8, 13, 10, 12, 12, 11, 10, 4, 6, 8, 13, 10, 12, 12, 11, 4, 6, 6, 12]
+column_widths = [6, 18, 15.5, 14, 17.5, 19, 12, 13.5, 8, 6, 11, 8, 4, 6, 8, 13, 10, 12, 12, 11, 10, 4]
+column_widths = column_widths + list(map(int, ('6 8 13 12 12 11 10 4 ' * (1 + len(mesostrata))).strip().split(' '))) + [6, 6, 12]
+
 for i, w in enumerate(column_widths):
     curve_sheet.set_column(i, i, w)
 
@@ -482,9 +487,41 @@ write_prelude_section(7, 21, 'FR Previsto', [
     (fr_previsto, prelude_currency_format)
 ])
 
+# ROW
+
+write_prelude_section(1, 26, 'Período', [
+    ('Mensal', prelude_text_format),
+    ('Anual', prelude_text_format)
+])
+
+def get_relative_cell(c_r, c_c, d_r, d_c):
+    return xlsxwriter.utility.xl_rowcol_to_cell(c_r + d_r, c_c + d_c)
+
+for i, layer in enumerate(mesostrata):
+    col = 7 - i
+    write_prelude_section(col, 26, layer[0], [
+        (
+            '=(1+{})^(1/12)-1'.format(
+                get_relative_cell(27, col, 1, 0)
+            ),
+             prelude_percentage_4_format
+        ),
+        (layer[2] / 100, prelude_percentage_2_format)
+    ])
+
 # END SECTION
 
 # SUBORDINATE TRANCHE
+
+l_border_format = workbook.add_format({'left': 1})
+r_border_format = workbook.add_format({'right': 1})
+
+def patch_border(is_l, row, col, n):
+    for i in range(n):
+        if is_l:
+            curve_sheet.write(row + i, col, '', l_border_format)
+        else:
+            curve_sheet.write(row + i, col, '', r_border_format)
 
 curve_sheet.merge_range('N3:U4', 'Tranche Subordinado', section_title_format)
 
@@ -529,6 +566,10 @@ init_row = sub_y_offset + sub_y_init_offset - 1
 curve_sheet.write(init_row, 13, 1, n_index_format)
 curve_sheet.write(init_row, 14, m_bound, date_format)
 curve_sheet.write(init_row, 15, saldo_sub, quantity_format)
+
+patch_border(True, 3, 13, 4)
+patch_border(False, 4, 20, 1)
+patch_border(False, 6, 20, 2)
 
 for i, saldo in list(enumerate(saldo_sub_evol)):
     prev_row = i + sub_y_offset + sub_y_init_offset
@@ -588,30 +629,147 @@ for i, saldo in list(enumerate(saldo_sub_evol)):
 
 # END SECTION
 
+# intermediary TRANCHES
+
+initial_column_position = 22
+tranche_width = 7
+for layer_i, layer in enumerate(mesostrata):
+    column_base_position = initial_column_position + layer_i * tranche_width + layer_i
+    curve_sheet.merge_range(2, column_base_position, 3,  column_base_position + tranche_width - 1, layer[0], section_title_format)
+
+    col_headers = ['Saldo Devedor', 'Juros', 'Amortiz', 'PMT', '% AM']
+
+    header_y_offset = 2
+
+    for i, h in enumerate(col_headers):
+        col_header_format = workbook.add_format({
+            'bold': True,
+            'align': 'center',
+            'font_size': 10,
+            'font_name': 'arial'
+        })
+        if i == len(col_headers) - 1:
+            col_header_format.set_right(1)
+
+        curve_sheet.write(sub_y_offset + header_y_offset, i + column_base_position + 2, h, col_header_format)
+
+    n_index_format_template = {
+        'font_name': 'arial',
+        'font_size': 10,
+        'align': 'center',
+        'left': 1
+    }
+    date_format_template = {
+        'font_name': 'arial',
+        'font_size': 10,
+        'align': 'center'
+    }
+    quantity_format_template = {
+        'font_name': 'arial',
+        'font_size': 10,
+        'num_format': '_-* #,##0.00_-;-* #,##0.00_-;_-* "-"??_-;_-@_-'
+    }
+
+    n_index_format = workbook.add_format(n_index_format_template)
+    date_format = workbook.add_format(date_format_template)
+    quantity_format = workbook.add_format(quantity_format_template)
+
+    init_row = sub_y_offset + sub_y_init_offset - 1
+    curve_sheet.write(init_row, column_base_position, 1, n_index_format)
+    curve_sheet.write(init_row, column_base_position + 1, m_bound, date_format)
+    curve_sheet.write(init_row, column_base_position + 2, saldo_sub, quantity_format)
+
+    patch_border(True, 3, column_base_position, 4)
+    patch_border(False, 4, column_base_position + tranche_width - 1, 1)
+    patch_border(False, 6, column_base_position + tranche_width - 1, 2)
+
+    for i in range(transition_rows[layer_i]):
+        current_row = i + sub_y_offset + sub_y_init_offset
+
+        n_index_format = workbook.add_format(n_index_format_template)
+        date_format = workbook.add_format(date_format_template)
+        quantity_format = workbook.add_format(quantity_format_template)
+        percentage_format = workbook.add_format({
+            'font_name': 'arial',
+            'font_size': 10,
+            'align': 'center',
+            'right': 1,
+            'num_format': '0.0000%'
+        })
+
+        if i == transition_rows[layer_i] - 1:
+            n_index_format.set_bottom(1)
+            date_format.set_bottom(1)
+            quantity_format.set_bottom(1)
+            percentage_format.set_bottom(1)
+
+        i_val = m_val = s_val = j_val = a_val = pmt_val = p_val = ''
+
+        i_val = i + 2
+        m_val = months[i]
+
+        saldo_col = column_base_position + 2
+        prev_saldo_cell = get_relative_cell(current_row, saldo_col, -1, 0)
+        s_val = '={}+{}-{}'.format(
+            prev_saldo_cell,
+            get_relative_cell(current_row, saldo_col, 0, 1),
+            get_relative_cell(current_row, saldo_col, 0, 3)
+        )
+        j_val = '={}*D23'.format(prev_saldo_cell)
+
+        if i < transition_rows[layer_i] - 1:
+            if i >= c_period:
+                a_val = '={}-{}'.format(
+                    get_relative_cell(current_row, saldo_col, 0, 3),
+                    get_relative_cell(current_row, saldo_col, 0, 1)
+                )
+
+                if saldo_sen_evol[i] > 0:
+                    pmt_val = '={}'.format(
+                        get_relative_cell(current_row, saldo_col, 0, 1)
+                    )
+                elif saldo_sen_evol[i - 1] > 0:
+                    pmt_val = '=K{}*H18-{}'.format(
+                        current_row,
+                        get_relative_cell(current_row, saldo_col + 3, 0, tranche_width)
+                    )
+                else:
+                    pmt_val = '=K{}*H18'.format(current_row)
+            else:
+                a_val = pmt_val = 0
+        else:
+            a_val = '={}'.format(prev_saldo_cell)
+            pmt_val = '={}+{}'.format(
+                get_relative_cell(current_row, saldo_col, 0, 1),
+                get_relative_cell(current_row, saldo_col, 0, 2)
+            )
+
+        p_val = '={}/{}'.format(
+            get_relative_cell(current_row, saldo_col, 0, 3),
+            prev_saldo_cell
+        )
+
+        curve_sheet.write(prev_row, column_base_position, i_val, n_index_format)
+        curve_sheet.write(prev_row, column_base_position + 1, m_val, date_format)
+        curve_sheet.write(prev_row, column_base_position + 2, s_val, quantity_format)
+        curve_sheet.write(prev_row, column_base_position + 3, j_val, quantity_format)
+        curve_sheet.write(prev_row, column_base_position + 4, a_val, quantity_format)
+        curve_sheet.write(prev_row, column_base_position + 5, pmt_val, quantity_format)
+        curve_sheet.write(prev_row, column_base_position + 6, p_val, percentage_format)
+
+ultimate_intermediary_offset = tranche_width * len(mesostrata) + initial_column_position + len(mesostrata)
+
+# END SECTION
+
 # SENIOR TRANCHE
 
-l_border_format = workbook.add_format({'left': 1})
-r_border_format = workbook.add_format({'right': 1})
-
-def patch_border(is_l, row, col, n):
-    for i in range(n):
-        if is_l:
-            curve_sheet.write(row + i, col, '', l_border_format)
-        else:
-            curve_sheet.write(row + i, col, '', r_border_format)
-
-patch_border(True, 4, 13, 3)
-patch_border(False, 4, 20, 1)
-patch_border(False, 6, 20, 2)
-
-curve_sheet.merge_range('W3:AC4', 'Tranche Sênior', section_title_format)
+curve_sheet.merge_range(2, ultimate_intermediary_offset, 3, ultimate_intermediary_offset + tranche_width - 1, 'Tranche Sênior', section_title_format)
 col_headers = ['Saldo Devedor', 'Juros', 'Amortiz', 'PMT', '% AM']
 
 is_finished = False
 
 for i, saldo in enumerate(saldo_sen_evol):
-    prev_row = i + sub_y_offset
-    current_row = prev_row + 1
+    current_row = i + sub_y_offset
 
     n_index_format = workbook.add_format({
         'font_name': 'arial',
@@ -642,16 +800,34 @@ for i, saldo in enumerate(saldo_sen_evol):
     if i >= sub_y_init_offset:
         i_val = i - sub_y_init_offset + 2
         m_val = months[i - sub_y_init_offset]
-        s_val = '=Y{0}+Z{1}-AB{1}'.format(prev_row, current_row)
-        j_val = '=Y{}*C23'.format(prev_row)
+
+        saldo_col = ultimate_intermediary_offset + 2
+        prev_saldo_cell = get_relative_cell(current_row, saldo_col, -1, 0)
+        s_val = '={}+{}-{}'.format(
+            prev_saldo_cell,
+            get_relative_cell(current_row, saldo_col, 0, 1),
+            get_relative_cell(current_row, saldo_col, 0, 3)
+        )
+        j_val = '={}*C23'.format(prev_saldo_cell)
 
         if i - sub_y_init_offset >= c_period:
             if saldo_sen_evol[i - sub_y_offset - 2] != 0:
-                a_val = '=AB{0}-Z{0}'.format(current_row)
-                pmt_val = '=K{}*H18-T{}'.format(i + sub_y_offset - 3, current_row)
+                a_val = '={}-{}'.format(
+                    get_relative_cell(current_row, saldo_col + 2, 0, 1),
+                    get_relative_cell(current_row, saldo_col + 2, 0, -1)
+                )
+                mesostrata_pmts = '-'.join([get_relative_cell(current_row, saldo_col - (tranche_width + 1) * i, 0, -5) for i in range(len(mesostrata))])
+                pmt_val = '=K{}*H18-{}-T{}'.format(
+                    i + sub_y_offset - 3,
+                    mesostrata_pmts,
+                    current_row + 1
+                )
             else:
-                a_val = '=Y{}'.format(prev_row)
-                pmt_val = '=Z{0}+AA{0}'.format(current_row)
+                a_val = '={}'.format(get_relative_cell(current_row, saldo_col, -1, 0))
+                pmt_val = '={}+{}'.format(
+                    get_relative_cell(current_row, saldo_col + 3, 0, -1),
+                    get_relative_cell(current_row, saldo_col + 3, 0, -2)
+                )
 
                 n_index_format.set_bottom(1)
                 date_format.set_bottom(1)
@@ -663,19 +839,22 @@ for i, saldo in enumerate(saldo_sen_evol):
             a_val = 0
             pmt_val = 0
 
-        p_val = '=AA{}/Y{}'.format(current_row, prev_row)
+        p_val = '={}/{}'.format(
+            get_relative_cell(current_row, saldo_col + 2, 0, 0),
+            get_relative_cell(current_row, saldo_col, -1, 0)
+        )
     elif i == sub_y_init_offset - 1:
         i_val = i - sub_y_init_offset + 2
         m_val = m_bound
         s_val = saldo_sen
 
-    curve_sheet.write(prev_row, 22, i_val, n_index_format)
-    curve_sheet.write(prev_row, 23, m_val, date_format)
-    curve_sheet.write(prev_row, 24, s_val, quantity_format)
-    curve_sheet.write(prev_row, 25, j_val, quantity_format)
-    curve_sheet.write(prev_row, 26, a_val, quantity_format)
-    curve_sheet.write(prev_row, 27, pmt_val, quantity_format)
-    curve_sheet.write(prev_row, 28, p_val, percentage_format)
+    curve_sheet.write(current_row, ultimate_intermediary_offset, i_val, n_index_format)
+    curve_sheet.write(current_row, ultimate_intermediary_offset + 1, m_val, date_format)
+    curve_sheet.write(current_row, ultimate_intermediary_offset + 2, s_val, quantity_format)
+    curve_sheet.write(current_row, ultimate_intermediary_offset + 3, j_val, quantity_format)
+    curve_sheet.write(current_row, ultimate_intermediary_offset + 4, a_val, quantity_format)
+    curve_sheet.write(current_row, ultimate_intermediary_offset + 5, pmt_val, quantity_format)
+    curve_sheet.write(current_row, ultimate_intermediary_offset + 6, p_val, percentage_format)
 
     if i == header_y_offset:
         for j, h in enumerate(col_headers):
@@ -688,7 +867,7 @@ for i, saldo in enumerate(saldo_sen_evol):
             if j == len(col_headers) - 1:
                 col_header_format.set_right(1)
 
-            curve_sheet.write(prev_row, j + 24, h, col_header_format)
+            curve_sheet.write(current_row, j + ultimate_intermediary_offset + 2, h, col_header_format)
 
     if is_finished:
         break
@@ -696,7 +875,7 @@ for i, saldo in enumerate(saldo_sen_evol):
 # END SECTION
 
 # FINANCIAL FLUX
-curve_sheet.merge_range('AE3:AG4', 'Fluxo Financeiro', section_title_format)
+curve_sheet.merge_range(2, ultimate_intermediary_offset + tranche_width + 1, 3, ultimate_intermediary_offset + tranche_width + 3, 'Fluxo Financeiro', section_title_format)
 
 currency_format_template = {
     'font_name': 'arial',
@@ -709,9 +888,9 @@ n_index_format = workbook.add_format(n_index_format_template)
 date_format = workbook.add_format(date_format_template)
 currency_format = workbook.add_format(currency_format_template)
 
-curve_sheet.write(4, 30, 1, n_index_format)
-curve_sheet.write(4, 31, m_bound, date_format)
-curve_sheet.write(4, 32, -total, currency_format)
+curve_sheet.write(4, ultimate_intermediary_offset + tranche_width + 1, 1, n_index_format)
+curve_sheet.write(4, ultimate_intermediary_offset + tranche_width + 2, m_bound, date_format)
+curve_sheet.write(4, ultimate_intermediary_offset + tranche_width + 3, -total, currency_format)
 
 for i, m in enumerate(months):
     if i >= len(saldo_sub_evol):
@@ -726,15 +905,15 @@ for i, m in enumerate(months):
         date_format.set_bottom(1)
         currency_format.set_bottom(1)
 
-    curve_sheet.write(i + flux_y_offset, 30, i + 2, n_index_format)
-    curve_sheet.write(i + flux_y_offset, 31, m, date_format)
+    curve_sheet.write(i + flux_y_offset, ultimate_intermediary_offset + tranche_width + 1, i + 2, n_index_format)
+    curve_sheet.write(i + flux_y_offset, ultimate_intermediary_offset + tranche_width + 2, m, date_format)
 
     c_val = ''
     if i < c_period:
         c_val = 0
     else:
         c_val = '=R{0}+S{0}+Z{0}+AA{0}'.format(i + flux_y_offset + 4)
-    curve_sheet.write(i + flux_y_offset, 32, c_val, currency_format)
+    curve_sheet.write(i + flux_y_offset, ultimate_intermediary_offset + tranche_width + 3, c_val, currency_format)
 
     curve_sheet.set_row(i + flux_y_offset, 18)
 
