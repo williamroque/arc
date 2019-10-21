@@ -14,6 +14,8 @@ import re
 
 import datetime
 
+from functools import reduce
+
 # INPUTS AND SANITATION
 
 inputs = json.loads(sys.stdin.readlines()[0])
@@ -629,7 +631,7 @@ for i, saldo in list(enumerate(saldo_sub_evol)):
 
 # END SECTION
 
-# intermediary TRANCHES
+# INTERMEDIARY TRANCHES
 
 initial_column_position = 22
 tranche_width = 7
@@ -677,7 +679,7 @@ for layer_i, layer in enumerate(mesostrata):
     init_row = sub_y_offset + sub_y_init_offset - 1
     curve_sheet.write(init_row, column_base_position, 1, n_index_format)
     curve_sheet.write(init_row, column_base_position + 1, m_bound, date_format)
-    curve_sheet.write(init_row, column_base_position + 2, saldo_sub, quantity_format)
+    curve_sheet.write(init_row, column_base_position + 2, total * layer[1] / 100, quantity_format)
 
     patch_border(True, 3, column_base_position, 4)
     patch_border(False, 4, column_base_position + tranche_width - 1, 1)
@@ -715,7 +717,7 @@ for layer_i, layer in enumerate(mesostrata):
             get_relative_cell(current_row, saldo_col, 0, 1),
             get_relative_cell(current_row, saldo_col, 0, 3)
         )
-        j_val = '={}*D23'.format(prev_saldo_cell)
+        j_val = '={}*{}'.format(prev_saldo_cell, get_relative_cell(27, 7 - layer_i, 0, 0))
 
         if i < transition_rows[layer_i] - 1:
             if i >= c_period:
@@ -745,17 +747,17 @@ for layer_i, layer in enumerate(mesostrata):
             )
 
         p_val = '={}/{}'.format(
-            get_relative_cell(current_row, saldo_col, 0, 3),
+            get_relative_cell(current_row, saldo_col, 0, 2),
             prev_saldo_cell
         )
 
-        curve_sheet.write(prev_row, column_base_position, i_val, n_index_format)
-        curve_sheet.write(prev_row, column_base_position + 1, m_val, date_format)
-        curve_sheet.write(prev_row, column_base_position + 2, s_val, quantity_format)
-        curve_sheet.write(prev_row, column_base_position + 3, j_val, quantity_format)
-        curve_sheet.write(prev_row, column_base_position + 4, a_val, quantity_format)
-        curve_sheet.write(prev_row, column_base_position + 5, pmt_val, quantity_format)
-        curve_sheet.write(prev_row, column_base_position + 6, p_val, percentage_format)
+        curve_sheet.write(current_row, column_base_position, i_val, n_index_format)
+        curve_sheet.write(current_row, column_base_position + 1, m_val, date_format)
+        curve_sheet.write(current_row, column_base_position + 2, s_val, quantity_format)
+        curve_sheet.write(current_row, column_base_position + 3, j_val, quantity_format)
+        curve_sheet.write(current_row, column_base_position + 4, a_val, quantity_format)
+        curve_sheet.write(current_row, column_base_position + 5, pmt_val, quantity_format)
+        curve_sheet.write(current_row, column_base_position + 6, p_val, percentage_format)
 
 ultimate_intermediary_offset = tranche_width * len(mesostrata) + initial_column_position + len(mesostrata)
 
