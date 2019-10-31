@@ -14,8 +14,6 @@ import re
 
 import datetime
 
-from functools import reduce
-
 # INPUTS AND SANITATION
 
 inputs = json.loads(sys.stdin.readlines()[0])
@@ -56,6 +54,7 @@ t_em_senior_anual /= 100
 
 t_em_mensal = (1 + t_em_anual) ** (1/12) - 1
 t_em_senior_mensal = (1 + t_em_senior_anual) ** (1/12) - 1
+t_em_mesostrata_mensal = [(1 + layer[2] / 100) ** (1/12) - 1 for layer in mesostrata]
 
 locale.setlocale(locale.LC_TIME, 'pt_BR')
 re_date = re.compile('^\s*[A-Z][a-z]{2}/\d{4}\s*$')
@@ -104,6 +103,8 @@ flux_total = [sum(fluxo[m]) for m in fluxo]
 
 months = [m for m in fluxo]
 
+flux_total = [total / len(months) for _ in months]
+
 m_bound = months[0]
 f_bound = flux_total[0]
 
@@ -124,140 +125,128 @@ for i in range(len(flux_total) - 1, -1, -1):
 
 # CURVE CALCULATION
 
-transition_rows = []
 while True:
+    saldo_sen             = total * r_sen / 100
+    saldo_sen_evol        = []
+    pmt_sen_evol          = []
+    amort_sen_evol        = []
+    juros_sen_evol        = []
+
+    saldo_mesostrata      = [total * layer[1] / 100 for layer in mesostrata]
+    saldo_mesostrata_evol = [[] for _ in mesostrata]
+    pmt_mesostrata_evol   = [[] for _ in mesostrata]
+    amort_mesostrata_evol = [[] for _ in mesostrata]
+    juros_mesostrata_evol = [[] for _ in mesostrata]
+
+    saldo_sub             = total * r_sub / 100
+    saldo_sub_evol        = []
+    pmt_sub_evol          = []
+    amort_sub_evol        = []
+    juros_sub_evol        = []
+
     current_layer = 0
-    transition_rows = []
-
-    if len(mesostrata):
-        _, r_current_layer, t_em_anual_current_layer = mesostrata[current_layer]
-        t_em_mensal_current_layer = (1 + t_em_anual_current_layer) ** (1/12) - 1
-
-        saldo_sub = total * r_current_layer / 100
-
-        sub_phase_started = False
-    else:
-        saldo_sub = total * r_sub / 100
-        juros_sub = saldo_sub * t_em_mensal
-
-    saldo_sen = total * r_sen / 100
-
-    saldo_sen_evol                = []
-    juros_sen_evol                = []
-    amort_sen_evol                = []
-    pmt_sen_evol                  = []
-    amort_perc_sen_evol           = []
-
-    saldo_sub_evol                = []
-    despesas_sub_evol             = []
-    juros_sub_evol                = []
-    amort_sub_evol                = []
-    pmt_sub_evol                  = []
-    amort_perc_sub_evol           = []
+    is_transitioning = False
 
     sen_finished = False
-    sub_finished = False
 
     sen_length = 0
     sub_length = 0
 
-    for m in range(len(months)):
-        pmt_adjustment = 0
-        if sub_finished:
-            pmt_adjustment = pmt_sub_evol[-1]
-            if len(mesostrata):
-                current_layer += 1
-                if current_layer < len(mesostrata):
-                    t_em_mensal_current_layer = (1 + t_em_anual_current_layer) ** (1/12) - 1
-                    saldo_sub = total * r_current_layer / 100
-                    _, r_current_layer, t_em_anual_current_layer = mesostrata[current_layer]
-                elif sub_phase_started:
-                    break
+    for i, m in enumerate(months):
+        juros_sub = saldo_sub * t_em_mensal
+        juros_mesostrata = [saldo_mesostrata[layer_i] * t_em_mesostrata_mensal[layer_i] for layer_i, layer in enumerate(mesostrata)]
+        juros_sen = saldo_sen * t_em_senior_mensal
+
+        if i > c_period - 1:
+            pmt_sub = juros_sub + despesas
+            pmt_mesostrata = juros_mesostrata.copy()
+            pmt_sen = flux_total[i - 1] * pmt_proper - sum(pmt_mesostrata) - pmt_sub
+
+            if current_layer == len(mesostrata) + 1:
+                if is_transitioning:
+                    if len(mesostrata):
+                        pmt_sub = flux_total[i - 1] * pmt_proper - pmt_mesostrata[0]
+                    else:
+                        pmt_sub = flux_total[i - 1] * pmt_proper - pmt_sen
+                    is_transitioning = False
                 else:
-                    saldo_sub = total * r_sub / 100
-                    sub_phase_started = True
-                sub_finished = False
-            else:
-                break
-            transition_rows.append(m)
-
-        if current_layer < len(mesostrata):
-            juros_sub = saldo_sub * t_em_mensal_current_layer / 100
-        else:
-            juros_sub = saldo_sub * t_em_mensal
-
-        sub_length += 1
-
-        if not sen_finished:
-            amort_sub = 0
-
-            juros_sen = saldo_sen * t_em_senior_mensal
-            sen_length += 1
-
-            if m > c_period - 1:
-                pmt_sub = juros_sub + despesas
-                pmt_sen = flux_total[m - 1] * pmt_proper - pmt_sub
-                amort_sen = pmt_sen - juros_sen
-                amort_perc_sen = amort_sen / saldo_sen
-
-                if amort_sen < 0:
-                    break
-            else:
-                pmt_sub = pmt_sen = amort_sen = amort_perc_sen = 0
-
-            saldo_sen = saldo_sen + juros_sen - pmt_sen
-        else:
-            juros_sen = pmt_sen = amort_sen = saldo_sen = 0
-
-            pmt_sub = flux_total[m - 1] * pmt_proper - pmt_adjustment
-            amort_sub = pmt_sub - juros_sub - despesas
-
-        amort_perc_sub = amort_sub / saldo_sub
-
-        if amort_perc_sen >= 1 and not sen_finished:
-            amort_sen = saldo_sen_evol[-1]
-            pmt_sen = amort_sen + juros_sen
-
-            pmt_sub = flux_total[m - 1] * pmt_proper - pmt_sen
+                    pmt_sub = flux_total[i - 1] * pmt_proper
+            elif current_layer >= 1:
+                if is_transitioning:
+                    pmt_mesostrata[-current_layer] = flux_total[i - 1] * pmt_proper - (pmt_sen if current_layer == 1 else pmt_mesostrata[-current_layer - 1])
+                    is_transitioning = False
+                else:
+                    pmt_mesostrata[-current_layer] = flux_total[i - 1] * pmt_proper
 
             amort_sub = pmt_sub - juros_sub - despesas
+            amort_mesostrata = [a - b for a, b in zip(pmt_mesostrata, juros_mesostrata)]
+            amort_sen = pmt_sen - juros_sen
+        else:
+            pmt_sub = amort_sub = 0
+            pmt_mesostrata = amort_mesostrata = [0 for _ in mesostrata]
+            pmt_sen = amort_sen = 0
 
-            amort_perc_sub = amort_sub / saldo_sub
-
-            sen_finished = True
-
-        if amort_perc_sub >= 1:
-            amort_sub = saldo_sub_evol[-1]
-            pmt_sub = amort_sub + juros_sub + despesas
-            sub_finished = True
+        if saldo_sub <= 0:
+            pmt_sub = juros_sub = amort_sub = 0
+        for layer_i, saldo_layer in enumerate(saldo_mesostrata):
+            if saldo_layer <= 0:
+                pmt_mesostrata[layer_i] = juros_mesostrata[layer_i] = amort_mesostrata[layer_i] = 0
+        if saldo_sen <= 0:
+            pmt_sen = juros_sen = amort_sen = 0
+        print(i, m, saldo_sub, saldo_mesostrata, saldo_sen, pmt_sub, pmt_mesostrata, pmt_sen, juros_sub, juros_mesostrata, juros_sen)
 
         saldo_sub = saldo_sub + despesas + juros_sub - pmt_sub
+        saldo_mesostrata = [saldo_mesostrata[layer_i] + juros_mesostrata[layer_i] - pmt_mesostrata[layer_i] for layer_i, layer in enumerate(mesostrata)]
+        saldo_sen = saldo_sen + juros_sen - pmt_sen
 
-        saldo_sub_evol.append(max(0, saldo_sub))
-        despesas_sub_evol.append(despesas)
-        juros_sub_evol.append(juros_sub)
-        amort_sub_evol.append(amort_sub)
+        saldo_sub_evol.append(saldo_sub)
+        for layer_i, layer in enumerate(saldo_mesostrata_evol):
+            layer.append(saldo_mesostrata[layer_i])
+        saldo_sen_evol.append(saldo_sen)
+
         pmt_sub_evol.append(pmt_sub)
-        amort_perc_sub_evol.append(min(100, amort_perc_sub * 100))
-
-        saldo_sen_evol.append(max(0, saldo_sen))
-        juros_sen_evol.append(juros_sen)
-        amort_sen_evol.append(amort_sen)
+        for layer_i, layer in enumerate(pmt_mesostrata_evol):
+            layer.append(pmt_mesostrata[layer_i])
         pmt_sen_evol.append(pmt_sen)
-        amort_perc_sen_evol.append(min(100, amort_perc_sen * 100))
 
-    inv_flux = [-total, *np.zeros(c_period)] + [sum(x) for x in list(zip(amort_sub_evol,
-                                                                         juros_sub_evol,
-                                                                         amort_sen_evol,
-                                                                         juros_sen_evol))[c_period:]]
+        amort_sub_evol.append(amort_sub)
+        for layer_i, layer in enumerate(amort_mesostrata_evol):
+            layer.append(amort_mesostrata[layer_i])
+        amort_sen_evol.append(amort_sen)
+
+        juros_sub_evol.append(juros_sub)
+        for layer_i, layer in enumerate(juros_mesostrata_evol):
+            layer.append(juros_mesostrata[layer_i])
+        juros_sen_evol.append(juros_sen)
+
+        if not current_layer == len(mesostrata) + 1:
+            if current_layer == 0 and saldo_sen <= 0 or \
+               current_layer >= 1 and saldo_mesostrata[-current_layer] <= 0:
+                sen_finished = True
+                is_transitioning = True
+                current_layer += 1
+
+        sub_length += 1
+        if not sen_finished:
+            sen_length += 1
+
+    inv_flux = [-total, *np.zeros(c_period)]
+    for i in range(len(amort_sub_evol)):
+        inv_flux.append(amort_sub_evol[i] + juros_sub_evol[i] +
+                        sum([layer[i] for layer in amort_mesostrata_evol]) + sum([layer[i] for layer in juros_mesostrata_evol]) +
+                        amort_sen_evol[i] + juros_sen_evol[i])
 
     irr = ((1 + np.irr(inv_flux)) ** 12 - 1) * 100
 
-    if not sub_finished:
-        pmt_proper = int((pmt_proper + .01) * 100) / 100
+    if saldo_sen_evol[-1] <= 0 and saldo_sub_evol[-1] <= 0:
+        print('IRR -- PMT_PROPER -- TARGET_IRR / IRR -- T_EM_MENSAL')
+        print( '------', irr, pmt_proper, target_irr / irr, t_em_anual, '------')
+
+    if saldo_sub_evol[-1] > 0:
+        pmt_proper += .01
     else:
         if abs(target_irr - irr) > .04:
-            t_em_anual *= (target_irr / irr) ** (1 / (len(mesostrata) + 1))
+            t_em_anual *= (target_irr / irr) ** (len(mesostrata) + 1)
             t_em_mensal = (1 + t_em_anual) ** (1/12) - 1
         else:
             break
@@ -685,7 +674,8 @@ for layer_i, layer in enumerate(mesostrata):
     patch_border(False, 4, column_base_position + tranche_width - 1, 1)
     patch_border(False, 6, column_base_position + tranche_width - 1, 2)
 
-    for i in range(transition_rows[layer_i]):
+    i = 0
+    while saldo_mesostrata_evol[layer_i][min(i - 1, 0)] > 0:
         current_row = i + sub_y_offset + sub_y_init_offset
 
         n_index_format = workbook.add_format(n_index_format_template)
@@ -699,7 +689,7 @@ for layer_i, layer in enumerate(mesostrata):
             'num_format': '0.0000%'
         })
 
-        if i == transition_rows[layer_i] - 1:
+        if saldo_mesostrata_evol[layer_i][i] <= 0:
             n_index_format.set_bottom(1)
             date_format.set_bottom(1)
             quantity_format.set_bottom(1)
@@ -719,7 +709,7 @@ for layer_i, layer in enumerate(mesostrata):
         )
         j_val = '={}*{}'.format(prev_saldo_cell, get_relative_cell(27, 7 - layer_i, 0, 0))
 
-        if i < transition_rows[layer_i] - 1:
+        if saldo_mesostrata_evol[layer_i][i] > 0:
             if i >= c_period:
                 a_val = '={}-{}'.format(
                     get_relative_cell(current_row, saldo_col, 0, 3),
@@ -758,6 +748,8 @@ for layer_i, layer in enumerate(mesostrata):
         curve_sheet.write(current_row, column_base_position + 4, a_val, quantity_format)
         curve_sheet.write(current_row, column_base_position + 5, pmt_val, quantity_format)
         curve_sheet.write(current_row, column_base_position + 6, p_val, percentage_format)
+
+        i += 1
 
 ultimate_intermediary_offset = tranche_width * len(mesostrata) + initial_column_position + len(mesostrata)
 
