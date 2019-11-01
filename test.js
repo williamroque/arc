@@ -17,14 +17,11 @@ input['outputFile'] = 'output.xlsx';
 input['indexador'] = 0;
 input['pu-emis'] = 1000;
 input['total'] = 14270000;
-// 70, 15 v
-input['r-sen'] = 80;
-input['r-sub'] = 20;
-//input['mesostrata'] = [['Mezanino', 15, 8.5]];
-input['mesostrata'] = [];
+input['r-sen'] = 70;
+input['r-sub'] = 15;
+input['mesostrata'] = [['Mezanino', 15, 8.5]];
 input['target-irr'] = 10.5;
-input['t-em-senior-anual'] = 8.5;
-// 7 ^
+input['t-em-senior-anual'] = 7;
 input['c-period'] = 3;
 input['fr-previsto'] = 400000;
 input['pmt-proper'] = 75;

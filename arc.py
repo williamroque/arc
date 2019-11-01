@@ -103,8 +103,6 @@ flux_total = [sum(fluxo[m]) for m in fluxo]
 
 months = [m for m in fluxo]
 
-flux_total = [total / len(months) for _ in months]
-
 m_bound = months[0]
 f_bound = flux_total[0]
 
@@ -126,6 +124,8 @@ for i in range(len(flux_total) - 1, -1, -1):
 # CURVE CALCULATION
 
 while True:
+    dynamic_despesas = despesas
+
     saldo_sen             = total * r_sen / 100
     saldo_sen_evol        = []
     pmt_sen_evol          = []
@@ -158,7 +158,7 @@ while True:
         juros_sen = saldo_sen * t_em_senior_mensal
 
         if i > c_period - 1:
-            pmt_sub = juros_sub + despesas
+            pmt_sub = juros_sub + dynamic_despesas
             pmt_mesostrata = juros_mesostrata.copy()
             pmt_sen = flux_total[i - 1] * pmt_proper - sum(pmt_mesostrata) - pmt_sub
 
@@ -178,7 +178,7 @@ while True:
                 else:
                     pmt_mesostrata[-current_layer] = flux_total[i - 1] * pmt_proper
 
-            amort_sub = pmt_sub - juros_sub - despesas
+            amort_sub = pmt_sub - juros_sub - dynamic_despesas
             amort_mesostrata = [a - b for a, b in zip(pmt_mesostrata, juros_mesostrata)]
             amort_sen = pmt_sen - juros_sen
         else:
@@ -187,15 +187,15 @@ while True:
             pmt_sen = amort_sen = 0
 
         if saldo_sub <= 0:
-            pmt_sub = juros_sub = amort_sub = 0
+            break
         for layer_i, saldo_layer in enumerate(saldo_mesostrata):
             if saldo_layer <= 0:
                 pmt_mesostrata[layer_i] = juros_mesostrata[layer_i] = amort_mesostrata[layer_i] = 0
         if saldo_sen <= 0:
             pmt_sen = juros_sen = amort_sen = 0
-        print(i, m, saldo_sub, saldo_mesostrata, saldo_sen, pmt_sub, pmt_mesostrata, pmt_sen, juros_sub, juros_mesostrata, juros_sen)
+        print(i, m, saldo_sub, saldo_mesostrata, saldo_sen, pmt_sub, pmt_mesostrata, pmt_sen, juros_sub, juros_mesostrata, juros_sen, flux_total[i - 1])
 
-        saldo_sub = saldo_sub + despesas + juros_sub - pmt_sub
+        saldo_sub = saldo_sub + dynamic_despesas + juros_sub - pmt_sub
         saldo_mesostrata = [saldo_mesostrata[layer_i] + juros_mesostrata[layer_i] - pmt_mesostrata[layer_i] for layer_i, layer in enumerate(mesostrata)]
         saldo_sen = saldo_sen + juros_sen - pmt_sen
 
@@ -238,9 +238,8 @@ while True:
 
     irr = ((1 + np.irr(inv_flux)) ** 12 - 1) * 100
 
-    if saldo_sen_evol[-1] <= 0 and saldo_sub_evol[-1] <= 0:
-        print('IRR -- PMT_PROPER -- TARGET_IRR / IRR -- T_EM_MENSAL')
-        print( '------', irr, pmt_proper, target_irr / irr, t_em_anual, '------')
+    print('IRR -- PMT_PROPER -- TARGET_IRR / IRR -- T_EM_MENSAL')
+    print( '------', irr, pmt_proper, target_irr / irr, t_em_anual, '------')
 
     if saldo_sub_evol[-1] > 0:
         pmt_proper += .01
