@@ -1,9 +1,5 @@
 const { ipcRenderer } = require('electron');
 
-function requestForms() {
-    return ipcRenderer.sendSync('get-forms');
-}
-
 function requestSaveDialog() {
     return ipcRenderer.sendSync('get-save-dialog');
 }

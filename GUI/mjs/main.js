@@ -43,7 +43,7 @@ function readData(path) {
 function runScript(input) {
     const subprocess = spawn('python3', [path.join(scriptPath, 'arc.py')]);
 
-    subprocess.stdin.write(input);
+    subprocess.stdin.write(JSON.stringify(input));
     subprocess.stdin.end();
 
     subprocess.stderr.on('data', err => {
@@ -76,19 +76,6 @@ function requestPackage() {
         attemptUpdate(packagePath);
     }
 }
-
-ipcMain.on('get-forms', (event, _) => {
-    while (!fs.readdirSync(formPath).some(f => /\.json$/.test(f))) {
-        requestPackage();
-    }
-
-    event.returnValue = fs.readdirSync(formPath)
-        .filter(f => /\.json$/.test(f))
-        .map(form => {
-            const formObj = JSON.parse(readData(path.join(formPath, form)));
-            return formObj;
-        });
-});
 
 ipcMain.on('get-save-dialog', (event, _) => {
     event.returnValue = createSaveDialog();

@@ -491,11 +491,10 @@ write_prelude_section(1, 26, 'Período', [
 ])
 
 for i, layer in enumerate(mesostrata):
-    col = 7 - i
-    write_prelude_section(col, 26, layer[0], [
+    write_prelude_section(i + 2, 26, layer[0], [
         (
             '=(1+{})^(1/12)-1'.format(
-                get_relative_cell(27, col, 1, 0)
+                get_relative_cell(27, i + 2, 1, 0)
             ),
              prelude_percentage_4_format
         ),
@@ -711,7 +710,7 @@ for layer_i, layer in enumerate(mesostrata):
             get_relative_cell(current_row, saldo_col, 0, 1),
             get_relative_cell(current_row, saldo_col, 0, 3)
         )
-        j_val = '={}*{}'.format(prev_saldo_cell, get_relative_cell(27, 7 - layer_i, 0, 0))
+        j_val = '={}*{}'.format(prev_saldo_cell, get_relative_cell(27, layer_i + 2, 0, 0))
 
         if saldo_mesostrata_evol[layer_i][i + 1] > 0:
             if i >= c_period:

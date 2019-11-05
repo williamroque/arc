@@ -5,8 +5,108 @@ const messagePrompt = document.querySelector('#message-prompt');
 
 const buildButton = document.querySelector('build');
 
-const forms = requestForms();
-let currentForm = forms.find(f => f.id === 'basic') || forms[0];
+const form = {
+    form: [
+        [
+            {
+                id: 'indexador',
+                label: 'Indexador',
+                type: 'float',
+                width: 33.33
+            },
+            {
+                id: 'pu-emis',
+                label: 'P.U. de Emissão',
+                type: 'float',
+                width: 33.33
+            },
+            {
+                id: 'total',
+                label: 'Total',
+                type: 'float',
+                width: 33.33
+            }
+        ],
+        [
+            {
+                id: 'r-sub',
+                label: 'R. Subordinado',
+                type: 'percentage',
+                width: 25
+            },
+            {
+                id: 'r-sen',
+                label: 'R. Sênior',
+                type: 'percentage',
+                width: 25
+            },
+            {
+                id: 'target-irr',
+                label: 'TIR Projetado',
+                type: 'percentage',
+                width: 25
+            },
+            {
+                id: 't-em-senior-anual',
+                label: 'T.A. Emissão Sênior',
+                type: 'percentage',
+                width: 25
+            }
+        ],
+        [
+            {
+                id: 'c-period',
+                label: 'P. Carência',
+                type: 'int',
+                width: 25
+            },
+            {
+                id: 'fr-previsto',
+                label: 'F.R. Previsto',
+                type: 'float',
+                width: 25
+            },
+            {
+                id: 'pmt-proper',
+                label: 'PMT Projetado Base',
+                type: 'percentage',
+                width: 25
+            },
+            {
+                id: 'despesas',
+                label: 'Despesas',
+                type: 'float',
+                width: 25
+            }
+        ],
+        [
+            {
+                id: 'mesostrata',
+                label: 'Mesostrata',
+                type: 'list',
+                width: 100,
+                inputs: [
+                    {
+                        label: 'Título',
+                        type: 'string',
+                        width: 33.3333
+                    },
+                    {
+                        label: 'Razão',
+                        type: 'percentage',
+                        width: 33.3333
+                    },
+                    {
+                        label: 'T.A. Emissão',
+                        type: 'percentage',
+                        width: 33.3333
+                    }
+                ],
+                max: 1
+            }
+        ]
+    ]
+}
 
 let inputFiles = [];
 
@@ -64,6 +164,74 @@ function catalyzeBuild() {
     }
 }
 
+function createInput(type, id, label, formCol, isList=false) {
+    const input = document.createElement('INPUT');
+
+    input.setAttribute('data-type', type);
+    input.setAttribute('id', id);
+    input.setAttribute('type', 'text');
+
+    if (type === 'percentage') {
+        input.classList.add('percentage-input');
+    } else {
+        input.classList.add('standard-input');
+    }
+
+    const inputLabel = document.createElement('LABEL');
+    inputLabel.classList.add(isList ? 'text-input-label-list' : 'text-input-label')
+    inputLabel.setAttribute('for', id);
+    inputLabel.innerText = label;
+
+    formCol.appendChild(inputLabel);
+
+    input.addEventListener('keydown', e => {
+        const target = e.currentTarget;
+        const type = target.getAttribute('data-type');
+
+        const labelElem = target.parentNode.firstChild;
+        const pSymElem = target.parentNode.childNodes[2];
+
+        if (e.key === 'Enter') {
+            catalyzeBuild();
+        } else if (e.key.length < 2) {
+            e.preventDefault();
+
+            const value = target.value + e.key;
+            if (
+                type === 'string' && /^[A-z]+$/.test(value) ||
+                type === 'int' && /^\d+$/.test(value)       ||
+                (type === 'percentage' || type === 'float') && /^((\d*\.\d+)|(\d+\.?))$/.test(value)
+            ) {
+                const cursorPos = target.selectionStart;
+                let nValue = target.value.split('');
+                nValue.splice(cursorPos, 0, e.key);
+                target.value = nValue.join('');
+                target.setSelectionRange(cursorPos + 1, cursorPos + 1);
+            }
+        }
+
+        if (target.value) {
+            labelElem.classList.add('text-input-label-active');
+
+            if (type === 'percentage') {
+                pSymElem.classList.add('perc-symbol-active');
+            }
+        } else {
+            labelElem.classList.remove('text-input-label-active');
+
+            if (type === 'percentage') {
+                pSymElem.classList.remove('perc-symbol-active');
+            }
+        }
+    }, false);
+
+    return input;
+}
+
+// When extending cap, remember to update value at the button
+let mesostrataCount = 0;
+let dblWindow;
+
 function renderForm(form) {
     clearNode(formContainer);
 
@@ -73,81 +241,92 @@ function renderForm(form) {
         
         row.forEach(col => {
             const formCol = document.createElement('DIV');
-            formCol.classList.add('form-col');
 
             const { id, label, type, width } = col;
 
-            const input = document.createElement('INPUT');
-
-            input.setAttribute('data-type', type);
+            formCol.style.width = `${width}%`;
 
             if (
                 type === 'percentage' ||
                 type === 'float' ||
                 type === 'int'
             ) {
-                input.setAttribute('type', 'text');
+                formCol.classList.add('form-col');
+
+                const inputElem = createInput(type, id, label, formCol);
+                formCol.appendChild(inputElem);
 
                 if (type === 'percentage') {
-                    input.classList.add('percentage-input');
-                } else {
-                    input.classList.add('standard-input');
+                    const pSymElem = document.createElement('LABEL');
+                    pSymElem.classList.add('perc-symbol');
+                    pSymElem.innerText = '%';
+                    formCol.appendChild(pSymElem);
                 }
-                
-                const inputLabel = document.createElement('LABEL');
-                inputLabel.classList.add('text-input-label')
-                inputLabel.setAttribute('for', id);
-                inputLabel.innerText = label;
+            } else if (type === 'list') {
+                formCol.classList.add('form-col-list');
 
-                formCol.appendChild(inputLabel);
+                const listWrapper = document.createElement('DIV');
+                listWrapper.classList.add('list-wrapper');
 
-                input.addEventListener('keydown', e => {
-                    const target = e.currentTarget;
-                    const type = target.getAttribute('data-type');
+                const addButton = document.createElement('BUTTON');
+                addButton.classList.add('add-button');
+                addButton.setAttribute('id', id);
+                addButton.setAttribute('data-type', 'list');
+                addButton.setAttribute('data-value', '[]');
+                addButton.innerText = '+';
 
-                    const labelElem = target.parentNode.firstChild;
-                    const pSymElem = target.parentNode.childNodes[2];
+                listWrapper.appendChild(addButton);
 
-                    if (e.key === 'Enter') {
-                        catalyzeBuild();
-                    } else if (e.key.length < 2) {
-                        e.preventDefault();
+                addButton.addEventListener('click', () => {
+                    if (mesostrataCount < col.max) {
+                        const inputRow = document.createElement('DIV');
+                        inputRow.classList.add('input-row');
 
-                        const value = target.value + e.key;
-                        if (
-                            type === 'int' && /^\d+$/.test(value) ||
-                            /^((\d*\.\d+)|(\d+\.?))$/.test(value)
-                        ) {
-                            target.value += e.key;
-                        }
-                    }
+                        inputRow.addEventListener('contextmenu', e => {
+                            dblWindow = e.currentTarget;
+                            setTimeout(() => { dblWindow = undefined }, 3000);
+                        }, false);
 
-                    if (target.value) {
-                        labelElem.classList.add('text-input-label-active');
+                        inputRow.addEventListener('click', e => {
+                            if (dblWindow === e.currentTarget) {
+                                e.currentTarget.remove();
+                                mesostrataCount--;
+                            }
+                        });
 
-                        if (type === 'percentage') {
-                            pSymElem.classList.add('perc-symbol-active');
-                        }
-                    } else {
-                        labelElem.classList.remove('text-input-label-active');
+                        col.inputs.forEach((input, i) => {
+                            const inputRowCol = document.createElement('DIV');
+                            inputRowCol.classList.add('input-row-col');
+                            inputRowCol.style.width = `${input.width}%`;
 
-                        if (type === 'percentage') {
-                            pSymElem.classList.remove('perc-symbol-active');
-                        }
+                            const inputElem = createInput(input.type, i, input.label, inputRowCol, true);
+                            inputRowCol.appendChild(inputElem);
+
+                            if (input.type === 'percentage') {
+                                const pSymElem = document.createElement('LABEL');
+                                pSymElem.classList.add('perc-symbol');
+                                pSymElem.innerText = '%';
+                                inputRowCol.appendChild(pSymElem);
+                            }
+
+                            inputElem.addEventListener('keydown', e => {
+                                const targetInput = e.currentTarget;
+                                let currentValue = JSON.parse(addButton.getAttribute('data-value'));
+
+                                currentValue[targetInput.id] = targetInput.value;
+
+                                addButton.setAttribute('data-value', JSON.stringify(currentValue));
+                            }, false);
+
+                            inputRow.appendChild(inputRowCol);
+                        });
+
+                        listWrapper.appendChild(inputRow);
+                        mesostrataCount++;
                     }
                 }, false);
-            } 
 
-            input.setAttribute('id', id);
-            formCol.style.width = `${width}%`;
-
-            formCol.appendChild(input);
-
-            if (type === 'percentage') {
-                const pSymElem = document.createElement('LABEL');
-                pSymElem.classList.add('perc-symbol');
-                pSymElem.innerText = '%';
-                formCol.appendChild(pSymElem);
+                formCol.appendChild(listWrapper);
             }
 
             formRow.appendChild(formCol);
@@ -246,4 +425,4 @@ const finalRegEx = {
 
 build.addEventListener('click', catalyzeBuild, false);
 
-renderForm(currentForm);
+renderForm(form);
