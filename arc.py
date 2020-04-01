@@ -202,7 +202,6 @@ while True:
                 pmt_mesostrata[layer_i] = juros_mesostrata[layer_i] = amort_mesostrata[layer_i] = 0
         if saldo_sen <= 0:
             pmt_sen = juros_sen = amort_sen = 0
-        #print(i, m, saldo_sub, saldo_mesostrata, saldo_sen, pmt_sub, pmt_mesostrata, pmt_sen, juros_sub, juros_mesostrata, juros_sen, flux_total[i - 1])
 
         saldo_sub = saldo_sub + dynamic_despesas + juros_sub - pmt_sub
         saldo_mesostrata = [saldo_mesostrata[layer_i] + juros_mesostrata[layer_i] - pmt_mesostrata[layer_i] for layer_i, layer in enumerate(mesostrata)]
@@ -228,7 +227,7 @@ while True:
             layer.append(juros_mesostrata[layer_i])
         juros_sen_evol.append(juros_sen)
 
-        if not current_layer == len(mesostrata) + 1:
+        if current_layer != len(mesostrata) + 1:
             if current_layer == 0 and saldo_sen <= 0 or \
                current_layer >= 1 and saldo_mesostrata[-current_layer] <= 0:
                 sen_finished = True
@@ -247,10 +246,9 @@ while True:
 
     irr = ((1 + np.irr(inv_flux)) ** 12 - 1) * 100
 
-    print('IRR -- PMT_PROPER -- TARGET_IRR / IRR -- T_EM_MENSAL')
-    print( '------', iteration, irr, pmt_proper, target_irr / irr, t_em_anual, '------')
+    print('iteration: {}\nirr: {}\npmt_proper: {}\ntarget_irr / irr: {}\nt_em_anual: {}\n[-1]: {}\n'.format(iteration, irr, pmt_proper, target_irr / irr, t_em_anual, saldo_sub_evol[-1]), flush=True)
 
-    if saldo_sub_evol[-1] > 0:
+    if iteration % 500 == 0:
         pmt_proper += .01
     else:
         d_irr = abs(target_irr - irr)
@@ -258,11 +256,12 @@ while True:
             if d_irr > .04:
                 t_em_anual *= (target_irr / irr) ** (len(mesostrata) + 1)
             else:
-                universal_constant = 1 / (iteration % 100 + 1)
-                pmt_proper = pmt_proper - .2
+                universal_constant = .1 ** (iteration % 500 // 50 + 1)
+                print(universal_constant, d_irr, flush=True)
                 t_em_anual += ((target_irr - irr) / abs(target_irr - irr)) * universal_constant
+                t_em_anual = abs(t_em_anual)
             t_em_mensal = (1 + t_em_anual) ** (1/12) - 1
-        else:
+        elif saldo_sub_evol[-1] <= 0:
             break
 
 # OUTPUT
