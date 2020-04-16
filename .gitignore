@@ -5,3 +5,5 @@ output.txt
 
 node_modules/
 dist/
+
+__pycache__/
