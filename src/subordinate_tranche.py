@@ -9,7 +9,14 @@ def carencia_phase(self, i, *_):
         amort = 0
         saldo = self.saldo + self.despesas + juros - pmt
 
-        row = tranche_row.TrancheRow(pmt, amort, juros, saldo, self.despesas)
+        formulae = {
+            'juros': '{prev_saldo} * {taxa_juros}',
+            'pmt': '0',
+            'amort': '0',
+            'saldo': '{prev_saldo} + {despesas} + {juros} - {pmt}'
+        }
+
+        row = tranche_row.TrancheRow(formulae, pmt, amort, juros, saldo, self.despesas)
         self.queue = row
 
         return False
@@ -24,7 +31,14 @@ def dependent_phase(self, *_):
     amort = pmt - juros - self.despesas
     saldo = self.saldo + self.despesas + juros - pmt
 
-    row = tranche_row.TrancheRow(pmt, amort, juros, saldo, self.despesas)
+    formulae = {
+        'juros': '{prev_saldo} * {taxa_juros}',
+        'pmt': '{juros} + {despesas}',
+        'amort': '{pmt} - {juros} - {despesas}',
+        'saldo': '{prev_saldo} + {despesas} + {juros} - {pmt}'
+    }
+
+    row = tranche_row.TrancheRow(formulae, pmt, amort, juros, saldo, self.despesas)
     self.queue = row
 
 
@@ -34,7 +48,14 @@ def transition_phase(self, _1, F_i, tranche_list, _2):
     amort = pmt - juros - self.despesas
     saldo = self.saldo + self.despesas + juros - pmt
 
-    row = tranche_row.TrancheRow(pmt, amort, juros, saldo, self.despesas)
+    formulae = {
+        'juros': '{prev_saldo} * {taxa_juros}',
+        'pmt': '{F_i} * {pmt_proper} - {pmt_next}',
+        'amort': '{pmt} - {juros} - {despesas}',
+        'saldo': '{prev_saldo} + {despesas} + {juros} - {pmt}'
+    }
+
+    row = tranche_row.TrancheRow(formulae, pmt, amort, juros, saldo, self.despesas)
     self.queue = row
 
     self.next_phase()
@@ -46,7 +67,14 @@ def main_phase(self, i, F_i, *_2):
     amort = pmt - juros - self.despesas
     saldo = self.saldo + self.despesas + juros - pmt
 
-    row = tranche_row.TrancheRow(pmt, amort, juros, saldo, self.despesas)
+    formulae = {
+        'juros': '{prev_saldo} * {taxa_juros}',
+        'pmt': '{F_i} * {pmt_proper}',
+        'amort': '{pmt} - {juros} - {despesas}',
+        'saldo': '{prev_saldo} + {despesas} + {juros} - {pmt}'
+    }
+
+    row = tranche_row.TrancheRow(formulae, pmt, amort, juros, saldo, self.despesas)
     self.queue = row
 
 
@@ -56,7 +84,14 @@ def final_phase(self, *_):
     pmt = self.despesas + juros + amort
     saldo = self.saldo + self.despesas + juros - pmt
 
-    row = tranche_row.TrancheRow(pmt, amort, juros, saldo, self.despesas)
+    formulae = {
+        'juros': '{prev_saldo} * {taxa_juros}',
+        'pmt': '{despesas} + {juros} + {amort}',
+        'amort': '{prev_saldo}',
+        'saldo': '{prev_saldo} + {despesas} + {juros} - {pmt}'
+    }
+
+    row = tranche_row.TrancheRow(formulae, pmt, amort, juros, saldo, self.despesas)
     self.queue = row
 
     self.next_phase()
