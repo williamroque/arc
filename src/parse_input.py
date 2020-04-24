@@ -31,6 +31,7 @@ class Input():
         self.total = float(self.total)
         self.razoes = [float(razao) / 100 for razao in self.razoes]
         self.target_irr = float(self.target_irr)
+        self.taxas_juros_anual = [float(taxa) / 100 for taxa in self.taxas_juros]
         self.taxas_juros = [
             (1 + float(taxa) / 100) ** (1/12) - 1 for taxa in self.taxas_juros
         ]

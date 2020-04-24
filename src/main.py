@@ -7,6 +7,8 @@ import locale
 
 import numpy as np
 
+import spreadsheet as ss
+
 print('Processing inputs.')
 
 inputs = parse_input.Input()
@@ -16,7 +18,7 @@ flux_total = flux.collapse()
 
 taxa_juros_sub = .01
 
-print('Processed inputs.\n')
+print('Inputs processed.\n')
 
 print('Calculating curve.')
 
@@ -53,3 +55,17 @@ for tranche in curve.tranche_list:
 print('--- END ---\n')
 
 print('Rendering curve.')
+spreadsheet = ss.Spreadsheet(
+    inputs,
+    taxa_juros_sub,
+    (taxa_juros_sub + 1) ** 12 - 1,
+    curve.tranche_list,
+    fluxo_financeiro,
+    len(curve.tranche_list[0].row_list),
+    len(curve.tranche_list[-1].row_list)
+)
+spreadsheet.render_prelude()
+spreadsheet.resize_columns()
+spreadsheet.render_file()
+
+print('Curve rendered.')
