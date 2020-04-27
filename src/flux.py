@@ -26,10 +26,12 @@ class Flux():
             self.parse_frame(df)
 
         self.collapsed_flux = []
+        self.months = []
 
     def collapse(self):
         for month, values in self.flux_total.items():
             self.collapsed_flux.append(sum(values))
+            self.months.append(month)
 
         return self.collapsed_flux
 

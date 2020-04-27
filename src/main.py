@@ -57,14 +57,17 @@ print('--- END ---\n')
 print('Rendering curve.')
 spreadsheet = ss.Spreadsheet(
     inputs,
+    flux_total,
+    flux.months,
     taxa_juros_sub,
     (taxa_juros_sub + 1) ** 12 - 1,
     curve.tranche_list,
-    fluxo_financeiro,
     len(curve.tranche_list[0].row_list),
-    len(curve.tranche_list[-1].row_list)
+    len(curve.tranche_list[-1].row_list),
+    fluxo_financeiro,
 )
 spreadsheet.render_prelude()
+spreadsheet.render_fluxo_creditos()
 spreadsheet.resize_columns()
 spreadsheet.render_file()
 
