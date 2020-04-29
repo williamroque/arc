@@ -97,6 +97,8 @@ formats['section_title'] = {
 formats['n_index'] = {
     'is_template': True,
     'format': {
+        'font_name': 'arial',
+        'font_size': 10,
         'align': 'center',
         'left': 1
     }
@@ -116,5 +118,46 @@ formats['date'] = {
     'format': {
         'align': 'center',
         'right': 1
+    }
+}
+
+formats['tranche_header_col'] = {
+    'is_template': False,
+    'format': {
+        'bold': True,
+        'align': 'center',
+        'font_size': 10,
+        'font_name': 'arial'
+    }
+}
+
+formats['east_tranche_header_col'] = {
+    'is_template': False,
+    'format': {
+        'bold': True,
+        'align': 'center',
+        'font_size': 10,
+        'font_name': 'arial',
+        'right': 1
+    }
+}
+
+formats['quantity'] = {
+    'is_template': True,
+    'format': {
+        'font_name': 'arial',
+        'font_size': 10,
+        'num_format': '_-* #,##0.00_-;-* #,##0.00_-;_-* "-"??_-;_-@_-'
+    }
+}
+
+formats['percentage'] = {
+    'is_template': True,
+    'format': {
+        'font_name': 'arial',
+        'font_size': 10,
+        'align': 'center',
+        'right': 1,
+        'num_format': '0.0000%'
     }
 }

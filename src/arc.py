@@ -168,23 +168,13 @@ col_headers = ['Saldo Devedor', 'Despesas', 'Juros', 'Amortiz', 'PMT', '% AM']
 header_y_offset = 2
 
 for i, h in enumerate(col_headers):
-    col_header_format = workbook.add_format({
-        'bold': True,
-        'align': 'center',
-        'font_size': 10,
-        'font_name': 'arial'
-    })
+    col_header_format = workbook.add_format()
     if i == len(col_headers) - 1:
         col_header_format.set_right(1)
 
     curve_sheet.write(sub_y_offset + header_y_offset, i + 15, h, col_header_format)
 
-n_index_format_template = {
-    'font_name': 'arial',
-    'font_size': 10,
-    'align': 'center',
-    'left': 1
-}
+n_index_format_template = 
 date_format_template = {
     'font_name': 'arial',
     'font_size': 10,
@@ -429,13 +419,6 @@ for i, saldo in enumerate(saldo_sen_evol):
         'font_name': 'arial',
         'font_size': 10,
         'num_format': '_-* #,##0.00_-;-* #,##0.00_-;_-* "-"??_-;_-@_-'
-    })
-    percentage_format = workbook.add_format({
-        'font_name': 'arial',
-        'font_size': 10,
-        'align': 'center',
-        'right': 1,
-        'num_format': '0.0000%'
     })
 
     i_val = m_val = s_val = j_val = a_val = pmt_val = p_val = ''

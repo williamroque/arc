@@ -6,7 +6,6 @@ import prelude_matrix
 
 import copy
 
-
 class Spreadsheet():
     def __init__(self, inputs, fluxo_creditos, months, taxa_juros_sub, taxa_juros_anual_sub, tranche_list, sub_length, sen_length, fluxo_financeiro):
         self.inputs = inputs
@@ -87,7 +86,7 @@ class Spreadsheet():
 
         title_height = 1
 
-        position_matrix = {}
+        self.position_matrix = {}
 
         for row in self.p_matrix:
             max_length = 1
@@ -108,7 +107,7 @@ class Spreadsheet():
                     for body_row_i, body_row in enumerate(body):
                         current_row = spreadsheet_row + body_row_i + 1
 
-                        adjusted_position_matrix = position_matrix.copy()
+                        adjusted_position_matrix = self.position_matrix.copy()
                         for a_title, position in adjusted_position_matrix.items():
                             adjusted_position_matrix[a_title] = xl_rowcol_to_cell(
                                 position[0] + min(body_row_i, position[2]) + 1,
@@ -151,8 +150,9 @@ class Spreadsheet():
                             ]
                         )
 
-                    position_matrix[title.replace(' ', '_').replace('%', 'P')] = (
-                        spreadsheet_row, current_cell, len(body) - 1)
+                    self.position_matrix[title.replace(' ', '_').replace('%', 'P')] = [
+                        spreadsheet_row, current_cell, len(body) - 1
+                    ]
 
             spreadsheet_row += max_length + title_height + row_margin
 
@@ -203,9 +203,256 @@ class Spreadsheet():
                 current_date_format
             )
 
+    def render_empty_tranche_row(self, row, cell, width, border_balance):
+        for i in range(width):
+            border_template = self.workbook.add_format({})
+
+            if i == 0 and (border_balance < 1):
+                border_template.set_left(1)
+
+            if i == width - 1 and (border_balance > -1):
+                border_template.set_right(1)
+
+            self.sheet.write(
+                row,
+                cell + i,
+                '',
+                border_template
+            )
+
     def render_tranches(self):
-        for tranche in self.tranche_list:
-            pass
+        for tranche_i, tranche in enumerate(self.tranche_list):
+            col_offset = self.tranches_x + \
+                tranche_i * self.normal_tranche_width + \
+                min(tranche_i, 1) + \
+                self.x_margin * tranche_i
+
+            self.sheet.merge_range(
+                self.tranches_y,
+                col_offset,
+                self.tranches_y + 1,
+                col_offset + self.subordinate_tranche_width - min(tranche_i, 1) - 1,
+                'Tranche {}'.format(tranche.title),
+                self.formats['section_title']
+            )
+
+            self.render_empty_tranche_row(
+                self.tranches_y + 2,
+                col_offset,
+                self.subordinate_tranche_width - min(tranche_i, 1),
+                0
+            )
+            self.render_empty_tranche_row(self.tranches_y + 3, col_offset, 1, -1)
+
+            header_offset = 2
+
+            self.sheet.write(
+                self.tranches_y + 3,
+                col_offset + header_offset,
+                'Saldo Devedor',
+                self.formats['tranche_header_col']
+            )
+            header_offset += 1
+
+            if tranche_i == 0:
+                self.sheet.write(
+                    self.tranches_y + 3,
+                    col_offset + header_offset,
+                    'Despesas',
+                    self.formats['tranche_header_col']
+                )
+                header_offset += 1
+
+            self.sheet.write(
+                self.tranches_y + 3,
+                col_offset + header_offset,
+                'Juros',
+                self.formats['tranche_header_col']
+            )
+            header_offset += 1
+
+            self.sheet.write(
+                self.tranches_y + 3,
+                col_offset + header_offset,
+                'Amortiz',
+                self.formats['tranche_header_col']
+            )
+            header_offset += 1
+
+            self.sheet.write(
+                self.tranches_y + 3,
+                col_offset + header_offset,
+                'PMT',
+                self.formats['tranche_header_col']
+            )
+            header_offset += 1
+
+            self.sheet.write(
+                self.tranches_y + 3,
+                col_offset + header_offset,
+                '% AM',
+                self.formats['east_tranche_header_col']
+            )
+
+            self.render_empty_tranche_row(
+                self.tranches_y + 4,
+                col_offset,
+                self.subordinate_tranche_width - min(tranche_i, 1),
+                0
+            )
+
+            self.render_empty_tranche_row(
+                self.tranches_y + 5,
+                col_offset,
+                self.subordinate_tranche_width - min(tranche_i, 1),
+                0
+            )
+
+            self.sheet.write(
+                self.tranches_y + 5,
+                col_offset,
+                '=1',
+                self.workbook.add_format(self.formats['n_index'])
+            )
+
+            date_format_template = copy.copy(self.formats['date'])
+            date_format_template['right'] = 0
+
+            self.sheet.write(
+                self.tranches_y + 5,
+                col_offset + 1,
+                self.months[0],
+                self.workbook.add_format(date_format_template)
+            )
+
+            quantity_format_template = copy.copy(self.formats['quantity'])
+
+            self.sheet.write(
+                self.tranches_y + 5,
+                col_offset + 2,
+                '={}'.format(self.inputs.total * self.inputs.razoes[tranche_i]),
+                self.workbook.add_format(quantity_format_template)
+            )
+
+            row_offset = self.tranches_y + 6
+            for row_i, row in enumerate(tranche.row_list):
+                index_format_template = copy.copy(self.formats['n_index'])
+                percentage_format_template = copy.copy(self.formats['percentage'])
+
+                taxa_juros_pos = copy.copy(self.position_matrix[tranche.title])
+                taxa_juros_pos[0] = taxa_juros_pos[0] + 1
+                taxa_juros_pos = xl_rowcol_to_cell(
+                    taxa_juros_pos[0],
+                    taxa_juros_pos[1]
+                )
+
+                pmt_proper_pos = copy.copy(self.position_matrix['P_PMT'])
+                pmt_proper_pos[0] = pmt_proper_pos[0] + 1
+                pmt_proper_pos = xl_rowcol_to_cell(
+                    pmt_proper_pos[0],
+                    pmt_proper_pos[1]
+                )
+
+                if row_i == len(tranche.row_list) - 1:
+                    index_format_template['bottom'] = 1
+                    date_format_template['bottom'] = 1
+                    quantity_format_template['bottom'] = 1
+                    percentage_format_template['bottom'] = 1
+
+                col_inner_offset = col_offset
+
+                self.sheet.write(
+                    row_offset,
+                    col_inner_offset,
+                    '={}'.format(row_i + 2),
+                    self.workbook.add_format(index_format_template)
+                )
+                col_inner_offset += 1
+
+                self.sheet.write(
+                    row_offset,
+                    col_inner_offset,
+                    self.months[row_i + 1],
+                    self.workbook.add_format(date_format_template)
+                )
+                col_inner_offset += 1
+
+                formatted_formulae = {
+                    'prev_saldo': xl_rowcol_to_cell(row_offset - 1, col_offset + 2),
+                    'taxa_juros': taxa_juros_pos,
+                    'despesas': xl_rowcol_to_cell(row_offset, col_offset + 3),
+                    'juros': xl_rowcol_to_cell(row_offset, col_offset + 4 - min(tranche_i, 1)),
+                    'pmt': xl_rowcol_to_cell(row_offset, col_offset + 6 - min(tranche_i, 1)),
+                    'F_i': xl_rowcol_to_cell(
+                        self.fluxo_creditos_y + 2 + row_i,
+                        self.fluxo_creditos_x + 1
+                    ),
+                    'pmt_proper': pmt_proper_pos,
+                    'pmt_next': xl_rowcol_to_cell(
+                        row_offset,
+                        col_offset + self.tranche_width + 7 - min(tranche_i, 1)
+                    ),
+                    'amort': xl_rowcol_to_cell(row_offset, col_offset + 5 - min(tranche_i, 1)),
+                    'row_sum': '-'.join([
+                        str(xl_rowcol_to_cell(
+                            row_offset,
+                            col_offset - 3 - i * (self.normal_tranche_width + 1)
+                        ))
+                    for i in range(len(self.tranche_list) - 1)])
+                }
+
+                self.sheet.write(
+                    row_offset,
+                    col_inner_offset,
+                    '=' + row.formulae['saldo'].format(**formatted_formulae),
+                    self.workbook.add_format(quantity_format_template)
+                )
+                col_inner_offset += 1
+
+                if tranche_i == 0:
+                    self.sheet.write(
+                        row_offset,
+                        col_inner_offset,
+                        '={}'.format(row.despesas),
+                        self.workbook.add_format(quantity_format_template)
+                    )
+                    col_inner_offset += 1
+
+                self.sheet.write(
+                    row_offset,
+                    col_inner_offset,
+                    '=' + row.formulae['juros'].format(**formatted_formulae),
+                    self.workbook.add_format(quantity_format_template)
+                )
+                col_inner_offset += 1
+
+                self.sheet.write(
+                    row_offset,
+                    col_inner_offset,
+                    '=' + row.formulae['amort'].format(**formatted_formulae),
+                    self.workbook.add_format(quantity_format_template)
+                )
+                col_inner_offset += 1
+
+                self.sheet.write(
+                    row_offset,
+                    col_inner_offset,
+                    '=' + row.formulae['pmt'].format(**formatted_formulae),
+                    self.workbook.add_format(quantity_format_template)
+                )
+                col_inner_offset += 1
+
+                self.sheet.write(
+                    row_offset,
+                    col_inner_offset,
+                    '={}/{}'.format(
+                        formatted_formulae['amort'],
+                        formatted_formulae['prev_saldo']
+                    ),
+                    self.workbook.add_format(percentage_format_template)
+                )
+
+                row_offset += 1
 
     def resize_columns(self):
         column_widths = [6, 18, 15.5, 14, 17.5, 19, 12, 13.5,

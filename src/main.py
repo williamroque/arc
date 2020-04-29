@@ -68,6 +68,7 @@ spreadsheet = ss.Spreadsheet(
 )
 spreadsheet.render_prelude()
 spreadsheet.render_fluxo_creditos()
+spreadsheet.render_tranches()
 spreadsheet.resize_columns()
 spreadsheet.render_file()
 
