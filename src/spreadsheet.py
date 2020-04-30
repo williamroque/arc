@@ -6,6 +6,8 @@ import prelude_matrix
 
 import copy
 
+import re
+
 class Spreadsheet():
     def __init__(self, inputs, fluxo_creditos, months, taxa_juros_sub, taxa_juros_anual_sub, tranche_list, sub_length, sen_length, fluxo_financeiro):
         self.inputs = inputs
@@ -79,6 +81,10 @@ class Spreadsheet():
         self.fluxo_fin_y = 2
         self.fluxo_fin_width = 3
 
+    def substitute_static(self, pos):
+        groups = re.match(r'^([A-Z]+)(\d+)$', pos)
+        return '${}${}'.format(groups[1], groups[2])
+
     def render_prelude(self):
         row_margin = 2
 
@@ -109,18 +115,20 @@ class Spreadsheet():
 
                         adjusted_position_matrix = self.position_matrix.copy()
                         for a_title, position in adjusted_position_matrix.items():
-                            adjusted_position_matrix[a_title] = xl_rowcol_to_cell(
-                                position[0] + min(body_row_i, position[2]) + 1,
-                                position[1]
+                            adjusted_position_matrix[a_title] = self.substitute_static(
+                                xl_rowcol_to_cell(
+                                    position[0] + min(body_row_i, position[2]) + 1,
+                                    position[1]
+                                )
                             )
 
                         format_inputs = {
                             'i_next': xl_rowcol_to_cell(current_row, current_cell + 1),
                             'i_prev': xl_rowcol_to_cell(current_row, current_cell - 1),
-                            'fluxo_fin_start': xl_rowcol_to_cell(self.fluxo_fin_y + 2, self.fluxo_fin_x + 2),
-                            'fluxo_fin_end': xl_rowcol_to_cell(self.fluxo_fin_y + len(self.fluxo_financeiro) + 3, self.fluxo_fin_x + 2),
+                            'fluxo_fin_start': xl_rowcol_to_cell(self.fluxo_fin_y + 2, self.fluxo_fin_x + 1),
+                            'fluxo_fin_end': xl_rowcol_to_cell(self.fluxo_fin_y + len(self.fluxo_financeiro) + 2, self.fluxo_fin_x + 1),
                             'prev_body': xl_rowcol_to_cell(current_row - 1, current_cell),
-                            'fluxo_3_sum': '{}:{}'.format(
+                            'fluxo_3_sum_terms': '{}:{}'.format(
                                 xl_rowcol_to_cell(
                                     self.fluxo_creditos_y + 2, self.fluxo_creditos_x + 1
                                 ),
@@ -128,7 +136,7 @@ class Spreadsheet():
                                     self.fluxo_creditos_y + 4, self.fluxo_creditos_x + 1
                                 )
                             ),
-                            'despesas_3_sum': '{}:{}'.format(
+                            'despesas_3_sum_terms': '{}:{}'.format(
                                 xl_rowcol_to_cell(
                                     self.tranches_y + 6, self.tranches_x + 3
                                 ),
@@ -169,38 +177,32 @@ class Spreadsheet():
         for i, fluxo_row in enumerate(self.fluxo_creditos):
             row_offset = self.fluxo_creditos_y + i + 2
 
-            current_index_format = self.workbook.add_format(
-                self.formats['n_index']
-            )
-            current_fluxo_format = self.workbook.add_format(
-                self.formats['fluxo']
-            )
-            current_date_format = self.workbook.add_format(
-                self.formats['date']
-            )
+            current_index_format_template = copy.copy(self.formats['n_index'])
+            current_fluxo_format_template = copy.copy(self.formats['fluxo'])
+            current_date_format_template = copy.copy(self.formats['date'])
 
             if i == len(self.fluxo_creditos) - 1:
-                current_index_format.set_bottom(1)
-                current_fluxo_format.set_bottom(1)
-                current_date_format.set_bottom(1)
+                current_index_format_template['bottom'] = 1
+                current_fluxo_format_template['bottom'] = 1
+                current_date_format_template['bottom'] = 1
 
             self.sheet.write(
                 row_offset,
                 self.fluxo_creditos_x,
                 i + 1,
-                current_index_format
+                self.workbook.add_format(current_index_format_template)
             )
             self.sheet.write(
                 row_offset,
                 self.fluxo_creditos_x + 1,
                 fluxo_row,
-                current_fluxo_format
+                self.workbook.add_format(current_fluxo_format_template)
             )
             self.sheet.write(
                 row_offset,
                 self.fluxo_creditos_x + 2,
                 self.months[i],
-                current_date_format
+                self.workbook.add_format(current_date_format_template)
             )
 
     def render_empty_tranche_row(self, row, cell, width, border_balance):
@@ -341,16 +343,20 @@ class Spreadsheet():
 
                 taxa_juros_pos = copy.copy(self.position_matrix[tranche.title])
                 taxa_juros_pos[0] = taxa_juros_pos[0] + 1
-                taxa_juros_pos = xl_rowcol_to_cell(
-                    taxa_juros_pos[0],
-                    taxa_juros_pos[1]
+                taxa_juros_pos = self.substitute_static(
+                    xl_rowcol_to_cell(
+                        taxa_juros_pos[0],
+                        taxa_juros_pos[1]
+                    )
                 )
 
                 pmt_proper_pos = copy.copy(self.position_matrix['P_PMT'])
                 pmt_proper_pos[0] = pmt_proper_pos[0] + 1
-                pmt_proper_pos = xl_rowcol_to_cell(
-                    pmt_proper_pos[0],
-                    pmt_proper_pos[1]
+                pmt_proper_pos = self.substitute_static(
+                    xl_rowcol_to_cell(
+                        pmt_proper_pos[0],
+                        pmt_proper_pos[1]
+                    )
                 )
 
                 if row_i == len(tranche.row_list) - 1:
@@ -390,7 +396,7 @@ class Spreadsheet():
                     'pmt_proper': pmt_proper_pos,
                     'pmt_next': xl_rowcol_to_cell(
                         row_offset,
-                        col_offset + self.tranche_width + 7 - min(tranche_i, 1)
+                        col_offset + self.subordinate_tranche_width + 6 - min(tranche_i, 1)
                     ),
                     'amort': xl_rowcol_to_cell(row_offset, col_offset + 5 - min(tranche_i, 1)),
                     'row_sum': '-'.join([
@@ -454,14 +460,75 @@ class Spreadsheet():
 
                 row_offset += 1
 
+    def render_fluxo_financeiro(self):
+        self.sheet.merge_range(
+            self.fluxo_fin_y,
+            self.fluxo_fin_x,
+            self.fluxo_fin_y + 1,
+            self.fluxo_fin_x + 2,
+            'Fluxo Financeiro',
+            self.formats['section_title']
+        )
+
+        for row_i, row in enumerate(self.fluxo_financeiro):
+            row_offset = self.fluxo_fin_y + 2 + row_i
+            tranche_displacement_offset = 3
+
+            n_index_format_template = copy.copy(self.formats['n_index'])
+            quantity_format_template = copy.copy(self.formats['quantity'])
+            date_format_template = copy.copy(self.formats['date'])
+
+            if row_i == len(self.fluxo_financeiro) - 1:
+                n_index_format_template['bottom'] = 1
+                quantity_format_template['bottom'] = 1
+                date_format_template['bottom'] = 1
+
+            self.sheet.write(
+                row_offset,
+                self.fluxo_fin_x,
+                row_i + 1,
+                self.workbook.add_format(n_index_format_template)
+            )
+
+            quantity = '0'
+            if row_i == 0:
+                quantity = str(-self.inputs.total)
+            elif row_i > self.inputs.c_period:
+                quantity = '+'.join([
+                    '{}+{}'.format(
+                        xl_rowcol_to_cell(
+                            row_offset + tranche_displacement_offset,
+                            self.tranches_x + i * (self.normal_tranche_width + 1) + 4
+                        ),
+                        xl_rowcol_to_cell(
+                            row_offset + tranche_displacement_offset,
+                            self.tranches_x + i * (self.normal_tranche_width + 1) + 5
+                        )
+                    )
+                    for i in range(len(self.tranche_list))
+                ])
+            self.sheet.write(
+                row_offset,
+                self.fluxo_fin_x + 1,
+                '=' + quantity,
+                self.workbook.add_format(quantity_format_template)
+            )
+
+            self.sheet.write(
+                row_offset,
+                self.fluxo_fin_x + 2,
+                self.months[row_i],
+                self.workbook.add_format(date_format_template)
+            )
+
     def resize_columns(self):
         column_widths = [6, 18, 15.5, 14, 17.5, 19, 12, 13.5,
                          8, 6, 11, 8, 4, 6, 8, 13, 10, 12, 12, 11, 10, 4]
 
-        for _ in range(len(self.tranche_list)):
+        for _ in range(len(self.tranche_list) - 1):
             column_widths += [6, 8, 13, 12, 12, 11, 10, 4]
 
-        column_widths += [6, 6, 12]
+        column_widths += [6, 14, 8]
 
         for i, width in enumerate(column_widths):
             self.sheet.set_column(i, i, width)

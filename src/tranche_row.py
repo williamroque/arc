@@ -6,6 +6,3 @@ class TrancheRow():
         self.juros = juros
         self.saldo = saldo
         self.despesas = despesas
-
-    def render(self, worksheet, row, cell):
-        pass

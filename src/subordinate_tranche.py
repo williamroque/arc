@@ -109,6 +109,3 @@ class SubordinateTranche(tranche.Tranche):
         self.phase_list = [
             carencia_phase, dependent_phase, transition_phase, main_phase, final_phase
         ]
-
-    def render(self, worksheet, row, cell, headers):
-        pass

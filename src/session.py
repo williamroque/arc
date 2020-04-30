@@ -42,7 +42,8 @@ class Session():
             tranche.calculate(i, F_i, self.tranche_list, tranche_i)
 
     def run(self):
-        for i, F_i in enumerate(self.fluxo_creditos):
+        for i in range(len(self.fluxo_creditos) - 1):
+            i += 1
             self.calculate_row(
                 i,
                 self.fluxo_creditos[i - 1],
@@ -54,7 +55,7 @@ class Session():
                     if tranche_i > 0:
                         self.tranche_list[tranche_i - 1].next_phase()
 
-                    tranche.calculate(i, F_i, self.tranche_list, tranche_i)
+                    tranche.calculate(i, self.fluxo_creditos[i - 1], self.tranche_list, tranche_i)
 
                     self.calculate_row(
                         i,
@@ -74,4 +75,4 @@ class Session():
         for tranche in self.tranche_list:
             for i, row in enumerate(tranche.row_list):
                 collapsed[i] = collapsed[i] + row.juros + row.amort
-        return [-self.total] + [0 for _ in range(self.c_period)] + collapsed
+        return [-self.total] + [0 for _ in range(self.c_period)] + collapsed[self.c_period:]

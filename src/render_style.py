@@ -116,7 +116,7 @@ formats['fluxo'] = {
 formats['date'] = {
     'is_template': True,
     'format': {
-        'align': 'center',
+        'align': 'left',
         'right': 1
     }
 }

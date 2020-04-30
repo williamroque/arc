@@ -64,11 +64,13 @@ spreadsheet = ss.Spreadsheet(
     curve.tranche_list,
     len(curve.tranche_list[0].row_list),
     len(curve.tranche_list[-1].row_list),
-    fluxo_financeiro,
+    fluxo_financeiro
 )
+
 spreadsheet.render_prelude()
 spreadsheet.render_fluxo_creditos()
 spreadsheet.render_tranches()
+spreadsheet.render_fluxo_financeiro()
 spreadsheet.resize_columns()
 spreadsheet.render_file()
 

@@ -40,6 +40,3 @@ class Tranche():
         else:
             self.queue = None
 
-
-    def render(self, worksheet, row, cell, headers):
-        raise NotImplementedError

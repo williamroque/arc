@@ -113,7 +113,7 @@ def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, se
                 'title': 'Sênior',
                 'body': [
                     '=' + str(inputs.taxas_juros[len(inputs.taxas_juros) - 1]),
-                    '=' + str(inputs.taxas_juros_anual[len(inputs.taxas_juros_anual) - 1])
+                    '=({prev_body}+1)^12-1'
                 ],
                 'format': [
                     'prelude_percentage_4',
@@ -124,7 +124,7 @@ def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, se
                 'title': 'Subordinado',
                 'body': [
                     '=' + str(taxas_juros_sub),
-                    '=' + str(taxas_juros_anual_sub)
+                    '=({prev_body}+1)^12-1'
                 ],
                 'format': [
                     'prelude_percentage_4',
@@ -146,7 +146,7 @@ def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, se
             {
                 'title': 'FR 3 PMTS',
                 'body': [
-                    '={fluxo_3_sum}*{P_PMT}-{despesas_3_sum}'
+                    '=SUM({fluxo_3_sum_terms})*{P_PMT}-SUM({despesas_3_sum_terms})'
                 ],
                 'format': [
                     'prelude_currency'
