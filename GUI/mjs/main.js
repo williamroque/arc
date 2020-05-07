@@ -29,20 +29,6 @@ if (!fs.existsSync(formPath)) {
     fs.mkdirSync(formPath);
 }
 
-if (!fs.existsSync(logoPath)) {
-    fs.copyFileSync('./logos-logo.png', logoPath);
-}
-
-function readData(path) {
-    let data;
-    try {
-        data = fs.readFileSync(path);
-    } catch (_) {
-        data = '{}';
-    }
-    return data;
-}
-
 let errorWin;
 let progressWin;
 function runScript(input) {
@@ -126,11 +112,14 @@ ipcMain.on('run-script', async (event, input) => {
 });
 
 function attemptUpdate(path) {
-    const packageData = JSON.parse(readData(path));
+    let [ logoImg, packageData ] = fs.readFileSync(path).toString('latin1').split('|===|');
+    packageData = JSON.parse(packageData);
 
     Object.keys(packageData).forEach(script => {
         fs.writeFileSync(`${scriptPath}/${script}`, packageData[script]);
     });
+
+    fs.writeFileSync(logoPath, Buffer.from(logoImg, 'latin1'));
 
     return 0;
 }
