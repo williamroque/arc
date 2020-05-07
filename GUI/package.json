@@ -6,7 +6,7 @@
     "build": {
         "appId": "com.ethos.arc",
         "mac": {
-            "target": "dmg",
+            "target": "mas",
             "icon": "assets/icon.png",
             "darkModeSupport": true
         },
@@ -31,12 +31,12 @@
     "email": "William Roque <william.roque@ethosgroup.com.br>",
     "license": "ISC",
     "devDependencies": {
-        "electron": "^4.1.4",
-        "electron-builder": "^20.40.2"
+        "electron": "^8.2.5",
+        "electron-builder": "^22.6.0"
     },
     "dependencies": {
         "electron-window-state": "^5.0.3",
         "fix-path": "^2.1.0",
-        "shelljs": "^0.8.3"
+        "shelljs": "^0.8.4"
     }
 }

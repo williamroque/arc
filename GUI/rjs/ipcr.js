@@ -11,4 +11,3 @@ function requestRunScript(input) {
 function requestAttemptUpdate(path) {
     return ipcRenderer.sendSync('attempt-update', path);
 }
-

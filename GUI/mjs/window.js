@@ -1,29 +1,17 @@
-// BrowserWindow import
 const { BrowserWindow } = require('electron');
-
-// Get path
 const path = require('path');
-
-// Get URL
 const url = require('url');
 
-// Window class
 class Window {
-    constructor(winObject) {
-        // Window
+    constructor(winObject, file) {
         this.window = new BrowserWindow(winObject);
-
-        // Load URL for window
-        this.loadURL();
-
-        // Set window to null on close
+        this.loadURL(file);
         this.window.on('closed', e => this.window = null);
     }
 
-    loadURL() {
-        // Load URL for window
+    loadURL(file) {
         this.window.loadURL(url.format({
-            pathname: path.join(__dirname, '../html/index.html'),
+            pathname: path.join(__dirname, `../html/${file}`),
             protocol: 'file:',
             slashes: true
         }));

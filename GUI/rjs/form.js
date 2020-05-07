@@ -14,19 +14,25 @@ const form = {
                 id: 'indexador',
                 label: 'Indexador',
                 type: 'float',
-                width: 33.33
+                width: 25
             },
             {
                 id: 'pu-emis',
                 label: 'P.U. de Emissão',
                 type: 'float',
-                width: 33.33
+                width: 25
             },
             {
                 id: 'total',
                 label: 'Total',
                 type: 'float',
-                width: 33.33
+                width: 25
+            },
+            {
+                id: 'starting-date',
+                label: 'Data',
+                type: 'string',
+                width: 25
             }
         ],
         [
@@ -34,12 +40,14 @@ const form = {
                 id: 'r-sub',
                 label: 'R. Subordinado',
                 type: 'percentage',
+                group: 'razoes',
                 width: 25
             },
             {
                 id: 'r-sen',
                 label: 'R. Sênior',
                 type: 'percentage',
+                group: 'razoes',
                 width: 25
             },
             {
@@ -52,6 +60,7 @@ const form = {
                 id: 't-em-senior-anual',
                 label: 'T.A. Emissão Sênior',
                 type: 'percentage',
+                group: 'taxas-juros',
                 width: 25
             }
         ],
@@ -70,7 +79,7 @@ const form = {
             },
             {
                 id: 'pmt-proper',
-                label: 'PMT Projetado Base',
+                label: 'PMT Projetado',
                 type: 'percentage',
                 width: 25
             },
@@ -83,25 +92,21 @@ const form = {
         ],
         [
             {
-                id: 'mesostrata',
-                label: 'Mesostrata',
+                id: 'mezanino',
+                label: 'Mezanino',
                 type: 'list',
                 width: 100,
                 inputs: [
                     {
-                        label: 'Título',
-                        type: 'string',
-                        width: 33.3333
-                    },
-                    {
                         label: 'Razão',
                         type: 'percentage',
-                        width: 33.3333
+                        group: 'razoes',
+                        width: 50
                     },
                     {
                         label: 'T.A. Emissão',
                         type: 'percentage',
-                        width: 33.3333
+                        width: 50
                     }
                 ],
                 max: 1
@@ -134,6 +139,13 @@ function showPrompt(message, period) {
     }, period);
 }
 
+const finalRegEx = {
+    int: /^\d+$/,
+    float: /^((\d+\.\d*)|(\.?\d+))$/,
+    percentage: /^((\d+\.\d*)|(\.?\d+))$/,
+    string: /^(Jan|Fev|Mar|Abr|Mai|Jun|Jul|Ago|Set|Out|Nov|Dez)\/\d{4}$/
+};
+
 function catalyzeBuild() {
     let values = [];
 
@@ -146,7 +158,8 @@ function catalyzeBuild() {
                 input.value,
                 input.getAttribute('data-type'),
                 col.childNodes[0].innerText,
-                input.id
+                input.id,
+                input.getAttribute('data-group')
             ]);
         });
     });
@@ -158,21 +171,37 @@ function catalyzeBuild() {
         if (inputFiles.length) {
             let inputs = {};
             values.forEach(value => {
-                inputs[value[3]] = value[0];
+                if (value[4] !== 'undefined') {
+                    if (inputs.hasOwnProperty(value[4])) {
+                        inputs[value[4]].push(value[0])
+                    } else {
+                        inputs[value[4]] = [value[0]];
+                    }
+                } else {
+                    inputs[value[3]] = value[0];
+                }
             });
             inputs.inputFiles = inputFiles;
             inputs.outputFile = requestSaveDialog();
-            inputs.mesostrata = addButton ? [JSON.parse(addButton.getAttribute('data-value'))] : [];
 
-            requestRunScript(inputs);
+            if (inputs.outputFile) {
+                let mezanineLayers = addButton ? [JSON.parse(addButton.getAttribute('data-value'))] : [];
+                mezanineLayers.forEach(layer => {
+                    inputs['razoes'].splice(inputs['razoes'].length - 1, 0, layer[0]);
+                    inputs['taxas-juros'].splice(inputs['taxas-juros'].length - 1, 0, layer[1]);
+                });
+
+                requestRunScript(inputs);
+            }
         }
     }
 }
 
-function createInput(type, id, label, formCol, isList=false) {
+function createInput(type, group, id, label, formCol, isList = false) {
     const input = document.createElement('INPUT');
 
     input.setAttribute('data-type', type);
+    input.setAttribute('data-group', group);
     input.setAttribute('id', id);
     input.setAttribute('type', 'text');
 
@@ -203,8 +232,8 @@ function createInput(type, id, label, formCol, isList=false) {
 
             const value = t.value + e.key;
             if (
-                type === 'string' && /^[A-z]+$/.test(value) ||
-                type === 'int' && /^\d+$/.test(value)       ||
+                type === 'string' && /^[A-Za-z0-9/]+$/.test(value) ||
+                type === 'int' && /^\d+$/.test(value) ||
                 (type === 'percentage' || type === 'float') && /^((\d*\.\d+)|(\d+\.?))$/.test(value)
             ) {
                 const cursorPos = t.selectionStart;
@@ -235,7 +264,7 @@ function createInput(type, id, label, formCol, isList=false) {
 }
 
 // When extending cap, remember to update value at the button
-let mesostrataCount = 0;
+let mezanineLayersCount = 0;
 let dblWindow;
 
 function renderForm(form) {
@@ -244,22 +273,23 @@ function renderForm(form) {
     form.form.forEach(row => {
         const formRow = document.createElement('DIV');
         formRow.classList.add('form-row');
-        
+
         row.forEach(col => {
             const formCol = document.createElement('DIV');
 
-            const { id, label, type, width } = col;
+            const { id, label, type, group, width } = col;
 
             formCol.style.width = `${width}%`;
 
             if (
                 type === 'percentage' ||
                 type === 'float' ||
-                type === 'int'
+                type === 'int' ||
+                type === 'string'
             ) {
                 formCol.classList.add('form-col');
 
-                const inputElem = createInput(type, id, label, formCol);
+                const inputElem = createInput(type, group, id, label, formCol);
                 formCol.appendChild(inputElem);
 
                 if (type === 'percentage') {
@@ -284,7 +314,7 @@ function renderForm(form) {
                 listWrapper.appendChild(addButton);
 
                 addButton.addEventListener('click', () => {
-                    if (mesostrataCount < col.max) {
+                    if (mezanineLayersCount < col.max) {
                         const inputRow = document.createElement('DIV');
                         inputRow.classList.add('input-row');
 
@@ -297,7 +327,7 @@ function renderForm(form) {
                             if (dblWindow === e.currentTarget) {
                                 e.currentTarget.remove();
                                 addButton.setAttribute('data-value', '[]');
-                                mesostrataCount--;
+                                mezanineLayersCount--;
                             }
                         });
 
@@ -306,7 +336,7 @@ function renderForm(form) {
                             inputRowCol.classList.add('input-row-col');
                             inputRowCol.style.width = `${input.width}%`;
 
-                            const inputElem = createInput(input.type, i, input.label, inputRowCol, true);
+                            const inputElem = createInput(input.type, input.group, i, input.label, inputRowCol, true);
                             inputRowCol.appendChild(inputElem);
 
                             if (input.type === 'percentage') {
@@ -329,7 +359,7 @@ function renderForm(form) {
                         });
 
                         listWrapper.appendChild(inputRow);
-                        mesostrataCount++;
+                        mezanineLayersCount++;
                     }
                 }, false);
 
@@ -423,12 +453,6 @@ fileContainer.addEventListener('dragleave', e => {
 
     fileContainer.style.border = '';
 }, false);
-
-const finalRegEx = {
-    int: /^\d+$/,
-    float: /^((\d+\.\d*)|(\.?\d+))$/,
-    percentage: /^((\d+\.\d*)|(\.?\d+))$/
-};
 
 buildButton.addEventListener('click', catalyzeBuild, false);
 

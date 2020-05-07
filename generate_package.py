@@ -1,16 +1,22 @@
 import sys
 import os
 
+import re
+
 import json
 
-script_path = input('Script path> ')
+script_path = './src'
 output_path = input('Output path> ')
 
-output = {}
+if script_path and output_path:
+    output = {}
 
-if script_path:
-    with open(script_path, 'r') as f:
-        output['script'] = f.read()
+    for file in filter(lambda x: re.match(r'^.+\.py$', x), os.listdir(script_path)):
+        with open('{}/{}'.format(script_path, file), 'r') as f:
+            output[file] = f.read()
 
-with open(output_path + '.apf', 'w') as f:
-    f.write(json.dumps(output))
+    with open('logos-logo-png', 'rb') as f:
+        output['logo'] = str(f.read())
+
+    with open('arc_v{}.apf'.format(output_path), 'w') as f:
+        f.write(json.dumps(output))

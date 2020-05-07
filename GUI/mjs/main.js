@@ -9,13 +9,12 @@ const path = require('path');
 
 const windowStateKeeper = require('electron-window-state');
 
-const appData = app.getPath('appData');
-
 const { spawn } = require('child_process');
 
-const appDataPath = app.getPath('userData');
-const scriptPath = path.join(app.getPath('userData'), 'Script');
-const formPath = path.join(app.getPath('userData'), 'Forms');
+const appData = app.getPath('userData');
+const scriptPath = path.join(appData, 'Script');
+const formPath = path.join(appData, 'Forms');
+const logoPath = path.join(appData, 'logos-logo.png')
 
 const Window = require('./window');
 
@@ -30,9 +29,13 @@ if (!fs.existsSync(formPath)) {
     fs.mkdirSync(formPath);
 }
 
+if (!fs.existsSync(logoPath)) {
+    fs.copyFileSync('./logos-logo.png', logoPath);
+}
+
 function readData(path) {
     let data;
-    try  {
+    try {
         data = fs.readFileSync(path);
     } catch (_) {
         data = '{}';
@@ -40,28 +43,54 @@ function readData(path) {
     return data;
 }
 
+let errorWin;
+let progressWin;
 function runScript(input) {
-    const subprocess = spawn('python3', [path.join(scriptPath, 'arc.py')]);
+    errorWin = new Window({
+        width: 820,
+        height: 700,
+        minWidth: 400,
+        minHeight: 600,
+        show: false,
+        webPreferences: {
+            nodeIntegration: true
+        }
+    }, 'error.html');
 
-    subprocess.stdin.write(JSON.stringify(input));
-    subprocess.stdin.end();
-
-    subprocess.stderr.on('data', err => {
-        console.log(err.toString());
-    });
-
-    subprocess.stdout.on('data', data => {
-        console.log(data.toString());
-    });
+    progressWin = new Window({
+        width: 820,
+        height: 700,
+        minWidth: 400,
+        minHeight: 600,
+        webPreferences: {
+            nodeIntegration: true
+        }
+    }, 'progress.html');
 
     return new Promise(resolve => {
-        subprocess.on('close', () => {
-            resolve(0);
+        progressWin.window.webContents.once('did-finish-load', () => {
+            const subprocess = spawn('python3', [path.join(scriptPath, 'main.py')]);
+
+            subprocess.stdin.write(input);
+            subprocess.stdin.end();
+
+            subprocess.stderr.on('data', err => {
+                errorWin.window.show();
+                errorWin.window.webContents.send('error', err.toString());
+            });
+
+            subprocess.stdout.on('data', data => {
+                progressWin.window.webContents.send('progress', data.toString());
+            });
+
+            subprocess.on('close', () => {
+                resolve(0);
+            });
         });
     });
 }
 
-const createSaveDialog = () => dialog.showSaveDialog({
+const createSaveDialog = () => dialog.showSaveDialogSync({
     properties: ['openFile'],
     filters: [
         { name: 'Excel', extensions: ['xlsx'] }
@@ -69,7 +98,7 @@ const createSaveDialog = () => dialog.showSaveDialog({
 });
 
 function requestPackage() {
-    const packagePath = dialog.showOpenDialog({
+    const packagePath = dialog.showOpenDialogSync({
         properties: ['openFile'],
         filters: [
             { name: 'Arc Package', extensions: ['apf'] }
@@ -86,12 +115,12 @@ ipcMain.on('get-save-dialog', (event, _) => {
 });
 
 ipcMain.on('run-script', async (event, input) => {
-    while (!fs.existsSync(`${scriptPath}/arc.py`)) {
+    while (!fs.existsSync(`${scriptPath}/main.py`)) {
         requestPackage();
     }
 
     let returnCode = 0;
-    returnCode = await runScript(JSON.stringify(input));
+    returnCode = await runScript(JSON.stringify({...input, cwd: process.cwd()}));
 
     event.returnValue = returnCode;
 });
@@ -99,9 +128,9 @@ ipcMain.on('run-script', async (event, input) => {
 function attemptUpdate(path) {
     const packageData = JSON.parse(readData(path));
 
-    if (packageData.hasOwnProperty('script')) {
-        fs.writeFileSync(`${scriptPath}/arc.py`, packageData.script);
-    }
+    Object.keys(packageData).forEach(script => {
+        fs.writeFileSync(`${scriptPath}/${script}`, packageData[script]);
+    });
 
     return 0;
 }
@@ -111,7 +140,6 @@ ipcMain.on('attempt-update', (event, path) => {
 });
 
 const mainWinObject = {
-    center: true,
     icon: '../assets/icon.png',
     frame: false,
     minWidth: 890,
@@ -119,6 +147,9 @@ const mainWinObject = {
     maxWidth: 1150,
     maxHeight: 770,
     fullscreen: false,
+    webPreferences: {
+        nodeIntegration: true
+    }
 };
 
 let mainWin;
@@ -132,8 +163,8 @@ const createWindow = () => {
     mainWinObject.width = mainWindowState.width;
     mainWinObject.height = mainWindowState.height;
 
-    mainWin = new Window(mainWinObject);
-    
+    mainWin = new Window(mainWinObject, 'index.html');
+
     mainWindowState.manage(mainWin.window);
 };
 
