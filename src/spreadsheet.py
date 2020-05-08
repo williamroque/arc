@@ -25,7 +25,7 @@ class Spreadsheet():
 
         self.sheet.insert_image(
             'F2',
-            '../logos-logo.png',
+            '{}/logos-logo.png'.format(self.inputs.appdata_path),
             {
                 'x_scale': 0.75,
                 'y_scale': 0.85,

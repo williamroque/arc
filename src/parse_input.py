@@ -22,6 +22,7 @@ class Input():
         self.pmt_proper = self.raw_inputs['pmt-proper']
         self.despesas = self.raw_inputs['despesas']
         self.starting_date = self.raw_inputs['starting-date']
+        self.appdata_path = self.raw_inputs['appdata-path']
 
         self.parse_inputs()
 

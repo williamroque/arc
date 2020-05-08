@@ -105,8 +105,10 @@ ipcMain.on('run-script', async (event, input) => {
         requestPackage();
     }
 
+    input['appdata-path'] = appData;
+
     let returnCode = 0;
-    returnCode = await runScript(JSON.stringify({...input, cwd: process.cwd()}));
+    returnCode = await runScript(JSON.stringify(input));
 
     event.returnValue = returnCode;
 });
