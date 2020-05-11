@@ -1,4 +1,5 @@
-def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, sen_length):
+def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, mez_lengths, sen_length):
+    mezanine_layers_count = len(inputs.razoes) - 2
     return [
         [
             {
@@ -14,6 +15,7 @@ def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, se
                 'title': 'Série',
                 'body': [
                     'Sênior',
+                    *['Mezanino' for _ in range(mezanine_layers_count)],
                     'Subordinado'
                 ],
                 'format': ['prelude_text']
@@ -22,6 +24,7 @@ def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, se
                 'title': 'PU Emissão',
                 'body': [
                     '=' + str(inputs.pu_emis),
+                    *['=' + str(inputs.pu_emis) for _ in range(mezanine_layers_count)],
                     '=' + str(inputs.pu_emis)
                 ],
                 'format': ['prelude_currency']
@@ -30,6 +33,7 @@ def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, se
                 'title': 'Indexador',
                 'body': [
                     '=' + str(inputs.indexador),
+                    *['=' + str(inputs.indexador) for _ in range(mezanine_layers_count)],
                     '=' + str(inputs.indexador)
                 ],
                 'format': ['prelude_text']
@@ -38,6 +42,7 @@ def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, se
                 'title': 'Taxa de Juros',
                 'body': [
                     '=' + str(inputs.taxas_juros_anual[len(inputs.taxas_juros_anual) - 1]),
+                    *['=' + str(inputs.taxas_juros_anual[-i - 2]) for i in range(mezanine_layers_count)],
                     '=' + str(taxas_juros_anual_sub)
                 ],
                 'format': ['prelude_percentage_2']
@@ -48,6 +53,7 @@ def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, se
                 'title': 'Série',
                 'body': [
                     'Sênior',
+                    *['Mezanino' for _ in range(mezanine_layers_count)],
                     'Subordinado'
                 ],
                 'format': ['prelude_text']
@@ -56,6 +62,7 @@ def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, se
                 'title': 'Razão',
                 'body': [
                     '=' + str(inputs.razoes[-1]),
+                    *['=' + str(inputs.razoes[-i - 2]) for i in range(mezanine_layers_count)],
                     '=' + str(inputs.razoes[0])
                 ],
                 'format': ['prelude_percentage_0']
@@ -64,6 +71,8 @@ def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, se
                 'title': 'PU Liquidação',
                 'body': [
                     '=' + str(inputs.pu_emis),
+                    *['=' + str(inputs.pu_emis)
+                      for _ in range(mezanine_layers_count)],
                     '=' + str(inputs.pu_emis)
                 ],
                 'format': ['prelude_currency']
@@ -72,6 +81,7 @@ def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, se
                 'title': 'Quantidades',
                 'body': [
                     '={i_next}/{i_prev}',
+                    *['={i_next}/{i_prev}' for _ in range(mezanine_layers_count)],
                     '={i_next}/{i_prev}'
                 ],
                 'format': ['prelude_quantity']
@@ -79,6 +89,7 @@ def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, se
             {
                 'title': 'Montante',
                 'body': [
+                    '={Valor_Total}*{Razão}',
                     '={Valor_Total}*{Razão}',
                     '={Valor_Total}*{Razão}'
                 ],
@@ -88,6 +99,7 @@ def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, se
                 'title': 'Prazo',
                 'body': [
                     '=' + str(sen_length),
+                    *['=' + str(length) for length in mez_lengths],
                     '=' + str(sub_length)
                 ],
                 'format': ['prelude_text']
@@ -120,6 +132,19 @@ def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, se
                     'prelude_percentage_2'
                 ]
             },
+            *[
+                {
+                    'title': 'Mezanino',
+                    'body': [
+                        '=' + str(inputs.taxas_juros[-i - 2]),
+                        '=({prev_body}+1)^12-1'
+                    ],
+                    'format': [
+                        'prelude_percentage_4',
+                        'prelude_percentage_2'
+                    ]
+                } for i in range(len(inputs.taxas_juros) - 1)
+            ],
             {
                 'title': 'Subordinado',
                 'body': [
@@ -142,7 +167,6 @@ def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, se
                     'prelude_percentage_2'
                 ]
             },
-            {},
             {
                 'title': 'FR 3 PMTS',
                 'body': [
@@ -161,27 +185,5 @@ def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, se
                     'prelude_currency'
                 ]
             }
-        ],
-        [
-            {
-                'title': 'Período',
-                'body': [
-                    'Mensal',
-                    'Anual'
-                ],
-                'format': ['prelude_text']
-            } if len(inputs.razoes) - 2 else {},
-            *[{
-                'title': 'Mezanino',
-                'body': [
-                    '=' + str(inputs.taxas_juros[i]),
-                    '=' + str(inputs.taxas_juros_anual[i])
-                ],
-                'format': [
-                    'prelude_percentage_4',
-                    'prelude_percentage_2'
-                ]
-            } for i in range(len(inputs.razoes) - 2)]
         ]
     ]
-

@@ -9,7 +9,7 @@ import copy
 import re
 
 class Spreadsheet():
-    def __init__(self, inputs, fluxo_creditos, months, taxa_juros_sub, taxa_juros_anual_sub, tranche_list, sub_length, sen_length, fluxo_financeiro):
+    def __init__(self, inputs, fluxo_creditos, months, taxa_juros_sub, taxa_juros_anual_sub, tranche_list, sub_length, mez_lengths, sen_length, fluxo_financeiro):
         self.inputs = inputs
         self.months = months
         self.fluxo_creditos = fluxo_creditos
@@ -46,6 +46,7 @@ class Spreadsheet():
             taxa_juros_sub,
             taxa_juros_anual_sub,
             sub_length,
+            mez_lengths,
             sen_length
         )
 
@@ -54,6 +55,7 @@ class Spreadsheet():
         self.prelude_x = 1
         self.prelude_y = 11
         self.prelude_width = len(self.p_matrix[0])
+        self.prelude_row_margin = 2
 
         self.fluxo_creditos_x = self.prelude_x + \
             self.prelude_width + \
@@ -86,8 +88,6 @@ class Spreadsheet():
         return '${}${}'.format(groups[1], groups[2])
 
     def render_prelude(self):
-        row_margin = 2
-
         spreadsheet_row = self.prelude_y
 
         title_height = 1
@@ -100,6 +100,8 @@ class Spreadsheet():
             for cell_i, cell in enumerate(row):
                 if 'title' in cell:
                     title, body, body_format = list(cell.values())
+
+                    max_length = max(max_length, len(body))
 
                     current_cell = cell_i + self.prelude_x
 
@@ -162,7 +164,7 @@ class Spreadsheet():
                         spreadsheet_row, current_cell, len(body) - 1
                     ]
 
-            spreadsheet_row += max_length + title_height + row_margin
+            spreadsheet_row += max_length + title_height + self.prelude_row_margin
 
     def render_fluxo_creditos(self):
         self.sheet.merge_range(
@@ -337,6 +339,7 @@ class Spreadsheet():
             )
 
             row_offset = self.tranches_y + 6
+
             for row_i, row in enumerate(tranche.row_list):
                 index_format_template = copy.copy(self.formats['n_index'])
                 percentage_format_template = copy.copy(self.formats['percentage'])

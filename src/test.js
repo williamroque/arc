@@ -25,6 +25,7 @@ input['fr-previsto'] = 400000;
 input['pmt-proper'] = 92;
 input['despesas'] = 10000;
 input['starting-date'] = 'Set/2019';
+input['appdata-path'] = '/Users/jetblack-work/Library/Application Support/Arc';
 
 subprocess.stdin.write(JSON.stringify(input));
 subprocess.stdin.end();
