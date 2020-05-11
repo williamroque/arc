@@ -19,7 +19,7 @@ class Spreadsheet():
         self.workbook = xlsxwriter.Workbook(inputs.output_path)
         self.workbook.set_size(1400, 1000)
 
-        self.sheet = self.workbook.add_worksheet()
+        self.sheet = self.workbook.add_worksheet('Curva')
         self.sheet.hide_gridlines(2)
         self.sheet.set_default_row(18)
 

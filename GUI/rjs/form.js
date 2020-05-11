@@ -5,7 +5,7 @@ const messagePrompt = document.querySelector('#message-prompt');
 
 const buildButton = document.querySelector('#build');
 
-let addButton;
+let mezanineLayers = [];
 
 const form = {
     form: [
@@ -140,8 +140,8 @@ function showPrompt(message, period) {
 }
 
 const finalRegEx = {
-    int: /^\d+$/,
-    float: /^((\d+\.\d*)|(\.?\d+))$/,
+    int: /^\d[\d\.]*$/,
+    float: /^(([\d\.]+,\d*)|(,?\d+))$/,
     percentage: /^((\d+\.\d*)|(\.?\d+))$/,
     string: /^(Jan|Fev|Mar|Abr|Mai|Jun|Jul|Ago|Set|Out|Nov|Dez)\/\d{4}$/
 };
@@ -155,7 +155,7 @@ function catalyzeBuild() {
 
             const input = col.childNodes[1];
             values.push([
-                input.value,
+                input.value.replace(/\./g, '').replace(/,/g, '.'),
                 input.getAttribute('data-type'),
                 col.childNodes[0].innerText,
                 input.id,
@@ -165,8 +165,11 @@ function catalyzeBuild() {
     });
 
     const firstInvalid = values.find(v => !finalRegEx[v[1]].test(v[0]));
+
     if (firstInvalid) {
         showPrompt(`Valor inválido no campo <b>${firstInvalid[2].toLowerCase()}</b>.`, 2000);
+    } else if (mezanineLayers.some(layer => layer.some(v => !v || !finalRegEx.float.test(v)))) {
+        showPrompt('Valor inválido no campo <b>Mezanino</b>.', 2000);
     } else {
         if (inputFiles.length) {
             let inputs = {};
@@ -185,14 +188,15 @@ function catalyzeBuild() {
             inputs.outputFile = requestSaveDialog();
 
             if (inputs.outputFile) {
-                let mezanineLayers = addButton ? [JSON.parse(addButton.getAttribute('data-value'))] : [];
                 mezanineLayers.forEach(layer => {
-                    inputs['razoes'].splice(inputs['razoes'].length - 1, 0, layer[0]);
-                    inputs['taxas-juros'].splice(inputs['taxas-juros'].length - 1, 0, layer[1]);
+                    inputs['razoes'].splice(inputs['razoes'].length - 1, 0, layer[0].replace(/\./g, '').replace(/,/g, '.'));
+                    inputs['taxas-juros'].splice(inputs['taxas-juros'].length - 1, 0, layer[1].replace(/\./g, '').replace(/,/g, '.'));
                 });
 
                 requestRunScript(inputs);
             }
+        } else {
+            showPrompt('Campo <b>Saldos</b> indefinido.', 2000);
         }
     }
 }
@@ -219,33 +223,33 @@ function createInput(type, group, id, label, formCol, isList = false) {
     formCol.appendChild(inputLabel);
 
     input.addEventListener('keydown', e => {
-        const t = e.currentTarget;
-        const type = t.getAttribute('data-type');
+        const target = e.currentTarget;
+        const type = target.getAttribute('data-type');
 
-        const labelElem = t.parentNode.firstChild;
-        const pSymElem = t.parentNode.childNodes[2];
+        const labelElem = target.parentNode.firstChild;
+        const pSymElem = target.parentNode.childNodes[2];
 
         if (e.key === 'Enter') {
             catalyzeBuild();
         } else if (e.key.length < 2) {
             e.preventDefault();
 
-            const value = t.value + e.key;
+            const value = target.value + e.key;
             if (
                 type === 'string' && /^[A-Za-z0-9/]+$/.test(value) ||
-                type === 'int' && /^\d+$/.test(value) ||
-                (type === 'percentage' || type === 'float') && /^((\d*\.\d+)|(\d+\.?))$/.test(value)
+                type === 'int' && /^\d[\d\.]*$/.test(value) ||
+                (type === 'percentage' || type === 'float') && /^(([\d\.]*,\d+)|(\d[\d\.]*,?))$/.test(value)
             ) {
-                const cursorPos = t.selectionStart;
-                let nValue = t.value.split('');
-                nValue.splice(cursorPos, 0, e.key);
-                t.value = nValue.join('');
-                t.setSelectionRange(cursorPos + 1, cursorPos + 1);
+                const selStart = target.selectionStart;
+                let nValue = target.value.split('');
+                nValue.splice(selStart, target.selectionEnd - selStart, e.key);
+                target.value = nValue.join('');
+                target.setSelectionRange(selStart+ 1, selStart+ 1);
             }
         }
 
-        const vLength = t.value.length;
-        if (t.value && !(e.key === 'Backspace' && t.selectionStart === vLength && vLength < 2)) {
+        const vLength = target.value.length;
+        if (target.value && !(e.key === 'Backspace' && target.selectionStart === vLength && vLength < 2)) {
             labelElem.classList.add('text-input-label-active');
 
             if (type === 'percentage') {
@@ -263,10 +267,7 @@ function createInput(type, group, id, label, formCol, isList = false) {
     return input;
 }
 
-// When extending cap, remember to update value at the button
 let mezanineLayersCount = 0;
-let dblWindow;
-
 function renderForm(form) {
     clearNode(formContainer);
 
@@ -308,27 +309,21 @@ function renderForm(form) {
                 addButton.classList.add('add-button');
                 addButton.setAttribute('id', id);
                 addButton.setAttribute('data-type', 'list');
-                addButton.setAttribute('data-value', '[]');
                 addButton.innerText = '+';
 
                 listWrapper.appendChild(addButton);
 
                 addButton.addEventListener('click', () => {
-                    if (mezanineLayersCount < col.max) {
+                    if (mezanineLayers.length < col.max) {
                         const inputRow = document.createElement('DIV');
                         inputRow.classList.add('input-row');
+                        inputRow.setAttribute('data-index', mezanineLayers.length);
+                        mezanineLayers.push([null, null]);
 
-                        inputRow.addEventListener('contextmenu', e => {
-                            dblWindow = e.currentTarget;
-                            setTimeout(() => { dblWindow = undefined }, 3000);
-                        }, false);
-
-                        inputRow.addEventListener('click', e => {
-                            if (dblWindow === e.currentTarget) {
-                                e.currentTarget.remove();
-                                addButton.setAttribute('data-value', '[]');
-                                mezanineLayersCount--;
-                            }
+                        inputRow.addEventListener('dblclick', e => {
+                            const target = e.currentTarget;
+                            target.remove();
+                            mezanineLayers.splice(target.getAttribute('data-index'), 1);
                         });
 
                         col.inputs.forEach((input, i) => {
@@ -346,13 +341,16 @@ function renderForm(form) {
                                 inputRowCol.appendChild(pSymElem);
                             }
 
-                            inputElem.addEventListener('keydown', e => {
-                                const targetInput = e.currentTarget;
-                                let currentValue = JSON.parse(addButton.getAttribute('data-value'));
+                            inputElem.addEventListener('keyup', e => {
+                                const target = e.currentTarget;
+                                const rowIndex = target.parentNode.getAttribute('data-index') | 0;
+                                const colIndex = target.getAttribute('id') | 0;
 
-                                currentValue[targetInput.id] = targetInput.value;
+                                mezanineLayers[rowIndex][colIndex] = target.value;
+                            }, false);
 
-                                addButton.setAttribute('data-value', JSON.stringify(currentValue));
+                            inputElem.addEventListener('dblclick', e => {
+                                e.stopPropagation();
                             }, false);
 
                             inputRow.appendChild(inputRowCol);
