@@ -36,27 +36,27 @@ class ElementController {
     }
 
     getChild(id) {
-        return this.children[id];
+        return this.DOMTree.children[id];
     }
 
-    hasProperty(property) {
-        return typeof this.DOMTree[property] !== 'undefined';
+    addEventListener(event, callback, context) {
+        this.element.addEventListener(event, callback.bind(context), false);
     }
 
     render() {
-        if (!this.hasProperty('element')) {
+        if (!this.element) {
             this.element = document.createElement(this.DOMTree.type);
         }
 
-        if (this.hasProperty('width')) {
+        if ('width' in this.DOMTree) {
             this.element.style.width = `${this.DOMTree.width}%`;
         }
 
-        if (this.hasProperty('text')) {
+        if ('text' in this.DOMTree) {
             this.element.innerText = this.DOMTree.text;
         }
 
-        if (this.hasProperty('classList')) {
+        if ('classList' in this.DOMTree) {
             this.DOMTree.classList.forEach(nodeClass => {
                 this.element.classList.add(nodeClass);
             });

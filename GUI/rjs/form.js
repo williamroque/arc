@@ -10,10 +10,14 @@ class Form {
 
     updateValue(group, id, value) {
         if (group) {
+            if (!(group in this.values)) {
+                this.values[group] = {};
+            }
             this.values[group][id] = value;
         } else {
             this.values[id] = value;
         }
+        console.log(this.values);
     }
 
     seedTree() {
@@ -42,6 +46,12 @@ class Form {
                     rowController.addChild(inputCell.DOMController);
                 });
             } else if (rowSchema.type === 'list') {
+                const listController = new ElementController(
+                    'DIV',
+                    {
+                        classList: new Set(['list-container'])
+                    }
+                );
                 const buttonController = new ElementController(
                     'BUTTON',
                     {
@@ -49,7 +59,9 @@ class Form {
                         classList: new Set(['add-button'])
                     }
                 );
-                rowController.addChild(buttonController);
+
+                listController.addChild(buttonController);
+                rowController.addChild(listController);
             } else if (rowSchema.type === 'file-input') {
                 const fileInputController = new ElementController(
                     'DIV',

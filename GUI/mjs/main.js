@@ -9,8 +9,6 @@ const Path = require('./path');
 const Window = require('./window');
 const Communication = require('./communication');
 
-const menuTemplate = require('./menuTemplate');
-
 Path.setup();
 Communication.setDefault();
 
@@ -29,7 +27,7 @@ app.on('ready', () => {
 });
 
 app.on('window-all-closed', () => {
-    if (isMac) {
+    if (!isMac) {
         app.exit(0);
     }
 });
@@ -50,6 +48,7 @@ const menuTemplate = [
             { role: 'hide' },
             { role: 'hideothers' },
             { role: 'unhide' },
+            { role: 'close' },
             { type: 'separator' },
             {
                 label: 'Quit',
@@ -58,6 +57,7 @@ const menuTemplate = [
             }
         ]
     }] : []),
+    { role: 'editMenu' },
     {
         label: 'Packages',
         submenu: [
@@ -69,6 +69,7 @@ const menuTemplate = [
             { type: 'separator' }
         ]
     },
+    { role: 'windowMenu' },
     {
         label: 'Developer',
         submenu: [

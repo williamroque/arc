@@ -1,10 +1,12 @@
 #form-container {
     margin: 0;
-    padding: 20px;
-    padding-top: 40px;
-    width: 70%;
-    height: 80%;
-    float: left;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.form {
+    padding: 40px 20px;
     overflow-y: scroll;
     overflow-x: hidden;
     display: flex;
@@ -15,11 +17,11 @@
 
 .form-row {
     width: 100%;
-    height: 40px;
+    min-height: 40px;
     margin-bottom: 20px;
 }
 
-.form-col, .form-col-list {
+.form-cell {
     height: 100%;
     margin: 0;
     padding: 5px;
@@ -27,45 +29,22 @@
     box-sizing: border-box;
 }
 
-input {
+.form-input {
     width: 100%;
-    height: 100%;
+    height: 25px;
     outline: none;
-    border: none;
     box-sizing: border-box;
-    padding: 0;
+    padding: 0 4px;
     margin: 0;
-}
-
-.file-input {
-    background: transparent;
-    color: #C0B283;
-    border: solid 1px #C0B283;
-    font-family: helvetica;
-    text-transform: uppercase;
-    font-family: 12pt;
-    font-weight: 600;
-    width: 80%;
-    cursor: pointer;
-}
-
-.file-input:active {
-    background: #C0B283;
-    color: white;
-}
-
-.standard-input, .percentage-input {
+    border: none;
     border-bottom: solid 1px #AAA;
     font-size: 11pt;
     color: #444;
-    padding-left: 4px;
-    padding-right: 4px;
-    height: 25px;
     transition-duration: .1s;
 }
 
-input:focus,
-.text-input-label-active + input {
+.form-input:focus,
+.form-input-active {
     border-bottom-color: #C0B283 !important;
     transition-duration: .1s !important;
 }
@@ -74,8 +53,7 @@ input:focus,
     padding-right: 15px;
 }
 
-.text-input-label-list,
-.text-input-label {
+.form-input-label {
     position: absolute;
     pointer-events: none;
     color: #555;
@@ -87,9 +65,8 @@ input:focus,
     transition-duration: .1s;
 }
 
-.form-col:focus-within .text-input-label,
-.input-row-col:focus-within .text-input-label,
-.text-input-label-active {
+.form-cell:focus-within .form-input-label,
+.form-input-label-active {
     font-weight: bold;
     font-size: 7pt;
     color: #C0B283;
@@ -97,16 +74,7 @@ input:focus,
     transition-duration: .1s;
 }
 
-.input-row-col:focus-within .text-input-label-list,
-.text-input-label-active {
-    font-weight: bold;
-    font-size: 7pt;
-    color: #C0B283;
-    transform: translate(0, -8px);
-    transition-duration: .1s;
-}
-
-.perc-symbol {
+.percentage-symbol {
     position: absolute;
     transform: translate(-13px, 5px);
     font-family: times;
@@ -116,49 +84,29 @@ input:focus,
     transition-duration: .1s;
 }
 
-.form-col:focus-within .perc-symbol,
-.input-row-col:focus-within .perc-symbol,
-.perc-symbol-active {
+.form-cell:focus-within .percentage-symbol,
+.percentage-symbol-active {
     opacity: 1;
     transition-duration: .1s;
 }
 
-.input-row-col:focus-within .perc-symbol,
-.perc-symbol-active {
+.form-cell:focus-within .percentage-symbol,
+.percentage-symbol-active {
     opacity: 1;
     transition-duration: .1s;
-}
-
-.input-row {
-    padding: 0;
-    margin: 0;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.list-wrapper {
-    padding: 0;
-    margin: 0;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.input-row-col {
-    margin-top: 20px;
-    display: inline-block;
-    box-sizing: border-box;
-    padding: 5px;
 }
 
 .add-button {
     width: 100%;
-    height: 40px;
-    border: solid 1px #C0B283;
+    height: 45px;
+    border: solid 2px #C0B283;
     outline: none;
     background: none;
-    font-family: arial;
+    font-family: helvetica;
+    font-weight: 100;
+    text-transform: uppercase;
     color: #C0B283;
-    font-size: 16pt;
+    font-size: 11pt;
     box-sizing: border-box;
     cursor: pointer;
 }
@@ -166,4 +114,14 @@ input:focus,
 .add-button:active {
     background: #C0B283;
     color: white;
+}
+
+.list-container {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    border: solid 1px #b7b5af;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

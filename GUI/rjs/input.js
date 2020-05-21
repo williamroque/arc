@@ -10,11 +10,6 @@ class Input {
         this.value = new InputValue('', properties.type);
 
         this.seedTree();
-        this.DOMController.element.addEventListener(
-            'keyup',
-            this.handleKeyEvent.bind(this),
-            false,
-        )
     }
 
     seedTree() {
@@ -41,6 +36,7 @@ class Input {
                 classList: new Set(['form-input'])
             }
         );
+        inputController.addEventListener('keyup', this.handleKeyEvent, this);
         this.DOMController.addChild(inputController, 'input');
 
         if (this.value.type === 'percentage') {
@@ -52,6 +48,7 @@ class Input {
                 }
             );
             this.DOMController.addChild(percentageLabelController, 'percentageSymbol');
+            inputController.addClass('percentage-input');
         }
     }
 
@@ -61,20 +58,23 @@ class Input {
         this.value.update(target.value);
         this.updateValueCallback(this.group, this.id, this.value);
 
+        const inputNode = this.DOMController.getChild('input');
         const labelNode = this.DOMController.getChild('label');
         const percentageLabelNode = this.DOMController.getChild('percentageSymbol');
 
         if (this.value.content) {
-            labelNode.addClass('text-input-label-active');
+            inputNode.addClass('form-input-active');
+            labelNode.addClass('form-input-label-active');
 
             if (this.value.type === 'percentage') {
-                percentageLabelNode.addClass('perc-symbol-active');
+                percentageLabelNode.addClass('percentage-symbol-active');
             }
         } else {
-            labelNode.removeClass('text-input-label-active');
+            inputNode.removeClass('form-input-active');
+            labelNode.removeClass('form-input-label-active');
 
             if (this.value.type === 'percentage') {
-                percentageLabelNode.removeClass('perc-symbol-active');
+                percentageLabelNode.removeClass('percentage-symbol-active');
             }
         }
     }
