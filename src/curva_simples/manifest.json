@@ -1,0 +1,138 @@
+{
+    "title": "Curva Simples",
+    "packageName": "curva_simples",
+    "requestsSaldos": true,
+    "isDefault": true,
+    "fileInputs": [
+        {
+            "name": "Excel",
+            "extensions": ["xlsx"]
+        },
+        {
+            "name": "Arc Package",
+            "extensions": ["apf"]
+        }
+    ],
+    "fileOutputs": [
+        {
+            "name": "Excel",
+            "extensions": ["xlsx"]
+        }
+    ],
+    "form": [
+        {
+            "type": "input-row",
+            "inputs": [
+                {
+                    "id": "indexador",
+                    "label": "Indexador",
+                    "type": "float",
+                    "width": 25
+                },
+                {
+                    "id": "pu-emis",
+                    "label": "P.U. de Emissão",
+                    "type": "float",
+                    "width": 25
+                },
+                {
+                    "id": "total",
+                    "label": "Total",
+                    "type": "float",
+                    "width": 25
+                },
+                {
+                    "id": "starting-date",
+                    "label": "Data",
+                    "type": "dateString",
+                    "width": 25
+                }
+            ]
+        },
+        {
+            "type": "input-row",
+            "inputs": [
+                {
+                    "id": "r-sub",
+                    "label": "R. Subordinado",
+                    "type": "percentage",
+                    "group": "razoes",
+                    "width": 25
+                },
+                {
+                    "id": "r-sen",
+                    "label": "R. Sênior",
+                    "type": "percentage",
+                    "group": "razoes",
+                    "width": 25
+                },
+                {
+                    "id": "target-irr",
+                    "label": "TIR Projetado",
+                    "type": "percentage",
+                    "width": 25
+                },
+                {
+                    "id": "t-em-senior-anual",
+                    "label": "T.A. Emissão Sênior",
+                    "type": "percentage",
+                    "group": "taxas-juros",
+                    "width": 25
+                }
+            ]
+        },
+        {
+            "type": "input-row",
+            "inputs": [
+                {
+                    "id": "c-period",
+                    "label": "P. Carência",
+                    "type": "int",
+                    "width": 25
+                },
+                {
+                    "id": "fr-previsto",
+                    "label": "F.R. Previsto",
+                    "type": "float",
+                    "width": 25
+                },
+                {
+                    "id": "pmt-proper",
+                    "label": "PMT Projetado",
+                    "type": "percentage",
+                    "width": 25
+                },
+                {
+                    "id": "despesas",
+                    "label": "Despesas",
+                    "type": "float",
+                    "width": 25
+                }
+            ]
+        },
+        {
+            "id": "mezanino",
+            "label": "Adicionar Mezanino",
+            "type": "list",
+            "inputs": [
+                {
+                    "label": "Razão",
+                    "type": "percentage",
+                    "group": "razoes",
+                    "width": 50
+                },
+                {
+                    "label": "T.A. Emissão",
+                    "type": "percentage",
+                    "width": 50
+                }
+            ],
+            "max": 1
+        },
+        {
+            "id": "planilhas-saldo",
+            "label": "Planilhas Saldo",
+            "type": "file-input"
+        }
+    ]
+}

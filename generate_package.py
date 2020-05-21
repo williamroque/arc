@@ -5,18 +5,39 @@ import re
 
 import json
 
-script_path = './src'
+framework_path = './src/framework'
+
+package_path = input('Package path> ')
 output_path = input('Output path> ')
 
-if script_path and output_path:
-    output = {}
+if package_path and output_path:
+    output = {"scripts": []}
 
-    for file in filter(lambda x: re.match(r'^.+\.py$', x), os.listdir(script_path)):
-        with open('{}/{}'.format(script_path, file), 'r') as f:
-            output[file] = f.read()
+    framework_scripts = list(
+        map(
+            lambda x: '{}/{}'.format(framework_path, x),
+            os.listdir(framework_path)
+        )
+    )
+    package_scripts = list(
+        map(
+            lambda x: '{}/{}'.format(package_path, x),
+            os.listdir(package_path)
+        )
+    )
+
+    with open('{}/{}'.format(package_path, 'manifest.json'), 'r') as f:
+        output['manifest'] = json.loads(f.read())
+
+    for script_path in filter(lambda x: re.match(r'^.+\.py$', x), framework_scripts + package_scripts):
+        with open(script_path, 'r') as f:
+            output["scripts"].append({
+                "path": re.search(r'(?<=/)\w+\.py$', script_path).group(0),
+                "contents": f.read()
+            })
 
     with open('logos-logo.png', 'rb') as f:
         raw_image = f.read().decode('latin1')
 
-    with open('arc_v{}.apf'.format(output_path), 'w', encoding='latin1') as f:
+    with open(output_path, 'w', encoding='latin1') as f:
         f.write(raw_image + '|===|' + json.dumps(output))

@@ -16,17 +16,11 @@
     </div>
     <div id="menu-container"></div>
     <div id="form-container"></div>
-    <div id="file-container">
-        Saldo
-    </div>
-    <script src="../rjs/ipcr.js"></script>
+    <script src="../rjs/communication.js"></script>
+    <script src="../rjs/elementController.js"></script>
+    <script src="../rjs/inputValue.js"></script>
+    <script src="../rjs/input.js"></script>
     <script src="../rjs/form.js"></script>
-    <script>
-        const remote = require('electron').remote;
-
-        document.querySelector('#close').addEventListener('click', () => {
-            remote.getCurrentWindow().close();
-        }, false);
-    </script>
+    <script src="../rjs/main.js"></script>
 </body>
 </html>
