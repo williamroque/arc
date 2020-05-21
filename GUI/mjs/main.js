@@ -1,13 +1,13 @@
 const {
     app,
-    Menu,
-    MenuItem
+    Menu
 } = require('electron');
+
+const Execute = require('./execute');
 
 const Path = require('./path');
 const Window = require('./window');
 const Communication = require('./communication');
-const Execute = require('./execute');
 
 const menuTemplate = require('./menuTemplate');
 
@@ -39,6 +39,47 @@ app.on('activate', () => {
         mainWindow.createWindow();
     }
 });
+
+const isMac = process.platform === 'darwin';
+const menuTemplate = [
+    ...(isMac ? [{
+        label: app.name,
+        submenu: [
+            { role: 'about' },
+            { type: 'separator' },
+            { role: 'hide' },
+            { role: 'hideothers' },
+            { role: 'unhide' },
+            { type: 'separator' },
+            {
+                label: 'Quit',
+                accelerator: 'Cmd+Q',
+                click: () => app.exit(0)
+            }
+        ]
+    }] : []),
+    {
+        label: 'Packages',
+        submenu: [
+            {
+                label: 'Add Package',
+                accelerator: 'CmdOrCtrl+Shift+P',
+                click: () => Execute.requestPackage()
+            },
+            { type: 'separator' }
+        ]
+    },
+    {
+        label: 'Developer',
+        submenu: [
+            {
+                label: 'Toggle Developer Tools',
+                accelerator: 'Cmd+Alt+I',
+                click: () => mainWindow.toggleDevTools()
+            }
+        ]
+    }
+];
 
 const menu = Menu.buildFromTemplate(menuTemplate);
 Menu.setApplicationMenu(menu);
