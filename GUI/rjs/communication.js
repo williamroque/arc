@@ -16,4 +16,8 @@ class Communication {
     static requestAttemptUpdate(path) {
         return ipcRenderer.sendSync('attempt-update', path);
     }
+
+    static addListener(event, callback) {
+        ipcRenderer.on(event, callback);
+    }
 }

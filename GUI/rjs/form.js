@@ -8,12 +8,19 @@ class Form {
         this.seedTree();
     }
 
-    updateValue(group, id, value) {
+    updateValue(group, id, value, groupIDIndex) {
         if (group) {
             if (!(group in this.values)) {
                 this.values[group] = {};
             }
-            this.values[group][id] = value;
+            if (typeof groupIDIndex === 'undefined') {
+                this.values[group][id] = value;
+            } else {
+                if (!(id in this.values[group])) {
+                    this.values[group][id] = [];
+                }
+                this.values[group][id][groupIDIndex] = value;
+            }
         } else {
             this.values[id] = value;
         }
@@ -40,28 +47,19 @@ class Form {
                 rowSchema.inputs.forEach(cellSchema => {
                     const inputCell = new Input(
                         this.updateValue.bind(this),
-                        cellSchema
+                        cellSchema,
+                        false
                     );
 
                     rowController.addChild(inputCell.DOMController);
                 });
             } else if (rowSchema.type === 'list') {
-                const listController = new ElementController(
-                    'DIV',
-                    {
-                        classList: new Set(['list-container'])
-                    }
-                );
-                const buttonController = new ElementController(
-                    'BUTTON',
-                    {
-                        text: rowSchema.label,
-                        classList: new Set(['add-button'])
-                    }
+                const list = new List(
+                    this.updateValue.bind(this),
+                    rowSchema
                 );
 
-                listController.addChild(buttonController);
-                rowController.addChild(listController);
+                rowController.addChild(list.DOMController);
             } else if (rowSchema.type === 'file-input') {
                 const fileInputController = new ElementController(
                     'DIV',
@@ -123,7 +121,7 @@ class Form {
 
 //         if (extension in files) {
 //             fileInputContainer.classList.add('file-input-occupied');
-            
+
 //         }
 //     });
 //     // CHANGE

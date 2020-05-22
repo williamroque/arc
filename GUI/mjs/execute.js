@@ -72,7 +72,7 @@ class Execute {
         const packagePath = Dialog.createOpenDialog([{ name: 'Arc Package', extensions: ['apf'] }]);
 
         if (packagePath) {
-            Execute.attemptUpdate(packagePath[0]);
+            return Execute.attemptUpdate(packagePath[0]);
         }
     }
 }

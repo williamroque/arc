@@ -33,6 +33,13 @@ class ElementController {
         this.DOMTree.children[id] = node;
 
         this.render();
+
+        return id;
+    }
+
+    removeChild(id) {
+        this.DOMTree.children[id].remove();
+        delete this.DOMTree.children[id];
     }
 
     getChild(id) {
@@ -57,6 +64,7 @@ class ElementController {
         }
 
         if ('classList' in this.DOMTree) {
+            this.element.className = '';
             this.DOMTree.classList.forEach(nodeClass => {
                 this.element.classList.add(nodeClass);
             });
@@ -66,5 +74,9 @@ class ElementController {
             childNodeController.render();
             this.element.appendChild(childNodeController.element);
         });
+    }
+
+    remove() {
+        this.element.remove();
     }
 }

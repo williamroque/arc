@@ -9,6 +9,8 @@ const Path = require('./path');
 const Window = require('./window');
 const Communication = require('./communication');
 
+const isMac = process.platform === 'darwin';
+
 Path.setup();
 Communication.setDefault();
 
@@ -38,7 +40,6 @@ app.on('activate', () => {
     }
 });
 
-const isMac = process.platform === 'darwin';
 const menuTemplate = [
     ...(isMac ? [{
         label: app.name,
@@ -64,7 +65,13 @@ const menuTemplate = [
             {
                 label: 'Add Package',
                 accelerator: 'CmdOrCtrl+Shift+P',
-                click: () => Execute.requestPackage()
+                click: () => {
+                    const package = Execute.requestPackage();
+
+                    if (package === 'success') {
+                        mainWindow.dispatchWebEvent('update-form-schemata', Path.formSchemata);
+                    }
+                }
             },
             { type: 'separator' }
         ]

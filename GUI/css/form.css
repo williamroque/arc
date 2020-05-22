@@ -118,10 +118,15 @@
 
 .list-container {
     width: 100%;
-    padding: 10px;
+    padding: 20px 10px;
     box-sizing: border-box;
     border: solid 1px #b7b5af;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-direction: column;
+}
+
+.list-items-container {
+    width: 100%;
 }

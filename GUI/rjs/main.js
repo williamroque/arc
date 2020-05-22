@@ -2,23 +2,31 @@ const remote = require('electron').remote;
 
 const formContainer = document.querySelector('#form-container');
 
-const formSchemata = Communication.requestFormSchemata();
-
-let currentForm;
+let formSchemata = Communication.requestFormSchemata();
 
 let forms = [];
-formSchemata.forEach(schema => {
-    const form = new Form(schema, formContainer);
-    if (schema.isDefault) {
-        currentForm = form;
-    }
+let currentForm;
+function constructForms() {
+    formSchemata.forEach(schema => {
+        const form = new Form(schema, formContainer);
+        if (schema.isDefault) {
+            currentForm = form;
+        }
 
-    forms.push(form);
+        forms.push(form);
+    });
+
+    if (currentForm) {
+        currentForm.render();
+    }
+}
+
+Communication.addListener('update-form-schemata', (_, updatedSchemata) => {
+    formSchemata = updatedSchemata;
+    constructForms();
 });
 
-if (currentForm) {
-    currentForm.render();
-}
+constructForms();
 
 document.querySelector('#close').addEventListener('click', () => {
     remote.getCurrentWindow().close();
