@@ -3,22 +3,6 @@
     "packageName": "curva_simples",
     "requestsSaldos": true,
     "isDefault": true,
-    "fileInputs": [
-        {
-            "name": "Excel",
-            "extensions": ["xlsx"]
-        },
-        {
-            "name": "Arc Package",
-            "extensions": ["apf"]
-        }
-    ],
-    "fileOutputs": [
-        {
-            "name": "Excel",
-            "extensions": ["xlsx"]
-        }
-    ],
     "form": [
         {
             "type": "input-row",
@@ -133,7 +117,15 @@
         {
             "id": "planilhas-saldo",
             "label": "Planilhas Saldo",
-            "type": "file-input"
+            "type": "file-input",
+            "allowedExtensions": [
+                {
+                    "name": "Excel",
+                    "extensions": [
+                        "xlsx"
+                    ]
+                }
+            ]
         }
     ]
 }

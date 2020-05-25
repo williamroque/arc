@@ -1,13 +1,13 @@
 class Input {
-    constructor(updateValueCallback, properties, hasGenericGroupID) {
-        this.updateValueCallback = updateValueCallback;
+    constructor(valuesContainer, properties, genericGroupID) {
+        this.valuesContainer = valuesContainer;
 
         this.id = properties.id;
         this.label = properties.label;
         this.width = properties.width;
         this.group = properties.group;
 
-        this.hasGenericGroupID = hasGenericGroupID;
+        this.genericGroupID = genericGroupID;
 
         this.value = new InputValue('', properties.type);
 
@@ -59,15 +59,15 @@ class Input {
 
         this.value.update(target.value);
 
-        if (this.hasGenericGroupID) {
+        if (typeof this.genericGroupID !== 'undefined') {
             let nodeIndex = 0, child = target.parentNode.parentNode;
             while ((child = child.previousSibling) !== null) {
                 nodeIndex++;
             }
 
-            this.updateValueCallback(this.group, this.id, this.value, nodeIndex);
+            this.valuesContainer.update(this.value, this.group, this.genericGroupID, nodeIndex);
         } else {
-            this.updateValueCallback(this.group, this.id, this.value);
+            this.valuesContainer.update(this.value, this.group, this.id);
         }
 
         const inputNode = this.DOMController.getChild('input');

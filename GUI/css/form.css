@@ -19,6 +19,8 @@
     width: 100%;
     min-height: 40px;
     margin-bottom: 20px;
+    display: flex;
+    flex-direction: row;
 }
 
 .form-cell {
@@ -129,4 +131,42 @@
 
 .list-items-container {
     width: 100%;
+}
+
+.delete-list-row-button {
+    background: #C0b283;
+    border: none;
+    width: 30px;
+    height: 30px;
+    color: white;
+    font-size: 11pt;
+    outline: none;
+    cursor: pointer;
+}
+
+.delete-list-row-button:active {
+    background: white;
+    border: solid 2px #C0B283;
+    color: #C0B283;
+    padding: 0;
+}
+
+.file-input {
+    width: 100%;
+    min-height: 80px;
+    padding: 0;
+    border: solid 1px #b7b5af;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: helvetica;
+    font-weight: 100;
+    text-transform: uppercase;
+    color: #b7b5af;
+    font-size: 10pt;
+}
+
+.file-input-active {
+    border: dashed 1px #9a9494;
+    color: #777676;
 }

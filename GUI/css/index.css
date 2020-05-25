@@ -35,7 +35,6 @@ html, body {
 #close, #build {
     position: absolute;
     z-index: 1;
-    font-family: 'Material Icons';
     font-size: 23pt;
     color: #C0B283;
     padding: 10px;
@@ -85,4 +84,8 @@ html, body {
 .prompt-visible {
     opacity: 1 !important;
     transition-duration: .2s !important;
+}
+
+.icon {
+    font-family: 'Material Icons';
 }

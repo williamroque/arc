@@ -3,28 +3,9 @@ class Form {
         this.schema = schema;
         this.container = container;
 
-        this.values = {};
+        this.valuesContainer = new ValuesContainer();
 
         this.seedTree();
-    }
-
-    updateValue(group, id, value, groupIDIndex) {
-        if (group) {
-            if (!(group in this.values)) {
-                this.values[group] = {};
-            }
-            if (typeof groupIDIndex === 'undefined') {
-                this.values[group][id] = value;
-            } else {
-                if (!(id in this.values[group])) {
-                    this.values[group][id] = [];
-                }
-                this.values[group][id][groupIDIndex] = value;
-            }
-        } else {
-            this.values[id] = value;
-        }
-        console.log(this.values);
     }
 
     seedTree() {
@@ -46,7 +27,7 @@ class Form {
             if (rowSchema.type === 'input-row') {
                 rowSchema.inputs.forEach(cellSchema => {
                     const inputCell = new Input(
-                        this.updateValue.bind(this),
+                        this.valuesContainer,
                         cellSchema,
                         false
                     );
@@ -55,20 +36,17 @@ class Form {
                 });
             } else if (rowSchema.type === 'list') {
                 const list = new List(
-                    this.updateValue.bind(this),
+                    this.valuesContainer,
                     rowSchema
                 );
 
                 rowController.addChild(list.DOMController);
             } else if (rowSchema.type === 'file-input') {
-                const fileInputController = new ElementController(
-                    'DIV',
-                    {
-                        text: rowSchema.label,
-                        classList: new Set(['file-input'])
-                    }
+                const fileInput = new FileInput(
+                    this.valuesContainer,
+                    rowSchema
                 );
-                rowController.addChild(fileInputController);
+                rowController.addChild(fileInput.DOMController);
             }
 
             this.DOMController.addChild(rowController);
@@ -87,66 +65,3 @@ class Form {
         this.container.appendChild(this.DOMController.element);
     }
 }
-
-
-
-
-// document.body.addEventListener('dragover', e => {
-//     e.preventDefault();
-
-//     document.body.classList.add('drag-overlay');
-// }, false);
-
-// document.body.addEventListener('drop', e => {
-//     e.preventDefault();
-//     e.stopPropagation();
-
-//     let files = {};
-//     Array.from(e.dataTransfer.files).forEach(file => {
-//         const filePattern = /^(?:\w|\/|\\|:)+\.([a-z]{1,4})$/;
-
-//         if (filePattern.test(file)) {
-//             const [path, extension] = file.match(filePattern);
-
-//             if (extension in files) {
-//                 files[extension].push(path);
-//             } else {
-//                 files[extension] = [path];
-//             }
-//         }
-//     });
-
-//     currentForm.schema.fileInputs.forEach(inputType => {
-//         const { extension } = inputType;
-
-//         if (extension in files) {
-//             fileInputContainer.classList.add('file-input-occupied');
-
-//         }
-//     });
-//     // CHANGE
-//     if (inputFiles.length < 1 && files.length) {
-//         clearNode(fileContainer);
-
-//         fileContainer.classList.add('file-input-occupied');
-//         fileList = document.createElement('UL');
-//         fileList.setAttribute('id', 'file-list');
-
-//         fileContainer.appendChild(fileList);
-//     } else {
-//         fileList = document.querySelector('#file-list');
-//     }
-
-//     // ADD FILES AS LIST NODES TO FILES PROMPT
-//     // DO NOT ADD FILES ALREADY PRESENT
-//     // FILES HAVE CLASS file-node
-//     // DELETE BUTTONS HAVE CLASS delete-node-button
-
-//     document.body.classList.remove('drag-overlay');
-// }, false);
-
-// document.body.addEventListener('dragleave', e => {
-//     e.preventDefault();
-
-//     document.body.classList.remove('drag-overlay');
-// }, false);

@@ -1,32 +1,49 @@
 class ListRow {
-    constructor(updateValueCallback, listID, inputs) {
-        this.updateValueCallback = updateValueCallback;
+    constructor(valuesContainer, listID, inputs) {
+        this.valuesContainer = valuesContainer;
         this.listID = listID;
         this.inputs = inputs;
 
         this.seedTree();
     }
 
-    updateValue(group, _, value, nodeIndex) {
-        this.updateValueCallback(group, this.listID, value, nodeIndex);
-    }
-
     seedTree() {
         this.DOMController = new ElementController(
             'DIV',
             {
-                classList: ['form-row']
+                classList: new Set(['form-row'])
             }
         );
 
         this.inputs.forEach(cellSchema => {
             const inputCell = new Input(
-                this.updateValue.bind(this),
+                this.valuesContainer,
                 cellSchema,
-                true
+                this.listID
             );
 
             this.DOMController.addChild(inputCell.DOMController);
         });
+
+        const deleteButton = new ElementController(
+            'BUTTON',
+            {
+                classList: new Set(['icon', 'delete-list-row-button']),
+                text: 'close'
+            }
+        );
+        deleteButton.addEventListener('click', () => {
+            this.DOMController.remove();
+
+            let nodeIndex = 0, child = this.DOMController.element;
+            while ((child = child.previousSibling) !== null) {
+                nodeIndex++;
+            }
+
+            this.inputs.forEach(cellSchema => {
+                this.valuesContainer.removeAtIndex(cellSchema.group, this.listID, nodeIndex);
+            });
+        }, this);
+        this.DOMController.addChild(deleteButton);
     }
 }

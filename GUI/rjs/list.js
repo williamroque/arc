@@ -1,6 +1,6 @@
 class List {
-    constructor(updateValueCallback, properties) {
-        this.updateValueCallback = updateValueCallback;
+    constructor(valuesContainer, properties) {
+        this.valuesContainer = valuesContainer;
 
         this.id = properties.id;
         this.label = properties.label;
@@ -41,7 +41,7 @@ class List {
 
     addRow() {
         if (Object.values(this.listController.DOMTree.children).length < this.max) {
-            const listRow = new ListRow(this.updateValueCallback, this.id, this.inputs);
+            const listRow = new ListRow(this.valuesContainer, this.id, this.inputs);
             this.listController.addChild(listRow.DOMController);
         }
     }

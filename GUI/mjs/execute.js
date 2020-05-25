@@ -1,4 +1,6 @@
 const fs = require('fs');
+const rimraf = require('rimraf');
+
 const { spawn } = require('child_process');
 
 const Dialog = require('./dialog');
@@ -51,7 +53,12 @@ class Execute {
         packageData = JSON.parse(packageData);
 
         try {
-            fs.mkdirSync(Path.join(Path.appPaths.packages, packageData.manifest.packageName));
+            const packageTargetPath = Path.join(Path.appPaths.packages, packageData.manifest.packageName);
+            if (fs.existsSync(packageTargetPath)) {
+                rimraf.sync(packageTargetPath);
+            }
+
+            fs.mkdirSync(packageTargetPath);
             packageData.scripts.forEach(script => {
                 fs.writeFileSync(Path.join(Path.appPaths.packages, packageData.manifest.packageName, script.path), script.contents);
             });
