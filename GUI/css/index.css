@@ -33,7 +33,7 @@ html, body {
 }
 
 #close, #build {
-    position: absolute;
+    position: fixed;
     z-index: 1;
     font-size: 23pt;
     color: #C0B283;

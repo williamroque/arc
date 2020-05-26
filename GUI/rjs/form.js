@@ -28,8 +28,7 @@ class Form {
                 rowSchema.inputs.forEach(cellSchema => {
                     const inputCell = new Input(
                         this.valuesContainer,
-                        cellSchema,
-                        false
+                        cellSchema
                     );
 
                     rowController.addChild(inputCell.DOMController);

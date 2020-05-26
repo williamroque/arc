@@ -4,6 +4,7 @@ class ValuesContainer {
     }
 
     update(value, group, id, index) {
+        console.log(value, group, id, index);
         if (group) {
             if (!(group in this.values)) {
                 this.values[group] = {};
@@ -33,10 +34,22 @@ class ValuesContainer {
         console.log(this.values);
     }
 
-    removeAtIndex(group = NaN, id = NaN, index = NaN) {
-        if (group in this.values) {
-            if (id in this.values[group]) {
+    removeAtIndex(group, id, index) {
+        console.log(group, id, index);
+        if (group && group in this.values) {
+            if (
+                id in this.values[group] &&
+                Array.isArray(this.values[group][id])
+            ) {
                 this.values[group][id].splice(index, 1);
+            }
+        } else {
+            if (
+                id in this.values &&
+                Array.isArray(this.values[id])
+            ) {
+                console.log('here');
+                this.values[id].splice(index, 1);
             }
         }
 

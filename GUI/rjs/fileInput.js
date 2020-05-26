@@ -3,11 +3,22 @@ class FileInput {
         this.valuesContainer = valuesContainer;
 
         this.label = properties.label;
+        this.id = properties.id;
         this.allowedExtensions = properties.allowedExtensions
             .map(x => x.extensions)
             .flat();
 
+        this.fileCount = 0;
+
         this.seedTree();
+    }
+
+    deleteCallback(id) {
+        if (--this.fileCount < 1) {
+            this.DOMController.toggleText();
+            this.DOMController.removeClass('file-input-active');
+        }
+        this.DOMController.removeChild(id);
     }
 
     seedTree() {
@@ -21,7 +32,7 @@ class FileInput {
 
         this.DOMController.addEventListener('dragover', e => {
             e.preventDefault();
-            this.DOMController.addClass('file-input-active');
+            this.DOMController.addClass('file-input-drag');
         }, this);
 
         this.DOMController.addEventListener('drop', e => {
@@ -38,32 +49,31 @@ class FileInput {
                 }
             });
 
+            if (this.fileCount === 0 && allowedFiles.length > 0) {
+                this.DOMController.toggleText();
+                this.DOMController.addClass('file-input-active');
+            }
+
             allowedFiles.forEach(file => {
-                const pathContainer = new ElementController(
-                    'DIV',
-                    {
-                        classList: new Set(['file-input-path-container'])
-                    }
-                );
+                this.fileCount++;
 
-                const pathText = new ElementController(
-                    'SPAN',
-                    {
-                        classList: new Set(['file-input-path-text']),
-                        text: file
-                    }
+                const fileInputRow = new FileInputRow(
+                    this.valuesContainer,
+                    this.deleteCallback.bind(this),
+                    file,
+                    this.id
                 );
-                pathContainer.addChild(pathText);
+                this.DOMController.addChild(fileInputRow.DOMController);
+                this.valuesContainer.update(file, null, this.id, fileInputRow.getIndex());
 
-                this.DOMController.addChild(pathContainer);
             });
 
-            this.DOMController.removeClass('file-input-active');
+            this.DOMController.removeClass('file-input-drag');
         }, this);
 
         this.DOMController.addEventListener('dragleave', e => {
             e.preventDefault();
-            this.DOMController.removeClass('file-input-active');
+            this.DOMController.removeClass('file-input-drag');
         }, this);
     }
 }

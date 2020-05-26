@@ -7,6 +7,8 @@ class ElementController {
         };
         this.childID = 0;
 
+        this.rendersText = true;
+
         this.render();
     }
 
@@ -30,6 +32,7 @@ class ElementController {
         if (typeof id === "undefined") {
             id = `unique-${this.childID++}`;
         }
+        node.nodeID = id;
         this.DOMTree.children[id] = node;
 
         this.render();
@@ -40,6 +43,11 @@ class ElementController {
     removeChild(id) {
         this.DOMTree.children[id].remove();
         delete this.DOMTree.children[id];
+    }
+
+    toggleText() {
+        this.rendersText = !this.rendersText;
+        this.render();
     }
 
     getChild(id) {
@@ -59,8 +67,10 @@ class ElementController {
             this.element.style.width = `${this.DOMTree.width}%`;
         }
 
-        if ('text' in this.DOMTree) {
+        if ('text' in this.DOMTree && this.rendersText) {
             this.element.innerText = this.DOMTree.text;
+        } else {
+            this.element.innerText = '';
         }
 
         if ('classList' in this.DOMTree) {

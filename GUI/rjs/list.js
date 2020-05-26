@@ -10,6 +10,10 @@ class List {
         this.seedTree();
     }
 
+    deleteCallback(id) {
+        this.listController.removeChild(id);
+    }
+
     seedTree() {
         this.DOMController = new ElementController(
             'DIV',
@@ -41,7 +45,7 @@ class List {
 
     addRow() {
         if (Object.values(this.listController.DOMTree.children).length < this.max) {
-            const listRow = new ListRow(this.valuesContainer, this.id, this.inputs);
+            const listRow = new ListRow(this.valuesContainer, this.deleteCallback.bind(this), this.id, this.inputs);
             this.listController.addChild(listRow.DOMController);
         }
     }

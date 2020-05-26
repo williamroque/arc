@@ -1,6 +1,8 @@
 class ListRow {
-    constructor(valuesContainer, listID, inputs) {
+    constructor(valuesContainer, deleteCallback, listID, inputs) {
         this.valuesContainer = valuesContainer;
+        this.deleteCallback = deleteCallback;
+
         this.listID = listID;
         this.inputs = inputs;
 
@@ -28,13 +30,11 @@ class ListRow {
         const deleteButton = new ElementController(
             'BUTTON',
             {
-                classList: new Set(['icon', 'delete-list-row-button']),
+                classList: new Set(['icon', 'delete-button']),
                 text: 'close'
             }
         );
         deleteButton.addEventListener('click', () => {
-            this.DOMController.remove();
-
             let nodeIndex = 0, child = this.DOMController.element;
             while ((child = child.previousSibling) !== null) {
                 nodeIndex++;
@@ -43,6 +43,9 @@ class ListRow {
             this.inputs.forEach(cellSchema => {
                 this.valuesContainer.removeAtIndex(cellSchema.group, this.listID, nodeIndex);
             });
+
+            this.deleteCallback(this.DOMController.nodeID);
+            this.DOMController.remove();
         }, this);
         this.DOMController.addChild(deleteButton);
     }
