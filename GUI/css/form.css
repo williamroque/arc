@@ -98,14 +98,17 @@
     transition-duration: .1s;
 }
 
-.form-input-invalid .form-input {
-    border-bottom-color: #966161 !important;
-    transition-duration: .1s;
+.form-input-invalid {
+    border-bottom: solid 2px #966161 !important;
 }
 
-.form-input-invalid .form-input-label {
+.form-input-label-invalid {
     color: #9a4d4d;
-    transition-duration: .1s;
+    font-weight: 600;
+}
+
+.percentage-symbol-invalid {
+    color: #7d5353;
 }
 
 .add-button {
@@ -185,6 +188,12 @@
 
 .file-input-active {
     border: solid 1px #C0B283;
+}
+
+.file-input-invalid {
+    border: solid 3px #8a5757;
+    color: #793f3f;
+    font-weight: 600;
 }
 
 .file-input-path-container {

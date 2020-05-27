@@ -11,14 +11,11 @@ class FileInput {
         this.fileCount = 0;
 
         this.seedTree();
-    }
 
-    deleteCallback(id) {
-        if (--this.fileCount < 1) {
-            this.DOMController.toggleText();
-            this.DOMController.removeClass('file-input-active');
-        }
-        this.DOMController.removeChild(id);
+        this.files = new Set();
+
+        this.value = new InputValue(this.files, 'filePaths', this.setValidityClassCallback.bind(this));
+        this.valuesContainer.update(this.value, null, this.id);
     }
 
     seedTree() {
@@ -64,8 +61,11 @@ class FileInput {
                     this.id
                 );
                 this.DOMController.addChild(fileInputRow.DOMController);
-                this.valuesContainer.update(file, null, this.id, fileInputRow.getIndex());
 
+                this.files.add(file);
+                this.value.update(this.files);
+
+                this.valuesContainer.update(this.value, null, this.id);
             });
 
             this.DOMController.removeClass('file-input-drag');
@@ -75,5 +75,23 @@ class FileInput {
             e.preventDefault();
             this.DOMController.removeClass('file-input-drag');
         }, this);
+    }
+
+    deleteCallback(id, path) {
+        this.files.delete(path);
+
+        if (--this.fileCount < 1) {
+            this.DOMController.toggleText();
+            this.DOMController.removeClass('file-input-active');
+        }
+        this.DOMController.removeChild(id);
+    }
+
+    setValidityClassCallback(isValid) {
+        if (!isValid) {
+            this.DOMController.addClass('file-input-invalid');
+        } else {
+            this.DOMController.removeClass('file-input-invalid');
+        }
     }
 }

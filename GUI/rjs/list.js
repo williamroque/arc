@@ -47,6 +47,7 @@ class List {
         if (Object.values(this.listController.DOMTree.children).length < this.max) {
             const listRow = new ListRow(this.valuesContainer, this.deleteCallback.bind(this), this.id, this.inputs);
             this.listController.addChild(listRow.DOMController);
+            listRow.setFormValues();
         }
     }
 }

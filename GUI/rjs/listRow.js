@@ -1,10 +1,12 @@
 class ListRow {
-    constructor(valuesContainer, deleteCallback, listID, inputs) {
+    constructor(valuesContainer, deleteCallback, listID, inputSchemata) {
         this.valuesContainer = valuesContainer;
         this.deleteCallback = deleteCallback;
 
         this.listID = listID;
-        this.inputs = inputs;
+        this.inputSchemata = inputSchemata;
+
+        this.inputs = [];
 
         this.seedTree();
     }
@@ -17,7 +19,7 @@ class ListRow {
             }
         );
 
-        this.inputs.forEach(cellSchema => {
+        this.inputSchemata.forEach(cellSchema => {
             const inputCell = new Input(
                 this.valuesContainer,
                 cellSchema,
@@ -25,6 +27,8 @@ class ListRow {
             );
 
             this.DOMController.addChild(inputCell.DOMController);
+
+            this.inputs.push(inputCell);
         });
 
         const deleteButton = new ElementController(
@@ -40,7 +44,7 @@ class ListRow {
                 nodeIndex++;
             }
 
-            this.inputs.forEach(cellSchema => {
+            this.inputSchemata.forEach(cellSchema => {
                 this.valuesContainer.removeAtIndex(cellSchema.group, this.listID, nodeIndex);
             });
 
@@ -48,5 +52,11 @@ class ListRow {
             this.DOMController.remove();
         }, this);
         this.DOMController.addChild(deleteButton);
+    }
+
+    setFormValues() {
+        this.inputs.forEach(input => {
+            input.updateFormValue('');
+        });
     }
 }

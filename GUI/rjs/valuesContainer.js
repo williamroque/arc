@@ -29,8 +29,6 @@ class ValuesContainer {
                 this.values[id] = value;
             }
         }
-
-        console.log(this.values);
     }
 
     removeAtIndex(group, id, index) {
@@ -49,5 +47,17 @@ class ValuesContainer {
                 this.values[id].splice(index, 1);
             }
         }
+    }
+
+    areAllValid(obj=this.values) {
+        Object.values(obj).forEach(value => {
+            if (value instanceof InputValue) {
+                value.setValidityClassCallback(value.test());
+            } else if (typeof value === 'string') {
+                
+            } else if (typeof value === 'object' && value !== null) {
+                this.areAllValid(value);
+            } 
+        });
     }
 }

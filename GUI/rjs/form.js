@@ -32,6 +32,7 @@ class Form {
                     );
 
                     rowController.addChild(inputCell.DOMController);
+                    inputCell.updateFormValue('');
                 });
             } else if (rowSchema.type === 'list') {
                 const list = new List(

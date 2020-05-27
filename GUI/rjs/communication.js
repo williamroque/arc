@@ -9,7 +9,7 @@ class Communication {
         return ipcRenderer.sendSync('get-save-dialog');
     }
 
-    static requestRunScript(input, currentForm) {
+    static requestRunScript(input, currentPackage) {
         return ipcRenderer.sendSync('run-script', input, currentPackage);
     }
 

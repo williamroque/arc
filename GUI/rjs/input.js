@@ -6,12 +6,13 @@ class Input {
         this.label = properties.label;
         this.width = properties.width;
         this.group = properties.group;
+        this.type = properties.type;
 
         this.genericGroupID = genericGroupID;
 
-        this.value = new InputValue('', properties.type);
-
         this.seedTree();
+
+        this.value = new InputValue('', this.type, this.setValidityClassCallback.bind(this));
     }
 
     seedTree() {
@@ -41,7 +42,7 @@ class Input {
         inputController.addEventListener('keydown', this.handleKeyEvent, this);
         this.DOMController.addChild(inputController, 'input');
 
-        if (this.value.type === 'percentage') {
+        if (this.type === 'percentage') {
             const percentageLabelController = new ElementController(
                 'LABEL',
                 {
@@ -54,8 +55,30 @@ class Input {
         }
     }
 
-    updateField(isDeletion, e) {
-        const target = e.currentTarget;
+    setValidityClassCallback(isValid) {
+        const inputNode = this.DOMController.getChild('input');
+        const labelNode = this.DOMController.getChild('label');
+        const percentageLabelNode = this.DOMController.getChild('percentageSymbol');
+
+        if (!isValid) {
+            inputNode.addClass('form-input-invalid');
+            labelNode.addClass('form-input-label-invalid');
+
+            if (this.type === 'percentage') {
+                percentageLabelNode.addClass('percentage-symbol-invalid');
+            }
+        } else {
+            inputNode.removeClass('form-input-invalid');
+            labelNode.removeClass('form-input-label-invalid');
+
+            if (this.type === 'percentage') {
+                percentageLabelNode.removeClass('percentage-symbol-invalid');
+            }
+        }
+    }
+
+    updateField(isDeletion, key) {
+        const target = this.DOMController.getChild('input').element;
 
         const selStart = target.selectionStart;
         const selEnd = target.selectionEnd;
@@ -76,7 +99,7 @@ class Input {
             target.value = targetValue;
             target.setSelectionRange(selStart - cursorOffset, selStart - cursorOffset);
         } else {
-            targetValue.splice(selStart, selEnd - selStart, e.key);
+            targetValue.splice(selStart, selEnd - selStart, key);
             targetValue = targetValue.join('');
 
             target.value = targetValue;
@@ -87,17 +110,19 @@ class Input {
     }
 
     updateFormValue(value) {
+        const target = this.DOMController.element;
+
         this.value.update(value);
 
         if (typeof this.genericGroupID !== 'undefined') {
-            let nodeIndex = 0, child = target.parentNode.parentNode;
+            let nodeIndex = 0, child = target.parentNode;
             while ((child = child.previousSibling) !== null) {
                 nodeIndex++;
             }
 
-            this.valuesContainer.update(this.value.content, this.group, this.genericGroupID, nodeIndex);
+            this.valuesContainer.update(this.value, this.group, this.genericGroupID, nodeIndex);
         } else {
-            this.valuesContainer.update(this.value.content, this.group, this.id);
+            this.valuesContainer.update(this.value, this.group, this.id);
         }
     }
 
@@ -110,14 +135,14 @@ class Input {
             inputNode.addClass('form-input-active');
             labelNode.addClass('form-input-label-active');
 
-            if (this.value.type === 'percentage') {
+            if (this.type === 'percentage') {
                 percentageLabelNode.addClass('percentage-symbol-active');
             }
         } else {
             inputNode.removeClass('form-input-active');
             labelNode.removeClass('form-input-label-active');
 
-            if (this.value.type === 'percentage') {
+            if (this.type === 'percentage') {
                 percentageLabelNode.removeClass('percentage-symbol-active');
             }
         }
@@ -126,7 +151,7 @@ class Input {
     handleKeyEvent(e) {
         if (e.key.length === 1 && !e.metaKey && !e.ctrlKey || e.key === 'Backspace') {
             this.updateFormValue(
-                this.updateField(e.key === 'Backspace', e)
+                this.updateField(e.key === 'Backspace', e.key)
             );
 
             e.preventDefault();

@@ -33,5 +33,9 @@ document.querySelector('#close').addEventListener('click', () => {
 }, false);
 
 document.querySelector('#build').addEventListener('click', () => {
-    console.log(currentForm.valuesContainer);
+    const values = currentForm.valuesContainer;
+    console.log(values);
+    if (values.areAllValid()) {
+        // Communication.requestRunScript(values, currentForm.packageName);
+    }
 });

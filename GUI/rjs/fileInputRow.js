@@ -43,8 +43,7 @@ class FileInputRow {
             }
         );
         deleteButton.addEventListener('click', e => {
-            this.valuesContainer.removeAtIndex(null, this.inputID, this.getIndex());
-            this.deleteCallback(this.DOMController.nodeID);
+            this.deleteCallback(this.DOMController.nodeID, this.path);
             this.DOMController.remove();
         }, this);
         this.DOMController.addChild(deleteButton);

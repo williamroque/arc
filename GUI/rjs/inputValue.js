@@ -1,10 +1,11 @@
 class InputValue {
-    constructor(content, type) {
+    constructor(content, type, setValidityClassCallback) {
         this.typeSystem = {
             int: /^\d[\d\.]*$/,
             float: /^(([\d\.]+,\d*)|(,?\d+))$/,
             percentage: /^((\d+\.\d*)|(\.?\d+))$/,
-            dateString: /^(Jan|Fev|Mar|Abr|Mai|Jun|Jul|Ago|Set|Out|Nov|Dez)\/\d{4}$/
+            dateString: /^(Jan|Fev|Mar|Abr|Mai|Jun|Jul|Ago|Set|Out|Nov|Dez)\/\d{4}$/,
+            filePaths: 'size'
         };
 
         this.content = content;
@@ -15,6 +16,8 @@ class InputValue {
         } else {
             throw new Error(`Unknown type '${type}'.`);
         }
+
+        this.setValidityClassCallback = setValidityClassCallback;
     }
 
     update(value) {
@@ -22,6 +25,10 @@ class InputValue {
     }
 
     test() {
-        return this.typeValid.test(this.content);
+        if (typeof this.typeValid === 'string') {
+            return !!this.content[this.typeValid];
+        } else {
+            return this.typeValid.test(this.content);
+        }
     }
 }
