@@ -38,7 +38,7 @@ class Input {
                 classList: new Set(['form-input'])
             }
         );
-        inputController.addEventListener('keyup', this.handleKeyEvent, this);
+        inputController.addEventListener('keydown', this.handleKeyEvent, this);
         this.DOMController.addChild(inputController, 'input');
 
         if (this.value.type === 'percentage') {
@@ -54,10 +54,40 @@ class Input {
         }
     }
 
-    handleKeyEvent(e) {
+    updateField(isDeletion, e) {
         const target = e.currentTarget;
 
-        this.value.update(target.value);
+        const selStart = target.selectionStart;
+        const selEnd = target.selectionEnd;
+
+        let targetValue = target.value.split('');
+
+        const selLength = selEnd - selStart;
+        if (isDeletion) {
+            let cursorOffset = 0;
+            if (selLength > 0) {
+                targetValue.splice(selStart, selLength);
+            } else {
+                targetValue.splice(selStart - 1, 1);
+                cursorOffset = 1;
+            }
+            targetValue = targetValue.join('');
+
+            target.value = targetValue;
+            target.setSelectionRange(selStart - cursorOffset, selStart - cursorOffset);
+        } else {
+            targetValue.splice(selStart, selEnd - selStart, e.key);
+            targetValue = targetValue.join('');
+
+            target.value = targetValue;
+            target.setSelectionRange(selStart + 1, selStart + 1);
+        }
+
+        return targetValue;
+    }
+
+    updateFormValue(value) {
+        this.value.update(value);
 
         if (typeof this.genericGroupID !== 'undefined') {
             let nodeIndex = 0, child = target.parentNode.parentNode;
@@ -65,11 +95,13 @@ class Input {
                 nodeIndex++;
             }
 
-            this.valuesContainer.update(this.value, this.group, this.genericGroupID, nodeIndex);
+            this.valuesContainer.update(this.value.content, this.group, this.genericGroupID, nodeIndex);
         } else {
-            this.valuesContainer.update(this.value, this.group, this.id);
+            this.valuesContainer.update(this.value.content, this.group, this.id);
         }
+    }
 
+    updateStyling() {
         const inputNode = this.DOMController.getChild('input');
         const labelNode = this.DOMController.getChild('label');
         const percentageLabelNode = this.DOMController.getChild('percentageSymbol');
@@ -89,5 +121,17 @@ class Input {
                 percentageLabelNode.removeClass('percentage-symbol-active');
             }
         }
+    }
+
+    handleKeyEvent(e) {
+        if (e.key.length === 1 && !e.metaKey && !e.ctrlKey || e.key === 'Backspace') {
+            this.updateFormValue(
+                this.updateField(e.key === 'Backspace', e)
+            );
+
+            e.preventDefault();
+        }
+
+        this.updateStyling();
     }
 }

@@ -31,3 +31,7 @@ constructForms();
 document.querySelector('#close').addEventListener('click', () => {
     remote.getCurrentWindow().close();
 }, false);
+
+document.querySelector('#build').addEventListener('click', () => {
+    console.log(currentForm.valuesContainer);
+});

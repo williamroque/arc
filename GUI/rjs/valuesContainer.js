@@ -4,7 +4,6 @@ class ValuesContainer {
     }
 
     update(value, group, id, index) {
-        console.log(value, group, id, index);
         if (group) {
             if (!(group in this.values)) {
                 this.values[group] = {};
@@ -35,7 +34,6 @@ class ValuesContainer {
     }
 
     removeAtIndex(group, id, index) {
-        console.log(group, id, index);
         if (group && group in this.values) {
             if (
                 id in this.values[group] &&
@@ -48,11 +46,8 @@ class ValuesContainer {
                 id in this.values &&
                 Array.isArray(this.values[id])
             ) {
-                console.log('here');
                 this.values[id].splice(index, 1);
             }
         }
-
-        console.log(this.values);
     }
 }
