@@ -14,6 +14,10 @@ class Dialog {
             filters: filters
         });
     }
+
+    static showError(title, content) {
+        dialog.showErrorBox(title, content);
+    }
 }
 
 module.exports = Dialog;

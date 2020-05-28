@@ -49,15 +49,56 @@ class ValuesContainer {
         }
     }
 
-    areAllValid(obj=this.values) {
+    areAllValid(obj = this.values) {
+        let areValid = true;
+
         Object.values(obj).forEach(value => {
             if (value instanceof InputValue) {
-                value.setValidityClassCallback(value.test());
-            } else if (typeof value === 'string') {
-                
+                const isValid = value.test();
+
+                if (!isValid) {
+                    areValid = false;
+                }
+                value.setValidityClassCallback(isValid);
             } else if (typeof value === 'object' && value !== null) {
-                this.areAllValid(value);
-            } 
+                if (!this.areAllValid(value)) {
+                    areValid = false;
+                }
+            }
         });
+
+        return areValid;
+    }
+
+    clean(value) {
+        return value
+            .replace(/\./g, '')
+            .replace(/\s/g, '')
+            .replace(/,/g, '.')
+            .replace(/-/g, '/');
+    }
+
+    cast(inputValue) {
+        if (inputValue.type === 'int') {
+            return parseInt(this.clean(inputValue.content));
+        } else if (inputValue.type === 'float' || inputValue.type === 'percentage') {
+            return parseFloat(this.clean(inputValue.content));
+        } else if (inputValue.type === 'filePaths') {
+            return Array.from(inputValue.content);
+        } else {
+            return this.clean(inputValue.content);
+        }
+    }
+
+    parse(obj = this.values) {
+        return Object.fromEntries(Object.entries(obj).map(([key, value]) => {
+            if (value instanceof InputValue) {
+                return [key, this.cast(value)];
+            } else if (Array.isArray(value)) {
+                return [key, Object.values(this.parse(value))];
+            } else {
+                return [key, this.parse(value)];
+            }
+        }));
     }
 }

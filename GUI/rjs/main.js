@@ -34,8 +34,10 @@ document.querySelector('#close').addEventListener('click', () => {
 
 document.querySelector('#build').addEventListener('click', () => {
     const values = currentForm.valuesContainer;
-    console.log(values);
     if (values.areAllValid()) {
-        // Communication.requestRunScript(values, currentForm.packageName);
+        Communication.requestRunScript(
+            values.parse(),
+            currentForm.schema.packageName
+        );
     }
 });

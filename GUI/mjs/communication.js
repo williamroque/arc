@@ -17,13 +17,17 @@ class Communication {
 
         ipcMain.on('run-script', async (event, input, currentPackage) => {
             const scriptPath = Path.join(Path.appPaths.packages, currentPackage, 'main.py');
-            while (!Path.exists(scriptPath)) {
-                Execute.requestPackage();
+            if (!Path.exists(scriptPath)) {
+                Dialog.showError('Package Error', 'Package contents missing or corrupted.');
+                return;
             }
 
             input['appdata-path'] = Path.appPaths.appData;
 
-            event.returnValue = await Execute.runScript(scriptPath, input);
+            console.log(input);
+
+            event.returnValue = 0;
+            //event.returnValue = await Execute.runScript(scriptPath, input);
         });
 
         ipcMain.on('attempt-update', (event, path) => {

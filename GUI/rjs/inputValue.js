@@ -2,8 +2,8 @@ class InputValue {
     constructor(content, type, setValidityClassCallback) {
         this.typeSystem = {
             int: /^\d[\d\.]*$/,
-            float: /^(([\d\.]+,\d*)|(,?\d+))$/,
-            percentage: /^((\d+\.\d*)|(\.?\d+))$/,
+            float: /^\d[\d\.]*(\,\d+)?$/,
+            percentage: /^\d[\d\.]*(\,\d+)?$/,
             dateString: /^(Jan|Fev|Mar|Abr|Mai|Jun|Jul|Ago|Set|Out|Nov|Dez)\/\d{4}$/,
             filePaths: 'size'
         };
