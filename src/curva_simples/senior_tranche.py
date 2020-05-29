@@ -67,8 +67,11 @@ def final_phase(self, *_):
 
 
 class SeniorTranche(tranche.Tranche):
-    def __init__(self, title, saldo, taxa_juros, pmt_proper, c_period):
-        super().__init__(title, saldo, taxa_juros, pmt_proper, c_period)
+    def __init__(self, saldo, taxa_juros, pmt_proper, c_period):
+        super().__init__(saldo, taxa_juros, pmt_proper, c_period)
+
+        self.title = 'Sênior'
+        self.id = 'sen'
 
         self.phase_list = [
             carencia_phase, main_phase, final_phase

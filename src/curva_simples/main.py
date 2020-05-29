@@ -31,7 +31,10 @@ while not irr or abs(inputs.target_irr - irr) >= .005:
         inputs.c_period,
         inputs.total,
         inputs.razoes,
-        [taxa_juros_sub, *inputs.taxas_juros],
+        {
+            'sub': taxa_juros_sub,
+            **inputs.taxas_juros
+        },
         inputs.pmt_proper,
         inputs.despesas,
         flux_total
@@ -63,7 +66,7 @@ spreadsheet = ss.Spreadsheet(
     (taxa_juros_sub + 1) ** 12 - 1,
     curve.tranche_list,
     len(curve.tranche_list[0].row_list),
-    [len(curve.tranche_list[i + 1].row_list) for i in range(len(inputs.razoes) - 2)],
+    [len(curve.tranche_list[i + 1].row_list) for i in range(len(inputs.razoes['mezanino']))],
     len(curve.tranche_list[-1].row_list),
     fluxo_financeiro
 )

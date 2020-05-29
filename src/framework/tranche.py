@@ -1,6 +1,7 @@
 class Tranche():
-    def __init__(self, title, saldo, taxa_juros, pmt_proper, c_period, despesas=None):
-        self.title = title
+    def __init__(self, saldo, taxa_juros, pmt_proper, c_period, despesas=None):
+        self.saldo_original = saldo
+
         self.saldo = saldo
         self.taxa_juros = taxa_juros
         self.pmt_proper = pmt_proper

@@ -24,10 +24,7 @@ class Communication {
 
             input['appdata-path'] = Path.appPaths.appData;
 
-            console.log(input);
-
-            event.returnValue = 0;
-            //event.returnValue = await Execute.runScript(scriptPath, input);
+            event.returnValue = await Execute.runScript(scriptPath, input);
         });
 
         ipcMain.on('attempt-update', (event, path) => {

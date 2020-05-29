@@ -1,5 +1,5 @@
 def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, mez_lengths, sen_length):
-    mezanine_layers_count = len(inputs.razoes) - 2
+    mezanine_layers_count = len(inputs.razoes['mezanino'])
     return [
         [
             {
@@ -41,8 +41,8 @@ def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, me
             {
                 'title': 'Taxa de Juros',
                 'body': [
-                    '=' + str(inputs.taxas_juros_anual[len(inputs.taxas_juros_anual) - 1]),
-                    *['=' + str(inputs.taxas_juros_anual[-i - 2]) for i in range(mezanine_layers_count)],
+                    '=' + str(inputs.taxas_juros_anual['sen']),
+                    *['=' + str(taxa) for taxa in inputs.taxas_juros_anual['mezanino']],
                     '=' + str(taxas_juros_anual_sub)
                 ],
                 'format': ['prelude_percentage_2']
@@ -61,9 +61,9 @@ def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, me
             {
                 'title': 'Razão',
                 'body': [
-                    '=' + str(inputs.razoes[-1]),
-                    *['=' + str(inputs.razoes[-i - 2]) for i in range(mezanine_layers_count)],
-                    '=' + str(inputs.razoes[0])
+                    '=' + str(inputs.razoes['sen']),
+                    *['=' + str(razao) for razao in inputs.razoes['mezanino']],
+                    '=' + str(inputs.razoes['sub'])
                 ],
                 'format': ['prelude_percentage_0']
             },
@@ -71,8 +71,7 @@ def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, me
                 'title': 'PU Liquidação',
                 'body': [
                     '=' + str(inputs.pu_emis),
-                    *['=' + str(inputs.pu_emis)
-                      for _ in range(mezanine_layers_count)],
+                    *['=' + str(inputs.pu_emis) for _ in range(mezanine_layers_count)],
                     '=' + str(inputs.pu_emis)
                 ],
                 'format': ['prelude_currency']
@@ -90,7 +89,7 @@ def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, me
                 'title': 'Montante',
                 'body': [
                     '={Valor_Total}*{Razão}',
-                    '={Valor_Total}*{Razão}',
+                    *['={Valor_Total}*{Razão}' for _ in range(mezanine_layers_count)],
                     '={Valor_Total}*{Razão}'
                 ],
                 'format': ['prelude_currency']
@@ -124,7 +123,7 @@ def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, me
             {
                 'title': 'Sênior',
                 'body': [
-                    '=' + str(inputs.taxas_juros[len(inputs.taxas_juros) - 1]),
+                    '=' + str(inputs.taxas_juros['sen']),
                     '=({prev_body}+1)^12-1'
                 ],
                 'format': [
@@ -136,14 +135,14 @@ def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, me
                 {
                     'title': 'Mezanino',
                     'body': [
-                        '=' + str(inputs.taxas_juros[-i - 2]),
+                        '=' + str(taxa),
                         '=({prev_body}+1)^12-1'
                     ],
                     'format': [
                         'prelude_percentage_4',
                         'prelude_percentage_2'
                     ]
-                } for i in range(len(inputs.taxas_juros) - 1)
+                } for taxa in inputs.taxas_juros['mezanino']
             ],
             {
                 'title': 'Subordinado',

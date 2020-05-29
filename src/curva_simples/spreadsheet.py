@@ -334,7 +334,7 @@ class Spreadsheet():
             self.sheet.write(
                 self.tranches_y + 5,
                 col_offset + 2,
-                '={}'.format(self.inputs.total * self.inputs.razoes[tranche_i]),
+                '={}'.format(tranche.saldo_original),
                 self.workbook.add_format(quantity_format_template)
             )
 
