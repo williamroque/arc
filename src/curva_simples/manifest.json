@@ -3,6 +3,14 @@
     "packageName": "curva_simples",
     "requestsSaldos": true,
     "isDefault": true,
+    "allowedOutputExtensions": [
+        {
+            "name": "Excel",
+            "extensions": [
+                "xlsx"
+            ]
+        }
+    ],
     "form": [
         {
             "type": "input-row",
@@ -37,14 +45,14 @@
             "type": "input-row",
             "inputs": [
                 {
-                    "id": "r-sub",
+                    "id": "sub",
                     "label": "R. Subordinado",
                     "type": "percentage",
                     "group": "razoes",
                     "width": 25
                 },
                 {
-                    "id": "r-sen",
+                    "id": "sen",
                     "label": "R. Sênior",
                     "type": "percentage",
                     "group": "razoes",
@@ -57,7 +65,7 @@
                     "width": 25
                 },
                 {
-                    "id": "t-em-senior-anual",
+                    "id": "sen",
                     "label": "T.A. Emissão Sênior",
                     "type": "percentage",
                     "group": "taxas-juros",

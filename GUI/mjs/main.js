@@ -68,7 +68,7 @@ const menuTemplate = [
                 click: () => {
                     const package = Execute.requestPackage();
 
-                    if (package === 'success') {
+                    if (package === 'success' && mainWindow && !mainWindow.isNull()) {
                         mainWindow.dispatchWebEvent('update-form-schemata', Path.formSchemata);
                     }
                 }

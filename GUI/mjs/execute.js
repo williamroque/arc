@@ -16,6 +16,7 @@ class Execute {
             minHeight: 600,
             show: false
         }, 'error.html', false);
+        errorWindow.createWindow();
 
         const progressWindow = new Window({
             width: 820,
@@ -23,6 +24,7 @@ class Execute {
             minWidth: 400,
             minHeight: 600
         }, 'progress.html', false);
+        progressWindow.createWindow();
 
         return new Promise(resolve => {
             progressWindow.addWebListener('did-finish-load', () => {

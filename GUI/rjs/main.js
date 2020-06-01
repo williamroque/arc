@@ -37,7 +37,7 @@ document.querySelector('#build').addEventListener('click', () => {
     if (values.areAllValid()) {
         Communication.requestRunScript(
             values.parse(),
-            currentForm.schema.packageName
+            currentForm.schema
         );
     }
 });

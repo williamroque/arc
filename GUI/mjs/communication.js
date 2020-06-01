@@ -16,12 +16,13 @@ class Communication {
         });
 
         ipcMain.on('run-script', async (event, input, currentPackage) => {
-            const scriptPath = Path.join(Path.appPaths.packages, currentPackage, 'main.py');
+            const scriptPath = Path.join(Path.appPaths.packages, currentPackage.packageName, 'main.py');
             if (!Path.exists(scriptPath)) {
                 Dialog.showError('Package Error', 'Package contents missing or corrupted.');
                 return;
             }
 
+            input['output-path'] = Dialog.createSaveDialog(currentPackage.allowedOutputExtensions);
             input['appdata-path'] = Path.appPaths.appData;
 
             event.returnValue = await Execute.runScript(scriptPath, input);
