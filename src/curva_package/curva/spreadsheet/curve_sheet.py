@@ -1,12 +1,43 @@
-import xlsxwriter
-from xlsxwriter.utility import xl_rowcol_to_cell
+from curva.framework.spreadsheet.spreadsheet import Spreadsheet
+from curva.spreadsheet.prelude.prelude_section import PreludeSection
 
-import render_style
-import prelude_matrix
 
-import copy
+class CurveSheet(Spreadsheet):
+    def __init__(self, inputs, fluxo_creditos, months, taxa_juros_sub, taxa_juros_anual_sub, tranche_list, sub_length, mez_lengths, sen_length, fluxo_financeiro):
+        super().__init__(
+            inputs,
+            {
+                'output_path': inputs.output_path,
+                'width': 1400,
+                'height': 1000,
+                'sheet_title': 'Curva'
+            },
+            [0, 0]
+        )
 
-import re
+        self.inputs = inputs
+
+        prelude_section = PreludeSection(
+            self,
+            self.inputs,
+            taxa_juros_anual_sub,
+            taxa_juros_sub
+        )
+        self.add_section(prelude_section)
+
+        self.add_image(
+            'F2',
+            '{}/logos-logo.png'.format(self.inputs.appdata_path),
+            {
+                'x_scale': 0.75,
+                'y_scale': 0.85,
+                'x_offset': 10,
+                'y_offset': -10
+            }
+        )
+
+
+"""
 
 class Spreadsheet():
     def __init__(self, inputs, fluxo_creditos, months, taxa_juros_sub, taxa_juros_anual_sub, tranche_list, sub_length, mez_lengths, sen_length, fluxo_financeiro):
@@ -525,16 +556,11 @@ class Spreadsheet():
             )
 
     def resize_columns(self):
-        column_widths = [6, 18, 15.5, 14, 17.5, 19, 12, 13.5,
-                         8, 6, 11, 8, 4, 6, 8, 13, 10, 12, 12, 11, 10, 4]
-
-        for _ in range(len(self.tranche_list) - 1):
-            column_widths += [6, 8, 13, 12, 12, 11, 10, 4]
-
-        column_widths += [6, 14, 8]
 
         for i, width in enumerate(column_widths):
             self.sheet.set_column(i, i, width)
 
     def render_file(self):
         self.workbook.close()
+
+"""

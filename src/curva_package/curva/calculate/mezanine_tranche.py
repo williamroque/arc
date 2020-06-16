@@ -1,5 +1,4 @@
-import tranche
-import tranche_row
+from curva.framework.tranche import *
 
 
 def carencia_phase(self, i, *_):
@@ -16,7 +15,7 @@ def carencia_phase(self, i, *_):
             'saldo': '{prev_saldo}+{juros}-{pmt}'
         }
 
-        row = tranche_row.TrancheRow(formulae, pmt, amort, juros, saldo)
+        row = TrancheRow(formulae, pmt, amort, juros, saldo)
         self.queue = row
 
         return False
@@ -38,7 +37,7 @@ def dependent_phase(self, *_):
         'saldo': '{prev_saldo}+{juros}-{pmt}'
     }
 
-    row = tranche_row.TrancheRow(formulae, pmt, amort, juros, saldo)
+    row = TrancheRow(formulae, pmt, amort, juros, saldo)
     self.queue = row
 
 
@@ -55,7 +54,7 @@ def transition_phase(self, _, F_i, tranche_list, tranche_i):
         'saldo': '{prev_saldo}+{juros}-{pmt}'
     }
 
-    row = tranche_row.TrancheRow(formulae, pmt, amort, juros, saldo)
+    row = TrancheRow(formulae, pmt, amort, juros, saldo)
     self.queue = row
 
     self.next_phase()
@@ -74,7 +73,7 @@ def main_phase(self, _1, F_i, *_2):
         'saldo': '{prev_saldo}+{juros}-{pmt}'
     }
 
-    row = tranche_row.TrancheRow(formulae, pmt, amort, juros, saldo)
+    row = TrancheRow(formulae, pmt, amort, juros, saldo)
     self.queue = row
 
 
@@ -91,13 +90,13 @@ def final_phase(self, *_):
         'saldo': '{prev_saldo}+{juros}-{pmt}'
     }
 
-    row = tranche_row.TrancheRow(formulae, pmt, amort, juros, saldo)
+    row = TrancheRow(formulae, pmt, amort, juros, saldo)
     self.queue = row
 
     self.next_phase()
 
 
-class MezanineTranche(tranche.Tranche):
+class MezanineTranche(Tranche):
     def __init__(self, saldo, taxa_juros, pmt_proper, c_period):
         super().__init__(saldo, taxa_juros, pmt_proper, c_period)
 

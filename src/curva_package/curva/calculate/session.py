@@ -1,7 +1,8 @@
-import tranche
-import subordinate_tranche
-import mezanine_tranche
-import senior_tranche
+from curva.framework.tranche import Tranche
+
+from curva.calculate.subordinate_tranche import SubordinateTranche
+from curva.calculate.mezanine_tranche import MezanineTranche
+from curva.calculate.senior_tranche import SeniorTranche
 
 
 class Session():
@@ -15,22 +16,23 @@ class Session():
 
         saldo_sub = saldo * razoes['sub']
         taxa_juros_sub = taxas_juros['sub']
-        tranche_sub = subordinate_tranche.SubordinateTranche(
+        tranche_sub = SubordinateTranche(
             saldo_sub, taxa_juros_sub, pmt_proper, c_period, despesas
         )
         self.tranche_list.append(tranche_sub)
 
-        for i in range(len(razoes['mezanino'])):
-            saldo_mez = saldo * razoes['mezanino'][i]
-            taxa_juros_mez = taxas_juros['mezanino'][i]
-            tranche_mez = mezanine_tranche.MezanineTranche(
-                saldo_mez, taxa_juros_mez, pmt_proper, c_period
-            )
-            self.tranche_list.append(tranche_mez)
+        if 'mezanino' in razoes:
+            for i in range(len(razoes['mezanino'])):
+                saldo_mez = saldo * razoes['mezanino'][i]
+                taxa_juros_mez = taxas_juros['mezanino'][i]
+                tranche_mez = MezanineTranche(
+                    saldo_mez, taxa_juros_mez, pmt_proper, c_period
+                )
+                self.tranche_list.append(tranche_mez)
 
         saldo_sen = saldo * razoes['sen']
         taxa_juros_sen = taxas_juros['sen']
-        tranche_sen = senior_tranche.SeniorTranche(
+        tranche_sen = SeniorTranche(
             saldo_sen, taxa_juros_sen, pmt_proper, c_period
         )
         self.tranche_list.append(tranche_sen)

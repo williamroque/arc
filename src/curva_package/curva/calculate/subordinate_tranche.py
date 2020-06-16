@@ -1,5 +1,4 @@
-import tranche
-import tranche_row
+from curva.framework.tranche import *
 
 
 def carencia_phase(self, i, *_):
@@ -16,7 +15,7 @@ def carencia_phase(self, i, *_):
             'saldo': '{prev_saldo}+{despesas}+{juros}-{pmt}'
         }
 
-        row = tranche_row.TrancheRow(
+        row = TrancheRow(
             formulae, pmt, amort, juros, saldo, self.despesas)
         self.queue = row
 
@@ -39,7 +38,7 @@ def dependent_phase(self, *_):
         'saldo': '{prev_saldo}+{despesas}+{juros}-{pmt}'
     }
 
-    row = tranche_row.TrancheRow(
+    row = TrancheRow(
         formulae, pmt, amort, juros, saldo, self.despesas)
     self.queue = row
 
@@ -57,7 +56,7 @@ def transition_phase(self, _1, F_i, tranche_list, _2):
         'saldo': '{prev_saldo}+{despesas}+{juros}-{pmt}'
     }
 
-    row = tranche_row.TrancheRow(
+    row = TrancheRow(
         formulae, pmt, amort, juros, saldo, self.despesas)
     self.queue = row
 
@@ -77,7 +76,7 @@ def main_phase(self, i, F_i, *_2):
         'saldo': '{prev_saldo}+{despesas}+{juros}-{pmt}'
     }
 
-    row = tranche_row.TrancheRow(
+    row = TrancheRow(
         formulae, pmt, amort, juros, saldo, self.despesas)
     self.queue = row
 
@@ -95,14 +94,14 @@ def final_phase(self, *_):
         'saldo': '{prev_saldo}+{despesas}+{juros}-{pmt}'
     }
 
-    row = tranche_row.TrancheRow(
+    row = TrancheRow(
         formulae, pmt, amort, juros, saldo, self.despesas)
     self.queue = row
 
     self.next_phase()
 
 
-class SubordinateTranche(tranche.Tranche):
+class SubordinateTranche(Tranche):
     def __init__(self, saldo, taxa_juros, pmt_proper, c_period, despesas):
         super().__init__(saldo, taxa_juros, pmt_proper, c_period, despesas)
 

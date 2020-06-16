@@ -43,7 +43,7 @@ class Input():
             else:
                 self.taxas_juros_anual[k] = v / 100
 
-        # To fix annoying reference 'feature'
+        # Deepcopy to fix annoying reference 'feature'
         self.taxas_juros = copy.deepcopy(self.taxas_juros_anual)
         for k, v in self.taxas_juros_anual.items():
             if type(v) == list:
