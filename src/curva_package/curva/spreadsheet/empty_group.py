@@ -3,7 +3,7 @@ from curva.framework.spreadsheet.group import Group
 
 class EmptyGroup(Group):
     def __init__(self):
-        pass
+        self.id = None
 
     def set_bounds(self, vertical_offset, horizontal_offset):
         self.vertical_offset = vertical_offset

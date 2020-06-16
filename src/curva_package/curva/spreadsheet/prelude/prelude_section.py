@@ -146,8 +146,64 @@ class PreludeSection(Section):
         )
         self.add_group(razoes_group)
 
+        pu_liquidacao_group = PreludeGroup(
+            self,
+            self.inputs,
+            'PU Liquidação',
+            [
+                {
+                    'text': '={item}',
+                    'repeat': [self.inputs.pu_emis] * layers_count
+                }
+            ],
+            set(['prelude_currency']),
+            'pu-liquidacao',
+            14
+        )
+        self.add_group(pu_liquidacao_group)
+
+        quantidades_group = PreludeGroup(
+            self,
+            self.inputs,
+            'Quantidades',
+            [
+                {
+                    'text': '=$1/$0',
+                    'repeat': layers_count,
+                    'references': [
+                        ['prelude-section', 'pu-liquidacao'],
+                        ['prelude-section', 'montante']
+                    ]
+                }
+            ],
+            set(['prelude_quantity']),
+            'quantidades'
+        )
+        self.add_group(quantidades_group)
+
+        montante_group = PreludeGroup(
+            self,
+            self.inputs,
+            'Montante',
+            [
+                {
+                    'text': '=$0*$1',
+                    'repeat': layers_count,
+                    'references': [
+                        ['prelude-section', 'valor-total'],
+                        ['prelude-section', 'razoes']
+                    ]
+                }
+            ],
+            set(['prelude_currency']),
+            'montante'
+        )
+        self.add_group(montante_group)
+
+
 """
-[6, 18, 15.5, 14, 17.5, 19, 12, 13.5, 8, 6, 11, 8, 4, 6, 8, 13, 10, 12, 12, 11, 10, 4]
+[6, 18, 15.5, 14, 17.5, 19, 12, 13.5, 8, 6,
+    11, 8, 4, 6, 8, 13, 10, 12, 12, 11, 10, 4]
 [6, 8, 13, 12, 12, 11, 10, 4]
 [6, 14, 8]
 """

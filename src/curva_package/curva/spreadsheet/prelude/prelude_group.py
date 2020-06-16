@@ -9,6 +9,8 @@ class PreludeGroup(Group):
     def __init__(self, parent_section, inputs, title, body, body_class_list, group_id, column_width=None):
         super().__init__(parent_section, inputs, group_id, [2, 0])
 
+        self.column_width = column_width
+
         self.add_row()
 
         header_cell = Cell(
@@ -24,6 +26,7 @@ class PreludeGroup(Group):
         )
         self.add_cell(header_cell)
 
+        row_offset = 0
         for i, body_row in enumerate(body):
             if 'format' in body_row:
                 body_row_format = body_row['format']
@@ -35,48 +38,62 @@ class PreludeGroup(Group):
 
                 if type(repeat_by) == int:
                     for repeat_i in range(repeat_by):
-                        self.add_row()
-
-                        row_copy = copy.copy(body_row)
-                        row_copy['text'] = row_copy['text'].format(index=repeat_i)
-
-                        body_cell = Cell(
-                            self,
-                            self.inputs,
-                            'body-{}-{}'.format(i, repeat_i),
-                            row_copy,
-                            body_row_format,
-                            column_width,
-                            stylesheet
+                        content = copy.copy(body_row)
+                        content['text'] = content['text'].format(
+                            index=repeat_i
                         )
-                        self.add_cell(body_cell)
+
+                        self.create_body_cell(
+                            row_offset,
+                            content,
+                            body_row_format
+                        )
+                        row_offset += 1
                 elif type(repeat_by) == list:
                     for repeat_i, repeat_item in enumerate(repeat_by):
-                        self.add_row()
-
-                        row_copy = copy.copy(body_row)
-                        row_copy['text'] = row_copy['text'].format(index=repeat_i, item=repeat_item)
-
-                        body_cell = Cell(
-                            self,
-                            self.inputs,
-                            'body-{}-{}'.format(i, repeat_i),
-                            row_copy,
-                            body_row_format,
-                            column_width,
-                            stylesheet
+                        content = copy.copy(body_row)
+                        content['text'] = content['text'].format(
+                            index=repeat_i,
+                            item=repeat_item
                         )
-                        self.add_cell(body_cell)
-            else:
-                self.add_row()
 
-                body_cell = Cell(
-                    self,
-                    self.inputs,
-                    'body-{}'.format(i),
+                        self.create_body_cell(
+                            row_offset,
+                            content,
+                            body_row_format
+                        )
+                        row_offset += 1
+            else:
+                self.create_body_cell(
+                    row_offset,
                     body_row,
-                    body_class_list,
-                    column_width,
-                    stylesheet
+                    body_row_format
                 )
-                self.add_cell(body_cell)
+                row_offset += 1
+
+    def create_body_cell(self, offset, content, cell_format):
+        self.add_row()
+
+        content = copy.deepcopy(content)
+        if 'references' in content:
+            for reference in content['references']:
+                reference.append(offset)
+
+        cell = Cell(
+            self,
+            self.inputs,
+            'body_{}'.format(offset),
+            content,
+            cell_format,
+            self.column_width,
+            stylesheet
+        )
+        self.add_cell(cell)
+
+    def query(self, row):
+        if len(self.cells) > 1:
+            row = min(row, len(self.cells) - 2)
+            cell_id = 'body_{}'.format(row)
+            return next(cell for cell in self.cells if cell.id == cell_id)
+        return None
+

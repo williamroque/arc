@@ -42,11 +42,12 @@ class Cell():
 
         if 'references' in self.content:
             for i, reference in enumerate(self.content['references']):
-                sheet = self.parent_group.parent_section.parent_sheet
+                spreadsheet = self.parent_group.parent_section.parent_sheet
 
-                target_section = sheet.query(reference[0])
+                target_section = spreadsheet.query(reference[0])
                 target_group = target_section.query(reference[1])
                 target_cell = target_group.query(reference[2])
+
                 text = text.replace(
                     '${}'.format(i),
                     target_cell.get_reference()
