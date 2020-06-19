@@ -311,6 +311,47 @@ class PreludeSection(Section):
             )
             self.add_group(mezanine_juros_group)
 
+        subordinado_juros_group = PreludeGroup(
+            self,
+            self.inputs,
+            'Subordinado',
+            [
+                {
+                    'text': self.inputs.get('taxas-juros')['sub'],
+                },
+                {
+                    'text': '=(@0+1)^12-1',
+                    'references': [
+                        {
+                            'path': ['prelude-section', 'subordinado-juros', 0],
+                            'static': True
+                        }
+                    ],
+                    'format': set(['prelude_percentage_2'])
+                }
+            ],
+            set(['prelude_percentage_4']),
+            'subordinado-juros'
+        )
+        self.add_group(subordinado_juros_group)
+
+        self.add_group(empty_group)  # IRR -> create fluxo financeiro first
+
+        self.add_group(empty_group)  # FR 3 PMTs -> create tranches first
+
+        fr_previsto_group = PreludeGroup(
+            self,
+            self.inputs,
+            'FR Previsto',
+            [
+                {
+                    'text': self.inputs.get('fr-previsto')
+                }
+            ],
+            set(['prelude_currency']),
+            'fr-previsto'
+        )
+        self.add_group(fr_previsto_group)
 
 
 """
