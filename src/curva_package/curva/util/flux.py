@@ -14,6 +14,9 @@ import re
 
 locale.setlocale(locale.LC_TIME, 'pt_BR')
 
+# df.columns = df.iloc[0]
+# parsed_df = df.loc[:, df.iloc[0].str.contains(r'\w{3}/\d{4}')].iloc[-1]
+# dict(parsed_df)
 
 class Flux():
     def __init__(self, saldo_files, starting_date):

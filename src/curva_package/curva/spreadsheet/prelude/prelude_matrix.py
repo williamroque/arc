@@ -1,11 +1,11 @@
 def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, mez_lengths, sen_length):
-    mezanine_layers_count = len(inputs.razoes['mezanino'])
+    mezanine_layers_count = len(inputs.get('razoes')['mezanino'])
     return [
         [
             {
                 'title': 'Valor Total',
                 'body': [
-                    '=' + str(inputs.total)
+                    '=' + str(inputs.get('total'))
                 ],
                 'format': ['prelude_currency']
             },
@@ -23,17 +23,19 @@ def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, me
             {
                 'title': 'PU Emissão',
                 'body': [
-                    '=' + str(inputs.pu_emis),
-                    *['=' + str(inputs.pu_emis) for _ in range(mezanine_layers_count)],
-                    '=' + str(inputs.pu_emis)
+                    '=' + str(inputs.get('pu_emis')),
+                    *['=' + str(inputs.get('pu_emis'))
+                      for _ in range(mezanine_layers_count)],
+                    '=' + str(inputs.get('pu_emis'))
                 ],
                 'format': ['prelude_currency']
             },
             {
                 'title': 'Indexador',
                 'body': [
-                    '=' + str(inputs.indexador),
-                    *['=' + str(inputs.indexador) for _ in range(mezanine_layers_count)],
+                    '=' + str(inputs.get('indexador')),
+                    *['=' + str(inputs.indexador)
+                      for _ in range(mezanine_layers_count)],
                     '=' + str(inputs.indexador)
                 ],
                 'format': ['prelude_text']
@@ -42,7 +44,8 @@ def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, me
                 'title': 'Taxa de Juros',
                 'body': [
                     '=' + str(inputs.taxas_juros_anual['sen']),
-                    *['=' + str(taxa) for taxa in inputs.taxas_juros_anual['mezanino']],
+                    *['=' + str(taxa)
+                      for taxa in inputs.taxas_juros_anual['mezanino']],
                     '=' + str(taxas_juros_anual_sub)
                 ],
                 'format': ['prelude_percentage_2']
@@ -71,7 +74,8 @@ def create_matrix(inputs, taxas_juros_sub, taxas_juros_anual_sub, sub_length, me
                 'title': 'PU Liquidação',
                 'body': [
                     '=' + str(inputs.pu_emis),
-                    *['=' + str(inputs.pu_emis) for _ in range(mezanine_layers_count)],
+                    *['=' + str(inputs.pu_emis)
+                      for _ in range(mezanine_layers_count)],
                     '=' + str(inputs.pu_emis)
                 ],
                 'format': ['prelude_currency']

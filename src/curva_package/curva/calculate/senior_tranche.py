@@ -27,8 +27,7 @@ def carencia_phase(self, i, *_):
 
 
 def main_phase(self, _1, F_i, tranche_list, _2):
-    row_sum = reduce(lambda acc, tranche: acc +
-                     tranche.queue.pmt, tranche_list[:-1], 0)
+    row_sum = reduce(lambda acc, tranche: acc + tranche.queue.pmt, tranche_list[:-1], 0)
 
     juros = self.saldo * self.taxa_juros
     pmt = F_i * self.pmt_proper - row_sum
@@ -66,8 +65,8 @@ def final_phase(self, *_):
 
 
 class SeniorTranche(Tranche):
-    def __init__(self, saldo, taxa_juros, pmt_proper, c_period):
-        super().__init__(saldo, taxa_juros, pmt_proper, c_period)
+    def __init__(self, inputs):
+        super().__init__(inputs, inputs.get('taxas-juros')['sen'], inputs.get('razoes')['sub'])
 
         self.title = 'Sênior'
         self.id = 'sen'

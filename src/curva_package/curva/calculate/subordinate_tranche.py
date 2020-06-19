@@ -15,8 +15,7 @@ def carencia_phase(self, i, *_):
             'saldo': '{prev_saldo}+{despesas}+{juros}-{pmt}'
         }
 
-        row = TrancheRow(
-            formulae, pmt, amort, juros, saldo, self.despesas)
+        row = TrancheRow(formulae, pmt, amort, juros, saldo, self.despesas)
         self.queue = row
 
         return False
@@ -102,8 +101,8 @@ def final_phase(self, *_):
 
 
 class SubordinateTranche(Tranche):
-    def __init__(self, saldo, taxa_juros, pmt_proper, c_period, despesas):
-        super().__init__(saldo, taxa_juros, pmt_proper, c_period, despesas)
+    def __init__(self, inputs):
+        super().__init__(inputs, inputs.get('taxas-juros')['sub'], inputs.get('razoes')['sub'])
 
         self.title = 'Subordinado'
         self.id = 'sub'

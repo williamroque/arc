@@ -6,7 +6,7 @@ import copy
 
 
 class PreludeSection(Section):
-    def __init__(self, parent_sheet, inputs, taxas_juros_anual_sub, taxa_juros_sub):
+    def __init__(self, parent_sheet, inputs):
         super().__init__(
             parent_sheet,
             inputs,
@@ -15,11 +15,6 @@ class PreludeSection(Section):
             [11, 1],
             False
         )
-
-        if 'mezanino' in self.inputs.razoes:
-            mezanine_layers_count = len(self.inputs.razoes['mezanino'])
-        else:
-            mezanine_layers_count = 0
 
         layers_count = mezanine_layers_count + 2
 
@@ -31,7 +26,7 @@ class PreludeSection(Section):
             'Valor Total',
             [
                 {
-                    'text': '={}'.format(self.inputs.total)
+                    'text': '={}'.format(self.inputs.get('total'))
                 }
             ],
             set(['prelude_currency']),
@@ -73,7 +68,7 @@ class PreludeSection(Section):
             [
                 {
                     'text': '={item}',
-                    'repeat': [self.inputs.pu_emis] * layers_count
+                    'repeat': [self.inputs.get('pu-emis')] * layers_count
                 }
             ],
             set(['prelude_currency']),
@@ -89,7 +84,7 @@ class PreludeSection(Section):
             [
                 {
                     'text': '={item}',
-                    'repeat': [self.inputs.indexador] * layers_count
+                    'repeat': [self.inputs.get('indexador')] * layers_count
                 }
             ],
             set(['prelude_text']),
@@ -104,14 +99,14 @@ class PreludeSection(Section):
             'Taxa de Juros',
             [
                 {
-                    'text': '={}'.format(inputs.taxas_juros_anual['sen'])
+                    'text': '={}'.format(self.inputs.get('taxas-juros-anual')['sen'])
                 },
                 {
                     'text': '={item}',
-                    'repeat': self.inputs.taxas_juros_anual['mezanino']
+                    'repeat': self.inputs.get('taxas-juros-anual')['mezanino']
                 },
                 {
-                    'text': '={}'.format(taxas_juros_anual_sub)
+                    'text': '={}'.format(self.inputs.get('taxas-juros-anual')['sub'])
                 }
             ],
             set(['prelude_percentage_2']),
@@ -130,14 +125,14 @@ class PreludeSection(Section):
             'Razão',
             [
                 {
-                    'text': '={}'.format(self.inputs.razoes['sen'])
+                    'text': '={}'.format(self.inputs.get('razoes')['sen'])
                 },
                 {
                     'text': '={item}',
-                    'repeat': self.inputs.razoes['mezanino']
+                    'repeat': self.inputs.get('razoes')['mezanino']
                 },
                 {
-                    'text': '={}'.format(self.inputs.razoes['sub'])
+                    'text': '={}'.format(self.inputs.get('razoes')['sub'])
                 }
             ],
             set(['prelude_percentage_0']),
@@ -153,7 +148,7 @@ class PreludeSection(Section):
             [
                 {
                     'text': '={item}',
-                    'repeat': [self.inputs.pu_emis] * layers_count
+                    'repeat': [self.inputs.get('pu-emis')] * layers_count
                 }
             ],
             set(['prelude_currency']),
@@ -199,6 +194,24 @@ class PreludeSection(Section):
             'montante'
         )
         self.add_group(montante_group)
+
+        prazo_group = PreludeGroup(
+            self,
+            self.inputs,
+            'Prazo',
+            [
+                {
+                    'text': '={}'.format(self.inputs.get('sen-length'))
+                },
+                {
+                    'text': '={item}',
+                    'repeat': self.inputs.get('mezanino-lengths')
+                },
+                {
+                    'text': '={}'.format(self.inputs.get('sub-length'))
+                }
+            ]
+        )
 
 
 """

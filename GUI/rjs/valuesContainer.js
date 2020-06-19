@@ -79,14 +79,20 @@ class ValuesContainer {
     }
 
     cast(inputValue) {
-        if (inputValue.type === 'int') {
-            return parseInt(this.clean(inputValue.content));
-        } else if (inputValue.type === 'float' || inputValue.type === 'percentage') {
-            return parseFloat(this.clean(inputValue.content));
-        } else if (inputValue.type === 'filePaths') {
+        if (inputValue.type === 'filePaths') {
             return Array.from(inputValue.content);
-        } else {
-            return this.clean(inputValue.content);
+        }
+
+        const content = this.clean(inputValue.content);
+        switch (inputValue.type) {
+            case 'int':
+                return parseInt(content);
+            case 'float':
+                return parseFloat(content);
+            case 'percentage':
+                return parseFloat(content) / 100;
+            default:
+                return content;
         }
     }
 

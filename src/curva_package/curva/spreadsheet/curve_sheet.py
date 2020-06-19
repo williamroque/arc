@@ -3,11 +3,11 @@ from curva.spreadsheet.prelude.prelude_section import PreludeSection
 
 
 class CurveSheet(Spreadsheet):
-    def __init__(self, inputs, fluxo_creditos, months, taxa_juros_sub, taxa_juros_anual_sub, tranche_list, sub_length, mez_lengths, sen_length, fluxo_financeiro):
+    def __init__(self, inputs):
         super().__init__(
             inputs,
             {
-                'output_path': inputs.output_path,
+                'output_path': inputs.get('output-path'),
                 'width': 1400,
                 'height': 1000,
                 'sheet_title': 'Curva'
@@ -15,19 +15,15 @@ class CurveSheet(Spreadsheet):
             [0, 0]
         )
 
-        self.inputs = inputs
-
         prelude_section = PreludeSection(
             self,
-            self.inputs,
-            taxa_juros_anual_sub,
-            taxa_juros_sub
+            self.inputs
         )
         self.add_section(prelude_section)
 
         self.add_image(
             'F2',
-            '{}/logos-logo.png'.format(self.inputs.appdata_path),
+            '{}/logos-logo.png'.format(self.inputs.get('appdata-path')),
             {
                 'x_scale': 0.75,
                 'y_scale': 0.85,

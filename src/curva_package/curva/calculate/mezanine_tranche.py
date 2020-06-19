@@ -97,8 +97,8 @@ def final_phase(self, *_):
 
 
 class MezanineTranche(Tranche):
-    def __init__(self, saldo, taxa_juros, pmt_proper, c_period):
-        super().__init__(saldo, taxa_juros, pmt_proper, c_period)
+    def __init__(self, inputs, taxa_juros, razao):
+        super().__init__(inputs, taxa_juros, razao)
 
         self.title = 'Mezanino'
         self.id = 'mezanino'

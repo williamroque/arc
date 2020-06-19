@@ -68,7 +68,7 @@
                     "id": "sen",
                     "label": "T.A. Emissão Sênior",
                     "type": "percentage",
-                    "group": "taxas-juros",
+                    "group": "taxas-juros-anual",
                     "width": 25
                 }
             ]

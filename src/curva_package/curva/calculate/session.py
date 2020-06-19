@@ -6,48 +6,36 @@ from curva.calculate.senior_tranche import SeniorTranche
 
 
 class Session():
-    def __init__(self, c_period, saldo, razoes, taxas_juros, pmt_proper, despesas, fluxo_creditos):
-        self.c_period = c_period
+    def __init__(self, inputs):
+        self.inputs = inputs
 
         self.tranche_list = []
         self.final_tranche_list = []
 
-        self.total = saldo
-
-        saldo_sub = saldo * razoes['sub']
-        taxa_juros_sub = taxas_juros['sub']
-        tranche_sub = SubordinateTranche(
-            saldo_sub, taxa_juros_sub, pmt_proper, c_period, despesas
-        )
+        tranche_sub = SubordinateTranche(self.inputs)
         self.tranche_list.append(tranche_sub)
 
-        if 'mezanino' in razoes:
-            for i in range(len(razoes['mezanino'])):
-                saldo_mez = saldo * razoes['mezanino'][i]
-                taxa_juros_mez = taxas_juros['mezanino'][i]
-                tranche_mez = MezanineTranche(
-                    saldo_mez, taxa_juros_mez, pmt_proper, c_period
-                )
-                self.tranche_list.append(tranche_mez)
+        for i in range(self.inputs.get('mezanine-layers-count')):
+            tranche_mez = MezanineTranche(
+                self.inputs,
+                self.inputs.get('taxas-juros')['mezanino'][i],
+                self.inputs.get('razoes')['mezanino'][i]
+            )
+            self.tranche_list.append(tranche_mez)
 
-        saldo_sen = saldo * razoes['sen']
-        taxa_juros_sen = taxas_juros['sen']
-        tranche_sen = SeniorTranche(
-            saldo_sen, taxa_juros_sen, pmt_proper, c_period
-        )
+        tranche_sen = SeniorTranche(self.inputs)
         self.tranche_list.append(tranche_sen)
-
-        self.fluxo_creditos = fluxo_creditos
 
     def calculate_row(self, i, F_i, tranche_list):
         for tranche_i, tranche in enumerate(tranche_list):
             tranche.calculate(i, F_i, self.tranche_list, tranche_i)
 
     def run(self):
-        for i in range(1, len(self.fluxo_creditos)):
+        fluxo_creditos = self.inputs.get('flux-total')
+        for i in range(1, len(fluxo_creditos)):
             self.calculate_row(
                 i,
-                self.fluxo_creditos[i - 1],
+                fluxo_creditos[i - 1],
                 self.tranche_list
             )
             for tranche_i, tranche in enumerate(self.tranche_list):
@@ -56,11 +44,16 @@ class Session():
                     if tranche_i > 0:
                         self.tranche_list[tranche_i - 1].next_phase()
 
-                    tranche.calculate(i, self.fluxo_creditos[i - 1], self.tranche_list, tranche_i)
+                    tranche.calculate(
+                        i,
+                        fluxo_creditos[i - 1],
+                        self.tranche_list,
+                        tranche_i
+                    )
 
                     self.calculate_row(
                         i,
-                        self.fluxo_creditos[i - 1],
+                        fluxo_creditos[i - 1],
                         self.tranche_list[:tranche_i]
                     )
 
@@ -76,4 +69,5 @@ class Session():
         for tranche in self.tranche_list:
             for i, row in enumerate(tranche.row_list):
                 collapsed[i] = collapsed[i] + row.juros + row.amort
-        return [-self.total] + [0 for _ in range(self.c_period)] + collapsed[self.c_period:]
+        c_period = self.inputs.get('c-period')
+        return [-self.inputs.get('total')] + [0 for _ in range(c_period)] + collapsed[c_period:]
