@@ -104,6 +104,8 @@ class SubordinateTranche(Tranche):
     def __init__(self, inputs):
         super().__init__(inputs, inputs.get('taxas-juros')['sub'], inputs.get('razoes')['sub'])
 
+        print(inputs.inputs)
+
         self.title = 'Subordinado'
         self.id = 'sub'
 

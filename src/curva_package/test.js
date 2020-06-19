@@ -8,7 +8,7 @@ const input = {
     total: 14270000,
     'starting-date': 'Set/2019',
     razoes: { sub: .15, sen: .70, mezanino: [.15] },
-    'target-irr': 10.5,
+    'target-irr': .105,
     'taxas-juros-anual': { sen: .07, mezanino: [.085] },
     'c-period': 3,
     'fr-previsto': 400000,

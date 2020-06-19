@@ -50,23 +50,31 @@ def main():
     negative_baseline = 0
 
     irr = None
-    while not irr or abs(inputs.get('target-irr') - irr) >= .005:
+    while not irr or abs(inputs.get('target-irr') - irr) >= .00005:
         if irr:
             if irr < 0:
                 negative_baseline = taxa_juros_sub
-            taxa_juros_sub *= inputs.get('target-irr') / abs(irr) ** (abs(irr) / irr)
-            taxa_juros_sub += negative_baseline
-        print(taxa_juros_sub, negative_baseline, irr, flush=True)
+            #taxa_juros_sub *= inputs.get('target-irr') / abs(irr) ** (abs(irr) / irr)
+            #taxa_juros_sub += negative_baseline
+            taxa_juros_sub = 0.015828156472992
+        #print(taxa_juros_sub, negative_baseline, irr, flush=True)
+
 
         taxas_juros = inputs.get('taxas-juros')
         taxas_juros['sub'] = taxa_juros_sub
         inputs.update('taxas-juros', taxas_juros)
+        #print(taxas_juros, flush=True)
+
+        taxas_juros_anual = inputs.get('taxas-juros-anual')
+        taxas_juros_anual['sub'] = (taxa_juros_sub + 1) ** 12 - 1
+        inputs.update('taxas-juros-anual', taxas_juros_anual)
 
         sess = Session(inputs)
         sess.run()
 
         fluxo_financeiro = sess.collapse_financial_flux()
-        irr = ((1 + np.irr(fluxo_financeiro)) ** 12 - 1) * 100
+        #print(fluxo_financeiro, flush=True)
+        irr = ((1 + np.irr(fluxo_financeiro)) ** 12 - 1)
 
     inputs.update('tranche-list', sess.tranche_list)
     inputs.update('sub-length', len(sess.tranche_list[0].row_list)),
@@ -88,12 +96,7 @@ def main():
 
     print('Rendering curve.')
 
-    sheet = CurveSheet(
-        inputs,
-        len(sess.tranche_list[0].row_list),
-        [len(sess.tranche_list[i + 1].row_list) for i in range(len(inputs.get('razoes')['mezanino']))],
-        len(sess.tranche_list[-1].row_list),
-    )
+    sheet = CurveSheet(inputs)
     sheet.render()
 
     print('Curve rendered.')

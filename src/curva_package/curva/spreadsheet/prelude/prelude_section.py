@@ -16,7 +16,7 @@ class PreludeSection(Section):
             False
         )
 
-        layers_count = mezanine_layers_count + 2
+        layers_count = self.inputs.get('mezanine-layers-count') + 2
 
         self.add_row()
 
@@ -49,7 +49,7 @@ class PreludeSection(Section):
                 },
                 {
                     'text': 'Mezanino',
-                    'repeat': mezanine_layers_count
+                    'repeat': self.inputs.get('mezanine-layers-count')
                 },
                 {
                     'text': 'Subordinado'
@@ -205,12 +205,14 @@ class PreludeSection(Section):
                 },
                 {
                     'text': '={item}',
-                    'repeat': self.inputs.get('mezanino-lengths')
+                    'repeat': self.inputs.get('mez-lengths')
                 },
                 {
                     'text': '={}'.format(self.inputs.get('sub-length'))
                 }
-            ]
+            ],
+            set(['prelude_text']),
+            'prazo'
         )
 
 
