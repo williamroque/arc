@@ -29,17 +29,21 @@ def main():
         time.strptime(inputs.get('starting-date'), '%b/%Y')
     )
 
-    flux = Flux(inputs.get('planilhas-saldo'), inputs.get('starting-date'))
-    flux_total = flux.collapse()
+    months, flux_total = Flux(
+        inputs.get('planilhas-saldo'),
+        inputs.get('starting-date')
+    ).get_flux()
 
     inputs.update('flux-total', flux_total)
-    inputs.update('flux-months', flux.months)
+    inputs.update('flux-months', months)
 
     if 'mezanino' in inputs.get('razoes'):
-        inputs.update('mezanine-layers-count', len(inputs.get('razoes')['mezanino']))
+        inputs.update(
+            'mezanine-layers-count',
+            len(inputs.get('razoes')['mezanino'])
+        )
     else:
         inputs.update('mezanine-layers-count', 0)
-
 
     print('Inputs processed.\n')
 
@@ -74,7 +78,10 @@ def main():
 
     inputs.update('tranche-list', sess.tranche_list)
     inputs.update('sub-length', len(sess.tranche_list[0].row_list)),
-    inputs.update('mez-lengths', [len(tranche.row_list) for tranche in sess.tranche_list[1:-1]])
+    inputs.update(
+        'mez-lengths',
+        [len(tranche.row_list) for tranche in sess.tranche_list[1:-1]]
+    )
     inputs.update('sen-length', len(sess.tranche_list[-1].row_list))
 
     print('Curve calculated.\n')
@@ -96,4 +103,3 @@ def main():
     sheet.render()
 
     print('Curve rendered.')
-
