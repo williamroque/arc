@@ -77,7 +77,9 @@ class PreludeGroup(Group):
         content = copy.deepcopy(content)
         if 'references' in content:
             for reference in content['references']:
-                reference.append(offset)
+                path = reference['path']
+                if len(path) < 3:
+                    path.append(offset)
 
         cell = Cell(
             self,

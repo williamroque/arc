@@ -1,6 +1,8 @@
 import xlsxwriter
 from xlsxwriter.utility import xl_rowcol_to_cell
 
+import re
+
 
 class Cell():
     def __init__(self, parent_group, inputs, cell_id, content, class_list, column_width, stylesheet):
@@ -44,13 +46,21 @@ class Cell():
             for i, reference in enumerate(self.content['references']):
                 spreadsheet = self.parent_group.parent_section.parent_sheet
 
-                target_section = spreadsheet.query(reference[0])
-                target_group = target_section.query(reference[1])
-                target_cell = target_group.query(reference[2])
+                path = reference['path']
+
+                target_section = spreadsheet.query(path[0])
+                target_group = target_section.query(path[1])
+                target_cell = target_group.query(path[2])
+
+                target_reference = target_cell.get_reference()
+
+                if reference['static']:
+                    col, row = re.search(r'([A-Za-z]+)(\d+)', target_reference).groups()
+                    target_reference = '${}${}'.format(col, row)
 
                 text = text.replace(
-                    '${}'.format(i),
-                    target_cell.get_reference()
+                    '@{}'.format(i),
+                    target_reference
                 )
 
         # text = text.format(**self.inputs)

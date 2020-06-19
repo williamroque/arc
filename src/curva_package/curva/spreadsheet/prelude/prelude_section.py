@@ -163,11 +163,17 @@ class PreludeSection(Section):
             'Quantidades',
             [
                 {
-                    'text': '=$1/$0',
+                    'text': '=@1/@0',
                     'repeat': layers_count,
                     'references': [
-                        ['prelude-section', 'pu-liquidacao'],
-                        ['prelude-section', 'montante']
+                        {
+                            'path': ['prelude-section', 'pu-liquidacao'],
+                            'static': True
+                        },
+                        {
+                            'path': ['prelude-section', 'montante'],
+                            'static': True
+                        }
                     ]
                 }
             ],
@@ -182,11 +188,17 @@ class PreludeSection(Section):
             'Montante',
             [
                 {
-                    'text': '=$0*$1',
+                    'text': '=@0*@1',
                     'repeat': layers_count,
                     'references': [
-                        ['prelude-section', 'valor-total'],
-                        ['prelude-section', 'razoes']
+                        {
+                            'path': ['prelude-section', 'valor-total'],
+                            'static': True
+                        },
+                        {
+                            'path': ['prelude-section', 'razoes'],
+                            'static': True
+                        }
                     ]
                 }
             ],
@@ -214,6 +226,91 @@ class PreludeSection(Section):
             set(['prelude_text']),
             'prazo'
         )
+        self.add_group(prazo_group)
+
+        pmt_proper_group = PreludeGroup(
+            self,
+            self.inputs,
+            '% PMT',
+            [
+                {
+                    'text': self.inputs.get('pmt-proper')
+                }
+            ],
+            set(['prelude_percentage_0']),
+            'pmt-proper'
+        )
+        self.add_group(pmt_proper_group)
+
+        self.add_row()
+
+        periodo_group = PreludeGroup(
+            self,
+            self.inputs,
+            'Período',
+            [
+                {
+                    'text': 'Mensal'
+                },
+                {
+                    'text': 'Anual'
+                }
+            ],
+            set(['prelude_text']),
+            'periodo'
+        )
+        self.add_group(periodo_group)
+
+        senior_juros_group = PreludeGroup(
+            self,
+            self.inputs,
+            'Sênior',
+            [
+                {
+                    'text': self.inputs.get('taxas-juros')['sen'],
+                },
+                {
+                    'text': '=(@0+1)^12-1',
+                    'references': [
+                        {
+                            'path': ['prelude-section', 'senior-juros', 0],
+                            'static': True
+                        }
+                    ],
+                    'format': set(['prelude_percentage_2'])
+                }
+            ],
+            set(['prelude_percentage_4']),
+            'senior-juros'
+        )
+        self.add_group(senior_juros_group)
+
+        for i, taxa in enumerate(self.inputs.get('taxas-juros')['mezanino']):
+            group_id = 'mezanino-juros-{}'.format(i)
+            mezanine_juros_group = PreludeGroup(
+                self,
+                self.inputs,
+                'Mezanino',
+                [
+                    {
+                        'text': taxa
+                    },
+                    {
+                        'text': '=(@0+1)^12-1',
+                        'references': [
+                            {
+                                'path': ['prelude-section', group_id, 0],
+                                'static': True
+                            }
+                        ],
+                        'format': set(['prelude_percentage_2'])
+                    }
+                ],
+                set(['prelude_percentage_4']),
+                group_id
+            )
+            self.add_group(mezanine_juros_group)
+
 
 
 """
