@@ -1,7 +1,7 @@
 from curva.framework.tranche import *
 
 
-def carencia_phase(self, i, *_):
+def carencia_phase(self, i, F_i, tranche_list, tranche_i):
     if self.i < self.c_period:
         juros = self.saldo * self.taxa_juros
         pmt = 0
@@ -24,7 +24,7 @@ def carencia_phase(self, i, *_):
     return True
 
 
-def dependent_phase(self, *_):
+def dependent_phase(self, i, F_i, tranche_list, tranche_i):
     juros = self.saldo * self.taxa_juros
     pmt = juros
     amort = pmt - juros
@@ -41,7 +41,7 @@ def dependent_phase(self, *_):
     self.queue = row
 
 
-def transition_phase(self, _, F_i, tranche_list, tranche_i):
+def transition_phase(self, i, F_i, tranche_list, tranche_i):
     juros = self.saldo * self.taxa_juros
     pmt = F_i * self.pmt_proper - tranche_list[tranche_i + 1].queue.pmt
     amort = pmt - juros
@@ -60,7 +60,7 @@ def transition_phase(self, _, F_i, tranche_list, tranche_i):
     self.next_phase()
 
 
-def main_phase(self, _1, F_i, *_2):
+def main_phase(self, i, F_i, tranche_list, tranche_i):
     juros = self.saldo * self.taxa_juros
     pmt = F_i * self.pmt_proper
     amort = pmt - juros
@@ -77,7 +77,7 @@ def main_phase(self, _1, F_i, *_2):
     self.queue = row
 
 
-def final_phase(self, *_):
+def final_phase(self, i, F_i, tranche_list, tranche_i):
     juros = self.saldo * self.taxa_juros
     amort = self.saldo
     pmt = juros + amort

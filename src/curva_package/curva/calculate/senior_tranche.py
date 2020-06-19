@@ -3,7 +3,7 @@ from curva.framework.tranche import *
 from functools import reduce
 
 
-def carencia_phase(self, i, *_):
+def carencia_phase(self, i, F_i, tranche_list, tranche_i):
     if self.i < self.c_period:
         juros = self.saldo * self.taxa_juros
         pmt = 0
@@ -26,7 +26,7 @@ def carencia_phase(self, i, *_):
     return True
 
 
-def main_phase(self, _1, F_i, tranche_list, _2):
+def main_phase(self, i, F_i, tranche_list, tranche_i):
     row_sum = reduce(lambda acc, tranche: acc + tranche.queue.pmt, tranche_list[:-1], 0)
 
     juros = self.saldo * self.taxa_juros
@@ -45,7 +45,7 @@ def main_phase(self, _1, F_i, tranche_list, _2):
     self.queue = row
 
 
-def final_phase(self, *_):
+def final_phase(self, i, F_i, tranche_list, tranche_i):
     juros = self.saldo * self.taxa_juros
     amort = self.saldo
     pmt = juros + amort
@@ -66,7 +66,7 @@ def final_phase(self, *_):
 
 class SeniorTranche(Tranche):
     def __init__(self, inputs):
-        super().__init__(inputs, inputs.get('taxas-juros')['sen'], inputs.get('razoes')['sub'])
+        super().__init__(inputs, inputs.get('taxas-juros')['sen'], inputs.get('razoes')['sen'])
 
         self.title = 'Sênior'
         self.id = 'sen'

@@ -54,16 +54,13 @@ def main():
         if irr:
             if irr < 0:
                 negative_baseline = taxa_juros_sub
-            #taxa_juros_sub *= inputs.get('target-irr') / abs(irr) ** (abs(irr) / irr)
-            #taxa_juros_sub += negative_baseline
-            taxa_juros_sub = 0.015828156472992
-        #print(taxa_juros_sub, negative_baseline, irr, flush=True)
 
+            taxa_juros_sub *= inputs.get('target-irr') / abs(irr) ** (abs(irr) / irr)
+            taxa_juros_sub += negative_baseline
 
         taxas_juros = inputs.get('taxas-juros')
         taxas_juros['sub'] = taxa_juros_sub
         inputs.update('taxas-juros', taxas_juros)
-        #print(taxas_juros, flush=True)
 
         taxas_juros_anual = inputs.get('taxas-juros-anual')
         taxas_juros_anual['sub'] = (taxa_juros_sub + 1) ** 12 - 1
@@ -73,7 +70,6 @@ def main():
         sess.run()
 
         fluxo_financeiro = sess.collapse_financial_flux()
-        #print(fluxo_financeiro, flush=True)
         irr = ((1 + np.irr(fluxo_financeiro)) ** 12 - 1)
 
     inputs.update('tranche-list', sess.tranche_list)
