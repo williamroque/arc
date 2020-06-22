@@ -43,6 +43,12 @@ class Group():
             max_horizontal + self.margin[1]
         )
 
+    def inject_style(self, callback, bias=0):
+        for i, cell in enumerate(self.cells):
+            cell.add_class(
+                callback(i + bias * len(self.cells))
+            )
+
     def render(self, sheet, workbook):
         for cell in self.cells:
             cell.render(sheet, workbook)

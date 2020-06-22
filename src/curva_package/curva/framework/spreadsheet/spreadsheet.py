@@ -6,7 +6,6 @@ class Spreadsheet():
         self.inputs = inputs 
 
         self.sections = []
-        self.structure = []
 
         self.workbook = xlsxwriter.Workbook(props['output_path'])
         self.workbook.set_size(props['width'], props['height'])
@@ -23,16 +22,7 @@ class Spreadsheet():
     def add_section(self, section):
         vertical_offset, horizontal_offset = self.padding
 
-        for row in self.structure:
-            max_height = 0
-            for s in row:
-                s_height = s.get_dimensions()[0]
-                if s_height > max_height:
-                    max_height = s_height
-
-            vertical_offset += max_height
-
-        for s in self.structure:
+        for s in self.sections:
             horizontal_offset += s.get_dimensions()[1]
 
         section.set_bounds(
@@ -41,7 +31,6 @@ class Spreadsheet():
         )
 
         self.sections.append(section)
-        self.structure.append(section)
 
     def query(self, section_id):
         search_generator = (section for section in self.sections if section.id == section_id)

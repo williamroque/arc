@@ -26,11 +26,13 @@ class Flux():
             )].iloc[-1]
 
             for date, value in dict(parsed_df).items():
-                if time.strptime(date, '%b/%Y') >= starting_date:
-                    if date in self.flux_total:
-                        self.flux_total[date] += value
+                parsed_date = time.strptime(date, '%b/%Y')
+                if parsed_date >= starting_date:
+                    formatted_date = time.strftime('%b-%y', parsed_date)
+                    if formatted_date in self.flux_total:
+                        self.flux_total[formatted_date] += value
                     else:
-                        self.flux_total[date] = value
+                        self.flux_total[formatted_date] = value
 
     def get_flux(self):
         return (

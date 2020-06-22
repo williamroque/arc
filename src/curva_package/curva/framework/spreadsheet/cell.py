@@ -29,8 +29,9 @@ class Cell():
                 }
 
     def add_class(self, class_name):
-        self.class_list.add(class_name)
-        self.compile_format()
+        if class_name != None:
+            self.class_list.add(class_name)
+            self.compile_format()
 
     def set_bounds(self, vertical_offset, horizontal_offset):
         self.vertical_offset = vertical_offset
@@ -56,10 +57,10 @@ class Cell():
 
                 if reference['static']:
                     col, row = re.search(r'([A-Za-z]+)(\d+)', target_reference).groups()
-                    target_reference = '${}${}'.format(col, row)
+                    target_reference = f'${col}${row}'
 
                 text = text.replace(
-                    '@{}'.format(i),
+                    f'@{i}',
                     target_reference
                 )
 

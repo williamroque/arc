@@ -1,5 +1,5 @@
 from curva.framework.spreadsheet.section import Section
-from curva.spreadsheet.prelude.prelude_group import PreludeGroup
+from curva.spreadsheet.prelude.group import PreludeGroup
 from curva.spreadsheet.empty_group import EmptyGroup
 
 import copy
@@ -12,8 +12,7 @@ class PreludeSection(Section):
             inputs,
             'prelude-section',
             [0, 1],
-            [11, 1],
-            False
+            [11, 1]
         )
 
         layers_count = self.inputs.get('mezanine-layers-count') + 2
@@ -286,7 +285,7 @@ class PreludeSection(Section):
         self.add_group(senior_juros_group)
 
         for i, taxa in enumerate(self.inputs.get('taxas-juros')['mezanino']):
-            group_id = 'mezanino-juros-{}'.format(i)
+            group_id = f'mezanino-juros-{i}'
             mezanine_juros_group = PreludeGroup(
                 self,
                 self.inputs,

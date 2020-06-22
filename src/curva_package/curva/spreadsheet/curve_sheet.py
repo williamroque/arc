@@ -1,5 +1,6 @@
 from curva.framework.spreadsheet.spreadsheet import Spreadsheet
-from curva.spreadsheet.prelude.prelude_section import PreludeSection
+from curva.spreadsheet.prelude.section import PreludeSection
+from curva.spreadsheet.fluxo_creditos.section import FluxoCreditosSection
 
 
 class CurveSheet(Spreadsheet):
@@ -31,6 +32,12 @@ class CurveSheet(Spreadsheet):
                 'y_offset': -10
             }
         )
+
+        fluxo_creditos_section = FluxoCreditosSection(
+            self,
+            self.inputs
+        )
+        self.add_section(fluxo_creditos_section)
 
 
 """

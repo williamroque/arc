@@ -84,7 +84,7 @@ class PreludeGroup(Group):
         cell = Cell(
             self,
             self.inputs,
-            'body_{}'.format(offset),
+            f'body_{offset}',
             content,
             cell_format,
             self.column_width,
@@ -95,7 +95,7 @@ class PreludeGroup(Group):
     def query(self, row):
         if len(self.cells) > 1:
             row = min(row, len(self.cells) - 2)
-            cell_id = 'body_{}'.format(row)
+            cell_id = f'body_{row}'
             return next(cell for cell in self.cells if cell.id == cell_id)
         return None
 

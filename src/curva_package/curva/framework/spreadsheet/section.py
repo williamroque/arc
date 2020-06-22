@@ -1,5 +1,5 @@
 class Section():
-    def __init__(self, parent_sheet, inputs, section_id, margin, default_offset, has_border):
+    def __init__(self, parent_sheet, inputs, section_id, margin, default_offset):
         self.parent_sheet = parent_sheet
         self.inputs = inputs
 

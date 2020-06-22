@@ -6,17 +6,13 @@ stylesheet = {
         'font_name': 'arial',
         'font_size': 10,
         'align': 'center',
-        'valign': 'vcenter',
-        'top': 1,
-        'left': 1,
-        'right': 1
+        'valign': 'vcenter'
     },
 
-    'n_index': {
+    'index': {
         'font_name': 'arial',
         'font_size': 10,
-        'align': 'center',
-        'left': 1
+        'align': 'center'
     },
 
     'fluxo': {
@@ -26,8 +22,7 @@ stylesheet = {
     },
 
     'date': {
-        'align': 'left',
-        'right': 1
+        'align': 'left'
     },
 
     'tranche_header_col': {
@@ -37,12 +32,11 @@ stylesheet = {
         'font_name': 'arial'
     },
 
-    'east_tranche_header_col': {
+    'tranche_header_col': {
         'bold': True,
         'align': 'center',
         'font_size': 10,
-        'font_name': 'arial',
-        'right': 1
+        'font_name': 'arial'
     },
 
     'quantity': {
@@ -55,7 +49,22 @@ stylesheet = {
         'font_name': 'arial',
         'font_size': 10,
         'align': 'center',
-        'right': 1,
         'num_format': '0.0000%'
+    },
+
+    'n': {
+        'top': 1
+    },
+
+    'e': {
+        'right': 1
+    },
+
+    's': {
+        'bottom': 1
+    },
+
+    'w': {
+        'left': 1
     }
 }
