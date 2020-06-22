@@ -26,7 +26,7 @@ class Flux():
             )].iloc[-1]
 
             for date, value in dict(parsed_df).items():
-                if time.strptime(k, '%b/%Y') >= starting_date:
+                if time.strptime(date, '%b/%Y') >= starting_date:
                     if date in self.flux_total:
                         self.flux_total[date] += value
                     else:
