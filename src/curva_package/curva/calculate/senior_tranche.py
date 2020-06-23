@@ -3,21 +3,21 @@ from curva.framework.tranche import *
 from functools import reduce
 
 
-def carencia_phase(self, i, F_i, tranche_list, tranche_i):
+def carencia_phase(self, F_i, tranche_list, tranche_i):
     if self.i < self.c_period:
         juros = self.saldo * self.taxa_juros
         pmt = 0
         amort = 0
         saldo = self.saldo + juros - pmt
 
-        formulae = {
-            'juros': '{prev_saldo}*{taxa_juros}',
-            'pmt': '0',
-            'amort': '0',
-            'saldo': '{prev_saldo}+{juros}-{pmt}'
-        }
-
-        row = TrancheRow(formulae, pmt, amort, juros, saldo)
+        row = self.create_row()
+        row.fill('n', None, 'default')
+        row.fill('data', None, 'default')
+        row.fill('saldo', saldo, 'default')
+        row.fill('juros', juros, 'default')
+        row.fill('amort', amort, 'carencia')
+        row.fill('pmt', pmt, 'carencia')
+        row.fill('amort_perc', None, 'default')
         self.queue = row
 
         return False
@@ -26,39 +26,43 @@ def carencia_phase(self, i, F_i, tranche_list, tranche_i):
     return True
 
 
-def main_phase(self, i, F_i, tranche_list, tranche_i):
-    row_sum = reduce(lambda acc, tranche: acc + tranche.queue.pmt, tranche_list[:-1], 0)
+def main_phase(self, F_i, tranche_list, tranche_i):
+    other_tranches = tranche_list[:-1]
+
+    row_sum = 0
+    for tranche in other_tranches:
+        row_sum += tranche.queue.get_value('pmt')
 
     juros = self.saldo * self.taxa_juros
     pmt = F_i * self.pmt_proper - row_sum
     amort = pmt - juros
     saldo = self.saldo + juros - pmt
 
-    formulae = {
-        'juros': '{prev_saldo}*{taxa_juros}',
-        'pmt': '{F_i}*{pmt_proper}-{row_sum}',
-        'amort': '{pmt}-{juros}',
-        'saldo': '{prev_saldo}+{juros}-{pmt}'
-    }
-
-    row = TrancheRow(formulae, pmt, amort, juros, saldo)
+    row = self.create_row()
+    row.fill('n', None, 'default')
+    row.fill('data', None, 'default')
+    row.fill('saldo', saldo, 'default')
+    row.fill('juros', juros, 'default')
+    row.fill('amort', amort, 'main')
+    row.fill('pmt', pmt, 'main')
+    row.fill('amort_perc', None, 'default')
     self.queue = row
 
 
-def final_phase(self, i, F_i, tranche_list, tranche_i):
+def final_phase(self, F_i, tranche_list, tranche_i):
     juros = self.saldo * self.taxa_juros
     amort = self.saldo
     pmt = juros + amort
     saldo = self.saldo + juros - pmt
 
-    formulae = {
-        'juros': '{prev_saldo}*{taxa_juros}',
-        'pmt': '{juros}+{amort}',
-        'amort': '{prev_saldo}',
-        'saldo': '{prev_saldo}+{juros}-{pmt}'
-    }
-
-    row = TrancheRow(formulae, pmt, amort, juros, saldo)
+    row = self.create_row()
+    row.fill('n', None, 'default')
+    row.fill('data', None, 'default')
+    row.fill('saldo', saldo, 'default')
+    row.fill('juros', juros, 'default')
+    row.fill('amort', amort, 'final')
+    row.fill('pmt', pmt, 'final')
+    row.fill('amort_perc', None, 'default')
     self.queue = row
 
     self.next_phase()
@@ -68,9 +72,42 @@ class SeniorTranche(Tranche):
     def __init__(self, inputs):
         super().__init__(inputs, inputs.get('taxas-juros')['sen'], inputs.get('razoes')['sen'])
 
-        self.title = 'Sênior'
-        self.id = 'sen'
+        self.title = 'Tranche Sênior'
 
         self.phase_list = [
             carencia_phase, main_phase, final_phase
         ]
+
+    def create_row(self):
+        row = TrancheRow()
+        row.add_column('n', 'N', 6,
+            {'default': '{i}'}
+        )
+        row.add_column('data', 'Data', 8,
+            {'default': '{data}'}
+        )
+        row.add_column('saldo', 'Saldo Devedor', 13,
+            {'default': '{prev_saldo}*{taxa_juros}'}
+        )
+        row.add_column('juros', 'Juros', 12,
+            {'default': '{prev_saldo}*{taxa_juros}'}
+        )
+        row.add_column('amort', 'Amortiz', 12,
+            {
+                'carencia': '0',
+                'main': '{pmt}-{juros}',
+                'final': '{prev_saldo}'
+            }
+        )
+        row.add_column('pmt', 'PMT', 12,
+            {
+                'carencia': '0',
+                'main': '{F_i}*{pmt_proper}-{row_sum}',
+                'final': '{juros}+{amort}'
+            }
+        )
+        row.add_column('amort_perc', '% AM', 10,
+            {'default': '{amort}/{prev_saldo}'}
+        )
+
+        return row

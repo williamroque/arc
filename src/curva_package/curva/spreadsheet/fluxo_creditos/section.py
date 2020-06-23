@@ -1,9 +1,9 @@
 from curva.framework.spreadsheet.section import Section
-from curva.spreadsheet.header_group import HeaderGroup
-from curva.spreadsheet.empty_group import EmptyGroup
-from curva.spreadsheet.fluxo_creditos.index_group import IndexGroup
+from curva.spreadsheet.groups.header_group import HeaderGroup
+from curva.spreadsheet.groups.empty_group import EmptyGroup
+from curva.spreadsheet.groups.index_group import IndexGroup
+from curva.spreadsheet.groups.date_group import DateGroup
 from curva.spreadsheet.fluxo_creditos.value_group import ValueGroup
-from curva.spreadsheet.fluxo_creditos.date_group import DateGroup
 
 
 class FluxoCreditosSection(Section):
@@ -12,7 +12,7 @@ class FluxoCreditosSection(Section):
             parent_sheet,
             inputs,
             'fluxo-creditos-section',
-            [0, 1],
+            [0, 2],
             [2, 1]
         )
 
@@ -31,7 +31,9 @@ class FluxoCreditosSection(Section):
 
         index_group = IndexGroup(
             self,
-            self.inputs
+            self.inputs,
+            len(self.inputs.get('flux-months')),
+            ['w']
         )
         self.add_group(index_group)
 
@@ -43,6 +45,8 @@ class FluxoCreditosSection(Section):
 
         date_group = DateGroup(
             self,
-            self.inputs
+            self.inputs,
+            len(self.inputs.get('flux-months')),
+            ['e']
         )
         self.add_group(date_group)

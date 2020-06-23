@@ -1,6 +1,7 @@
 from curva.framework.spreadsheet.spreadsheet import Spreadsheet
 from curva.spreadsheet.prelude.section import PreludeSection
 from curva.spreadsheet.fluxo_creditos.section import FluxoCreditosSection
+from curva.spreadsheet.tranches.section import TrancheSection
 
 
 class CurveSheet(Spreadsheet):
@@ -38,6 +39,14 @@ class CurveSheet(Spreadsheet):
             self.inputs
         )
         self.add_section(fluxo_creditos_section)
+
+        subordinate_tranche_section = TrancheSection(
+            self,
+            self.inputs,
+            'subordinado-section',
+            self.inputs.get('tranche-list')[0]
+        )
+        self.add_section(subordinate_tranche_section)
 
 
 """

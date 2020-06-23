@@ -16,6 +16,9 @@ class Tranche():
 
         self.i = 0
 
+    def create_row(self):
+        raise NotImplementedError
+
     def next_phase(self):
         self.phase_list = self.phase_list[1:]
 
@@ -33,20 +36,37 @@ class Tranche():
             return True
         return False
 
-    def calculate(self, i, F_i, tranche_list, tranche_i):
+    def calculate(self, F_i, tranche_list, tranche_i):
         if len(self.phase_list):
-            repeats_calculation = self.phase_list[0](self, i, F_i, tranche_list, tranche_i)
+            repeats_calculation = self.phase_list[0](self, F_i, tranche_list, tranche_i)
             if repeats_calculation:
-                self.phase_list[0](self, i, F_i, tranche_list, tranche_i)
+                self.phase_list[0](self, F_i, tranche_list, tranche_i)
         else:
             self.queue = None
 
 
 class TrancheRow():
-    def __init__(self, formulae, pmt, amort, juros, saldo, despesas=None):
-        self.formulae = formulae
-        self.pmt = pmt
-        self.amort = amort
-        self.juros = juros
-        self.saldo = saldo
-        self.despesas = despesas
+    def __init__(self):
+        self.columns = {}
+
+    def add_column(self, column_id, title, column_width, formulae):
+        self.columns[column_id] = {
+            'title': title,
+            'column_width': column_width,
+            'formulae': formulae,
+        }
+
+    def fill(self, column_id, value, formula):
+        self.columns[column_id]['value'] = value
+
+        formulae = self.columns[column_id]['formulae']
+        self.columns[column_id]['formula'] = formulae[formula]
+
+    def get_columns(self):
+        return self.columns
+
+    def get_value(self, column_id):
+        return self.columns[column_id]['value']
+
+    def get_values(self):
+        return [self.get_value(col) for col in self.columns]

@@ -92,7 +92,10 @@ def main():
     for tranche in sess.tranche_list:
         print('\n', tranche.title)
         for i, row in enumerate(tranche.row_list):
-            print(i + 1, row.saldo, row.juros, row.amort, row.pmt)
+            print(i + 1, end=' ')
+            for value in row.get_values():
+                print(value, end=' ')
+            print()
 
     print('--- END ---\n')
 

@@ -1,6 +1,6 @@
 from curva.framework.spreadsheet.section import Section
+from curva.spreadsheet.groups.empty_group import EmptyGroup
 from curva.spreadsheet.prelude.group import PreludeGroup
-from curva.spreadsheet.empty_group import EmptyGroup
 
 import copy
 
