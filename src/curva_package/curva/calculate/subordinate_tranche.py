@@ -1,8 +1,23 @@
 from curva.framework.tranche import *
 
 
+def presentation_phase(self, F_i, tranche_list, tranche_i):
+    row = self.create_row()
+    row.fill('n', None, 'default')
+    row.fill('data', None, 'default')
+    row.fill('saldo', self.saldo, 'presentation')
+    row.fill('despesas', None, 'empty')
+    row.fill('juros', None, 'empty')
+    row.fill('amort', None, 'empty')
+    row.fill('pmt', None, 'empty')
+    row.fill('amort_perc', None, 'empty')
+    self.queue = row
+
+    self.next_phase()
+
+
 def carencia_phase(self, F_i, tranche_list, tranche_i):
-    if self.i < self.c_period:
+    if self.i < self.c_period + 1:
         juros = self.saldo * self.taxa_juros
         pmt = 0
         amort = 0
@@ -105,49 +120,71 @@ def final_phase(self, F_i, tranche_list, tranche_i):
 
 class SubordinateTranche(Tranche):
     def __init__(self, inputs):
-        super().__init__(inputs, inputs.get('taxas-juros')['sub'], inputs.get('razoes')['sub'])
+        super().__init__(inputs, inputs.get('taxas-juros')['sub'], inputs.get('razoes')['sub'], 'subordinado')
 
         self.title = 'Tranche Subordinado'
 
         self.phase_list = [
-            carencia_phase, dependent_phase, transition_phase, main_phase, final_phase
+            presentation_phase, carencia_phase, dependent_phase, transition_phase, main_phase, final_phase
         ]
 
     def create_row(self):
         row = TrancheRow()
         row.add_column('n', 'N', 6,
-            {'default': '{i}'}
+            {'default': '={i}'},
+            set(['index'])
         )
         row.add_column('data', 'Data', 8,
-            {'default': '{data}'}
+            {'default': '{data}'},
+            set(['date'])
         )
         row.add_column('saldo', 'Saldo Devedor', 13,
-            {'default': '{prev_saldo}+{despesas}+{juros}-{pmt}'}
+            {
+                'presentation': '={original_saldo}',
+                'default': '={prev_saldo}+{despesas}+{juros}-{pmt}'
+            },
+            set(['tranche_quantity'])
         )
         row.add_column('despesas', 'Despesas', 10,
-            {'default': f'={self.despesas}'}
+            {
+                'empty': '',
+                'default': f'={self.despesas}'
+            },
+            set(['tranche_quantity'])
         )
         row.add_column('juros', 'Juros', 12,
-            {'default': '{prev_saldo}*{taxa_juros}'}
+            {
+                'empty': '',
+                'default': '={prev_saldo}*{taxa_juros}'
+            },
+            set(['tranche_quantity'])
         )
         row.add_column('amort', 'Amortiz', 12,
             {
-                'carencia': '0',
-                'main': '{pmt}-{juros}-{despesas}',
-                'final': '{prev_saldo}'
-            }
+                'empty': '',
+                'carencia': '=0',
+                'main': '={pmt}-{juros}-{despesas}',
+                'final': '={prev_saldo}'
+            },
+            set(['tranche_quantity'])
         )
         row.add_column('pmt', 'PMT', 12,
             {
-                'carencia': '0',
-                'dependent': '{juros}+{despesas}',
-                'transition': '{F_i}*{pmt_proper}-{pmt_next}',
-                'main': '{F_i}*{pmt_proper}',
-                'final': '{despesas}+{juros}+{amort}'
-            }
+                'empty': '',
+                'carencia': '=0',
+                'dependent': '={juros}+{despesas}',
+                'transition': '={F_i}*{pmt_proper}-{pmt_next}',
+                'main': '={F_i}*{pmt_proper}',
+                'final': '={despesas}+{juros}+{amort}'
+            },
+            set(['tranche_quantity'])
         )
         row.add_column('amort_perc', '% AM', 10,
-            {'default': '{amort}/{prev_saldo}'}
+            {
+                'empty': '',
+                'default': '={amort}/{prev_saldo}'
+            },
+            set(['tranche_percentage'])
         )
 
         return row

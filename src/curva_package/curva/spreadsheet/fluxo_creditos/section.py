@@ -1,8 +1,8 @@
 from curva.framework.spreadsheet.section import Section
-from curva.spreadsheet.groups.header_group import HeaderGroup
-from curva.spreadsheet.groups.empty_group import EmptyGroup
-from curva.spreadsheet.groups.index_group import IndexGroup
-from curva.spreadsheet.groups.date_group import DateGroup
+from curva.spreadsheet.util.header_group import HeaderGroup
+from curva.spreadsheet.util.empty_group import EmptyGroup
+from curva.spreadsheet.util.index_group import IndexGroup
+from curva.spreadsheet.util.date_group import DateGroup
 from curva.spreadsheet.fluxo_creditos.value_group import ValueGroup
 
 
@@ -11,8 +11,8 @@ class FluxoCreditosSection(Section):
         super().__init__(
             parent_sheet,
             inputs,
-            'fluxo-creditos-section',
-            [0, 2],
+            'fluxo-creditos',
+            [0, 1],
             [2, 1]
         )
 

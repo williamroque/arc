@@ -13,7 +13,7 @@ class ValueGroup(Group):
             cell = Cell(
                 self,
                 self.inputs,
-                f'body_{i}',
+                f'row_{i}',
                 {
                     'text': f'={value}'
                 },

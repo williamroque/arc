@@ -17,7 +17,8 @@ class Session():
             tranche_mez = MezanineTranche(
                 self.inputs,
                 self.inputs.get('taxas-juros')['mezanino'][i],
-                self.inputs.get('razoes')['mezanino'][i]
+                self.inputs.get('razoes')['mezanino'][i],
+                f'mezanino-{i}'
             )
             self.tranche_list.append(tranche_mez)
 
@@ -30,7 +31,7 @@ class Session():
 
     def run(self):
         fluxo_creditos = self.inputs.get('flux-total')
-        for i in range(1, len(fluxo_creditos)):
+        for i in range(len(fluxo_creditos)):
             self.calculate_row(
                 fluxo_creditos[i - 1],
                 self.tranche_list
@@ -63,7 +64,7 @@ class Session():
         collapsed = [0 for _ in self.tranche_list[0].row_list]
 
         for tranche in self.tranche_list:
-            for i, row in enumerate(tranche.row_list):
+            for i, row in enumerate(tranche.row_list[1:]):
                 collapsed[i] += row.get_value('juros') + row.get_value('amort')
 
         c_period = self.inputs.get('c-period')

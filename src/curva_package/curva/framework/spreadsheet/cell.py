@@ -50,8 +50,19 @@ class Cell():
                 path = reference['path']
 
                 target_section = spreadsheet.query(path[0])
+
+                if not target_section:
+                    continue
+
                 target_group = target_section.query(path[1])
+
+                if not target_group:
+                    continue
+
                 target_cell = target_group.query(path[2])
+
+                if not target_cell:
+                    continue
 
                 target_reference = target_cell.get_reference()
 

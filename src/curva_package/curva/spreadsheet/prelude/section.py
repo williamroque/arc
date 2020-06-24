@@ -1,5 +1,5 @@
 from curva.framework.spreadsheet.section import Section
-from curva.spreadsheet.groups.empty_group import EmptyGroup
+from curva.spreadsheet.util.empty_group import EmptyGroup
 from curva.spreadsheet.prelude.group import PreludeGroup
 
 import copy
@@ -10,7 +10,7 @@ class PreludeSection(Section):
         super().__init__(
             parent_sheet,
             inputs,
-            'prelude-section',
+            'prelude',
             [0, 1],
             [11, 1]
         )
@@ -166,11 +166,11 @@ class PreludeSection(Section):
                     'repeat': layers_count,
                     'references': [
                         {
-                            'path': ['prelude-section', 'pu-liquidacao'],
+                            'path': ['prelude', 'pu-liquidacao'],
                             'static': True
                         },
                         {
-                            'path': ['prelude-section', 'montante'],
+                            'path': ['prelude', 'montante'],
                             'static': True
                         }
                     ]
@@ -191,11 +191,11 @@ class PreludeSection(Section):
                     'repeat': layers_count,
                     'references': [
                         {
-                            'path': ['prelude-section', 'valor-total'],
+                            'path': ['prelude', 'valor-total'],
                             'static': True
                         },
                         {
-                            'path': ['prelude-section', 'razoes'],
+                            'path': ['prelude', 'razoes'],
                             'static': True
                         }
                     ]
@@ -272,7 +272,7 @@ class PreludeSection(Section):
                     'text': '=(@0+1)^12-1',
                     'references': [
                         {
-                            'path': ['prelude-section', 'senior-juros', 0],
+                            'path': ['prelude', 'senior-juros', 0],
                             'static': True
                         }
                     ],
@@ -285,7 +285,7 @@ class PreludeSection(Section):
         self.add_group(senior_juros_group)
 
         for i, taxa in enumerate(self.inputs.get('taxas-juros')['mezanino']):
-            group_id = f'mezanino-juros-{i}'
+            group_id = f'mezanino-{i}-juros'
             mezanine_juros_group = PreludeGroup(
                 self,
                 self.inputs,
@@ -298,7 +298,7 @@ class PreludeSection(Section):
                         'text': '=(@0+1)^12-1',
                         'references': [
                             {
-                                'path': ['prelude-section', group_id, 0],
+                                'path': ['prelude', group_id, 0],
                                 'static': True
                             }
                         ],
@@ -322,7 +322,7 @@ class PreludeSection(Section):
                     'text': '=(@0+1)^12-1',
                     'references': [
                         {
-                            'path': ['prelude-section', 'subordinado-juros', 0],
+                            'path': ['prelude', 'subordinado-juros', 0],
                             'static': True
                         }
                     ],

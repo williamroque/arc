@@ -1,5 +1,7 @@
 class Tranche():
-    def __init__(self, inputs, taxa_juros, razao):
+    def __init__(self, inputs, taxa_juros, razao, tranche_id):
+        self.id = tranche_id
+
         self.saldo_original = inputs.get('total') * razao
 
         self.saldo = self.saldo_original
@@ -49,11 +51,12 @@ class TrancheRow():
     def __init__(self):
         self.columns = {}
 
-    def add_column(self, column_id, title, column_width, formulae):
+    def add_column(self, column_id, title, column_width, formulae, style):
         self.columns[column_id] = {
             'title': title,
             'column_width': column_width,
             'formulae': formulae,
+            'style': style
         }
 
     def fill(self, column_id, value, formula):
