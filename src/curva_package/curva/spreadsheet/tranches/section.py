@@ -56,17 +56,18 @@ class TrancheSection(Section):
                 substitution_map = {
                     'i': row_i + 1,
                     'data': self.inputs.get('flux-months')[row_i],
-                    'original_saldo': tranche.saldo_original,
-                    'prev_saldo': '@0',
-                    'despesas': '@1',
-                    'juros': '@2',
-                    'amort': '@3',
-                    'pmt': '@4',
-                    'taxa_juros': '@5',
-                    'F_i': '@6',
-                    'pmt_proper': '@7',
-                    'pmt_next': '@8',
-                    'row_sum': '-'.join([f'@{i + 9}' for i in range(len(tranche_list[:-1]))])
+                    'valor_total': '@0',
+                    'razao': '@1',
+                    'prev_saldo': '@2',
+                    'despesas': '@3',
+                    'juros': '@4',
+                    'amort': '@5',
+                    'pmt': '@6',
+                    'taxa_juros': '@7',
+                    'F_i': '@8',
+                    'pmt_proper': '@9',
+                    'pmt_next': '@10',
+                    'row_sum': '-'.join([f'@{i + 11}' for i in range(len(tranche_list[:-1]))])
                 }
 
                 row_cell = Cell(
@@ -76,6 +77,14 @@ class TrancheSection(Section):
                     {
                         'text': column['formula'].format(**substitution_map),
                         'references': [
+                            {
+                                'path': ['prelude', 'valor-total', 0],
+                                'static': True
+                            },
+                            {
+                                'path': ['prelude', 'razoes', len(tranche_list) - tranche_i - 1],
+                                'static': True
+                            },
                             {
                                 'path': [self.id, 'saldo', f'row_{row_i - 1}'],
                                 'static': False

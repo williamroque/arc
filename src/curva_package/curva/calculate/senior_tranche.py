@@ -104,7 +104,7 @@ class SeniorTranche(Tranche):
         )
         row.add_column('saldo', 'Saldo Devedor', 13,
             {
-                'presentation': '={original_saldo}',
+                'presentation': '={valor_total}*{razao}',
                 'default': '={prev_saldo}+{juros}-{pmt}'
             },
             set(['tranche_quantity'])

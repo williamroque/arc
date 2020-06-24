@@ -75,8 +75,6 @@ class Cell():
                     target_reference
                 )
 
-        # text = text.format(**self.inputs)
-
         if self.column_width:
             sheet.set_column(
                 self.horizontal_offset,

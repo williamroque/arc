@@ -7,7 +7,7 @@ class DateGroup(Group):
     def __init__(self, parent_section, inputs, length, class_list):
         super().__init__(parent_section, inputs, 'date', [0, 0])
         
-        for i, date in enumerate(inputs.get('flux-months')):
+        for i, date in enumerate(inputs.get('flux-months')[:length]):
             self.add_row()
 
             cell = Cell(
@@ -22,8 +22,5 @@ class DateGroup(Group):
                 stylesheet
             )
             self.add_cell(cell)
-
-            if i >= length:
-                break
 
         self.inject_style(lambda i: 's' if i == -1 else None, -1)
