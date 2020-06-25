@@ -15,6 +15,11 @@ stylesheet = {
         'align': 'center'
     },
 
+    'null': {
+        'num_format': '-',
+        'align': 'left'
+    },
+
     'fluxo': {
         'bold': True,
         'num_format': '#,##0.00',

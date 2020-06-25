@@ -44,7 +44,9 @@ class Cell():
         text = self.content['text']
 
         if 'references' in self.content:
-            for i, reference in enumerate(self.content['references']):
+            for i, reference in enumerate(self.content['references'][::-1]):
+                i = len(self.content['references']) - i - 1
+
                 spreadsheet = self.parent_group.parent_section.parent_sheet
 
                 path = reference['path']

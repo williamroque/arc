@@ -212,14 +212,14 @@ class PreludeSection(Section):
             'Prazo',
             [
                 {
-                    'text': '={}'.format(self.inputs.get('sen-length'))
-                },
-                {
-                    'text': '={item}',
-                    'repeat': self.inputs.get('mez-lengths')
-                },
-                {
-                    'text': '={}'.format(self.inputs.get('sub-length'))
+                    'text': '=@{index}',
+                    'repeat': self.inputs.get('tranche-list'),
+                    'references': [
+                        {
+                            'path': [tranche.id, 'n', f'row_{len(tranche.row_list) - 1}'],
+                            'static': True
+                        } for tranche in self.inputs.get('tranche-list')[::-1]
+                    ]
                 }
             ],
             set(['prelude_text']),
@@ -334,9 +334,78 @@ class PreludeSection(Section):
         )
         self.add_group(subordinado_juros_group)
 
-        self.add_group(empty_group)  # IRR -> create fluxo financeiro first
+        tranche_list = self.inputs.get('tranche-list')
+        max_tranche_length = max(
+            [len(tranche.row_list) for tranche in tranche_list]
+        )
+        irr_group = PreludeGroup(
+            self,
+            self.inputs,
+            'TIR',
+            [
+                {
+                    'text': '=IRR(@0:@1)',
+                    'references': [
+                        {
+                            'path': ['fluxo-financeiro', 'value', 'total'],
+                            'static': True
+                        },
+                        {
+                            'path': ['fluxo-financeiro', 'value', f'row_{max_tranche_length - 1}'],
+                            'static': True
+                        }
+                    ]
+                },
+                {
+                    'text': '=(1+@0)^12-1',
+                    'references': [
+                        {
+                            'path': ['prelude', 'irr', 0],
+                            'static': True
+                        }
+                    ]
+                }
+            ],
+            set(['prelude_percentage_2']),
+            'irr'
+        )
+        self.add_group(irr_group)
 
-        self.add_group(empty_group)  # FR 3 PMTs -> create tranches first
+        fr_3_pmts_group = PreludeGroup(
+            self,
+            self.inputs,
+            'FR 3 PMTs',
+            [
+                {
+                    'text': '=SUM(@1:@2)*@0-SUM(@3:@4)',
+                    'references': [
+                        {
+                            'path': ['prelude', 'pmt-proper', 0],
+                            'static': True
+                        },
+                        {
+                            'path': ['fluxo-creditos', 'value', 'row_0'],
+                            'static': True
+                        },
+                        {
+                            'path': ['fluxo-creditos', 'value', 'row_2'],
+                            'static': True
+                        },
+                        {
+                            'path': ['subordinado', 'despesas', 'row_1'],
+                            'static': True
+                        },
+                        {
+                            'path': ['subordinado', 'despesas', 'row_3'],
+                            'static': True
+                        },
+                    ]
+                }
+            ],
+            set(['prelude_currency']),
+            'fr-3-pmts'
+        )
+        self.add_group(fr_3_pmts_group)
 
         fr_previsto_group = PreludeGroup(
             self,

@@ -22,7 +22,7 @@ class ValueGroup(Group):
         for i in range(self.inputs.get('c-period')):
             self.create_cell({
                 'text': '=0'
-            }, f'carencia_{i}')
+            }, f'carencia_{i}', set(['null']))
             row_offset += 1
 
         max_tranche_length = max(
@@ -52,7 +52,7 @@ class ValueGroup(Group):
 
         self.inject_style(lambda i: 's' if i == -1 else None, -1)
 
-    def create_cell(self, content, cell_id):
+    def create_cell(self, content, cell_id, style=set(['fluxo'])):
         self.add_row()
 
         cell = Cell(
@@ -60,7 +60,7 @@ class ValueGroup(Group):
             self.inputs,
             cell_id,
             content,
-            set(['fluxo']),
+            style,
             13,
             stylesheet
         )
