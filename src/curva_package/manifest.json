@@ -116,7 +116,7 @@
                 {
                     "label": "T.A. Emissão",
                     "type": "percentage",
-                    "group": "taxas-juros",
+                    "group": "taxas-juros-anual",
                     "width": 50
                 }
             ],
