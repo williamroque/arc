@@ -102,7 +102,7 @@ class PreludeSection(Section):
                 },
                 {
                     'text': '={item}',
-                    'repeat': self.inputs.get('taxas-juros-anual')['mezanino']
+                    'repeat': self.inputs.get('taxas-juros-anual')['mezanino'] if 'mezanino' in self.inputs.get('taxas-juros-anual') else 0
                 },
                 {
                     'text': '={}'.format(self.inputs.get('taxas-juros-anual')['sub'])
@@ -128,7 +128,7 @@ class PreludeSection(Section):
                 },
                 {
                     'text': '={item}',
-                    'repeat': self.inputs.get('razoes')['mezanino']
+                    'repeat': self.inputs.get('razoes')['mezanino'] if 'mezanino' in self.inputs.get('razoes') else 0
                 },
                 {
                     'text': '={}'.format(self.inputs.get('razoes')['sub'])
@@ -284,31 +284,32 @@ class PreludeSection(Section):
         )
         self.add_group(senior_juros_group)
 
-        for i, taxa in enumerate(self.inputs.get('taxas-juros')['mezanino']):
-            group_id = f'mezanino-{i}-juros'
-            mezanine_juros_group = PreludeGroup(
-                self,
-                self.inputs,
-                'Mezanino',
-                [
-                    {
-                        'text': taxa
-                    },
-                    {
-                        'text': '=(@0+1)^12-1',
-                        'references': [
-                            {
-                                'path': ['prelude', group_id, 0],
-                                'static': True
-                            }
-                        ],
-                        'format': set(['prelude_percentage_2'])
-                    }
-                ],
-                set(['prelude_percentage_4']),
-                group_id
-            )
-            self.add_group(mezanine_juros_group)
+        if 'mezanino' in self.inputs.get('taxas-juros'):
+            for i, taxa in enumerate(self.inputs.get('taxas-juros')['mezanino']):
+                group_id = f'mezanino-{i}-juros'
+                mezanine_juros_group = PreludeGroup(
+                    self,
+                    self.inputs,
+                    'Mezanino',
+                    [
+                        {
+                            'text': taxa
+                        },
+                        {
+                            'text': '=(@0+1)^12-1',
+                            'references': [
+                                {
+                                    'path': ['prelude', group_id, 0],
+                                    'static': True
+                                }
+                            ],
+                            'format': set(['prelude_percentage_2'])
+                        }
+                    ],
+                    set(['prelude_percentage_4']),
+                    group_id
+                )
+                self.add_group(mezanine_juros_group)
 
         subordinado_juros_group = PreludeGroup(
             self,

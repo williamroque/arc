@@ -19,6 +19,8 @@ class Communication {
             const scriptPath = Path.join(Path.appPaths.packages, currentPackage.packageName, 'main.py');
             if (!Path.exists(scriptPath)) {
                 Dialog.showError('Package Error', 'Package contents missing or corrupted.');
+                event.returnValue = 'error';
+
                 return;
             }
 
@@ -26,10 +28,6 @@ class Communication {
             input['appdata-path'] = Path.appPaths.appData;
 
             event.returnValue = await Execute.runScript(scriptPath, input);
-        });
-
-        ipcMain.on('attempt-update', (event, path) => {
-            event.returnValue = Execute.attemptUpdate(path);
         });
     }
 }

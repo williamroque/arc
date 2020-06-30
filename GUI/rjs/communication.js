@@ -13,10 +13,6 @@ class Communication {
         return ipcRenderer.sendSync('run-script', input, currentPackage);
     }
 
-    static requestAttemptUpdate(path) {
-        return ipcRenderer.sendSync('attempt-update', path);
-    }
-
     static addListener(event, callback) {
         ipcRenderer.on(event, callback);
     }

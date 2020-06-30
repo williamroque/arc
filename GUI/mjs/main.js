@@ -66,11 +66,11 @@ const menuTemplate = [
                 label: 'Add Package',
                 accelerator: 'CmdOrCtrl+Shift+P',
                 click: () => {
-                    const package = Execute.requestPackage();
-
-                    if (package === 'success' && mainWindow && !mainWindow.isNull()) {
-                        mainWindow.dispatchWebEvent('update-form-schemata', Path.formSchemata);
-                    }
+                    Execute.requestPackage().then(() => {
+                        if (mainWindow && !mainWindow.isNull()) {
+                            mainWindow.dispatchWebEvent('update-form-schemata', Path.formSchemata);
+                        }
+                    });
                 }
             },
             { type: 'separator' }

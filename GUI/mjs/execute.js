@@ -1,5 +1,6 @@
 const fs = require('fs');
 const rimraf = require('rimraf');
+const unzipper = require('unzipper');
 
 const { spawn } = require('child_process');
 
@@ -50,31 +51,40 @@ class Execute {
     }
 
     static attemptUpdate(packagePath) {
-        // Binary image data has to be "decoded" as latin1 to be included in the package header
-        let [logoImg, packageData] = fs.readFileSync(packagePath).toString('latin1').split('|===|');
-        packageData = JSON.parse(packageData);
-
-        try {
-            const packageTargetPath = Path.join(Path.appPaths.packages, packageData.manifest.packageName);
-            if (fs.existsSync(packageTargetPath)) {
-                rimraf.sync(packageTargetPath);
+        return new Promise((resolve, reject) => {
+            const extractionPath = Path.join(Path.appPaths.temp, 'arc_package');
+            if (Path.exists(extractionPath)) {
+                rimraf.sync(extractionPath);
             }
 
-            fs.mkdirSync(packageTargetPath);
-            packageData.scripts.forEach(script => {
-                fs.writeFileSync(Path.join(Path.appPaths.packages, packageData.manifest.packageName, script.path), script.contents);
+            Path.create(extractionPath);
+            fs.createReadStream(packagePath).pipe(
+                unzipper.Extract({ path: extractionPath })
+            ).on('close', () => {
+                try {
+                    const { packageName } = JSON.parse(
+                        fs.readFileSync(
+                            Path.join(extractionPath, 'dist', 'manifest.json')
+                        )
+                    );
+                            
+                    const targetPath = Path.join(Path.appPaths.appData, 'Packages', packageName);
+
+                    if (Path.exists(targetPath)) {
+                        rimraf.sync(targetPath);
+                    }
+
+                    fs.renameSync(
+                        Path.join(extractionPath, 'dist'),
+                        targetPath
+                    );
+
+                    resolve();
+                } catch (error) {
+                    reject(error);
+                }
             });
-            fs.writeFileSync(
-                Path.join(Path.appPaths.packages, packageData.manifest.packageName, 'manifest.json'),
-                JSON.stringify(packageData.manifest)
-            );
-
-            fs.writeFileSync(Path.appPaths.logo, Buffer.from(logoImg, 'latin1'));
-
-            return 'success';
-        } catch (error) {
-            return error;
-        }
+        });
     }
 
     static requestPackage() {

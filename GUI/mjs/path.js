@@ -11,9 +11,9 @@ class Path {
         const appDataPath = app.getPath('userData');
 
         return {
+            temp: Path.join(appDataPath, 'temp'),
             appData: appDataPath,
-            packages: path.join(appDataPath, 'Packages'),
-            logo: path.join(appDataPath, 'logos-logo.png')
+            packages: path.join(appDataPath, 'Packages')
         };
     }
 
@@ -50,6 +50,10 @@ class Path {
 
         if (!Path.exists(Path.appPaths.packages)) {
             Path.create(Path.appPaths.packages);
+        }
+
+        if (!Path.exists(Path.appPaths.temp)) {
+            Path.create(Path.appPaths.temp);
         }
     }
 }

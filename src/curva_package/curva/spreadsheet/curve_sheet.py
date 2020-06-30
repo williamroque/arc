@@ -5,6 +5,9 @@ from curva.spreadsheet.fluxo_creditos.section import FluxoCreditosSection
 from curva.spreadsheet.tranches.section import TrancheSection
 from curva.spreadsheet.fluxo_financeiro.section import FluxoFinanceiroSection
 
+import importlib.resources
+import curva.assets
+
 
 class CurveSheet(Spreadsheet):
     def __init__(self, inputs):
@@ -25,9 +28,11 @@ class CurveSheet(Spreadsheet):
         )
         self.add_section(prelude_section)
 
+        with importlib.resources.path(curva.assets, 'logo.png') as p:
+            logo_path = str(p)
         self.add_image(
             'F2',
-            '{}/logos-logo.png'.format(self.inputs.get('appdata-path')),
+            logo_path,
             {
                 'x_scale': 0.75,
                 'y_scale': 0.85,
