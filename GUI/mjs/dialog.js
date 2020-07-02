@@ -22,7 +22,8 @@ class Dialog {
     static ask(question) {
         const answer = dialog.showMessageBoxSync({
             message: question,
-            buttons: ['Sim', 'Não']
+            buttons: ['Sim', 'Não'],
+            cancelId: 1
         });
         return answer === 0;
     }

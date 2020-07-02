@@ -1,7 +1,6 @@
 const {
     app,
-    Menu,
-    MenuItem
+    Menu
 } = require('electron');
 
 const Execute = require('./execute');

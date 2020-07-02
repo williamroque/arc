@@ -2,6 +2,12 @@
     "title": "Curva",
     "packageName": "curva",
     "isDefault": true,
+    "requirements": [
+        "XlsxWriter==1.2.2",
+        "xlrd==1.2.0",
+        "numpy==1.17.3",
+        "pandas==0.25.3"
+    ],
     "allowedOutputExtensions": [
         {
             "name": "Excel",

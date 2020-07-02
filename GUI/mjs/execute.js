@@ -9,7 +9,7 @@ const Window = require('./window');
 const Path = require('./path');
 
 class Execute {
-    static runScript(scriptPath, input) {
+    static runScript(args, input, closesOnFinish=false) {
         const errorWindow = new Window({
             width: 820,
             height: 700,
@@ -29,7 +29,7 @@ class Execute {
 
         return new Promise(resolve => {
             progressWindow.addWebListener('did-finish-load', () => {
-                const subprocess = spawn('python3', [scriptPath]);
+                const subprocess = spawn('python3', args);
 
                 subprocess.stdin.write(JSON.stringify(input));
                 subprocess.stdin.end();
@@ -44,6 +44,9 @@ class Execute {
                 });
 
                 subprocess.on('close', () => {
+                    if (closesOnFinish) {
+                        progressWindow.window.close();
+                    }
                     resolve(0);
                 });
             });
@@ -60,9 +63,9 @@ class Execute {
             Path.create(extractionPath);
             fs.createReadStream(packagePath).pipe(
                 unzipper.Extract({ path: extractionPath })
-            ).on('close', () => {
+            ).on('close', async () => {
                 try {
-                    const { packageName } = JSON.parse(
+                    const { packageName, requirements } = JSON.parse(
                         fs.readFileSync(
                             Path.join(extractionPath, 'dist', 'manifest.json')
                         )
@@ -79,6 +82,12 @@ class Execute {
                         targetPath
                     );
 
+                    for (let i = 0; i < requirements.length; i++) {
+                        await Execute.runScript([
+                            '-m', 'pip', 'install', '--disable-pip-version-check', requirements[i]
+                        ], '', true);
+                    }
+                        
                     resolve();
                 } catch (error) {
                     reject(error);
