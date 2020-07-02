@@ -18,6 +18,14 @@ class Dialog {
     static showError(title, content) {
         dialog.showErrorBox(title, content);
     }
+
+    static ask(question) {
+        const answer = dialog.showMessageBoxSync({
+            message: question,
+            buttons: ['Sim', 'Não']
+        });
+        return answer === 0;
+    }
 }
 
 module.exports = Dialog;

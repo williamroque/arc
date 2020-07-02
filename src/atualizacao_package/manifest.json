@@ -1,0 +1,41 @@
+{
+    "title": "Curva Atualização",
+    "packageName": "atualizacao",
+    "isDefault": false,
+    "allowedOutputExtensions": [
+        {
+            "name": "Excel",
+            "extensions": [
+                "xlsx"
+            ]
+        }
+    ],
+    "form": [
+        {
+            "id": "planilha-curva",
+            "label": "Planilha Curva",
+            "type": "file-input",
+            "allowedExtensions": [
+                {
+                    "name": "Excel",
+                    "extensions": [
+                        "xlsx"
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "planilhas-saldo",
+            "label": "Planilhas Saldo",
+            "type": "file-input",
+            "allowedExtensions": [
+                {
+                    "name": "Excel",
+                    "extensions": [
+                        "xlsx"
+                    ]
+                }
+            ]
+        }
+    ]
+}

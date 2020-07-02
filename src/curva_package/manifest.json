@@ -1,7 +1,6 @@
 {
     "title": "Curva",
     "packageName": "curva",
-    "requestsSaldos": true,
     "isDefault": true,
     "allowedOutputExtensions": [
         {

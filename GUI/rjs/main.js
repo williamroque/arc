@@ -6,27 +6,24 @@ let formSchemata = Communication.requestFormSchemata();
 
 let forms = [];
 let currentForm;
-function constructForms() {
-    formSchemata.forEach(schema => {
-        const form = new Form(schema, formContainer);
-        if (schema.isDefault) {
-            currentForm = form;
-        }
 
-        forms.push(form);
-    });
-
-    if (currentForm) {
-        currentForm.render();
+formSchemata.forEach(schema => {
+    const form = new Form(schema, formContainer);
+    if (schema.isDefault) {
+        currentForm = form;
     }
-}
 
-Communication.addListener('update-form-schemata', (_, updatedSchemata) => {
-    formSchemata = updatedSchemata;
-    constructForms();
+    forms.push(form);
 });
 
-constructForms();
+if (currentForm) {
+    currentForm.render();
+}
+
+Communication.addListener('update-form', (_, formID) => {
+    currentForm = forms.find(form => form.schema.packageName === formID);
+    currentForm.render();
+});
 
 document.querySelector('#close').addEventListener('click', () => {
     remote.getCurrentWindow().close();

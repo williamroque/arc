@@ -1,6 +1,7 @@
 const {
     app,
-    Menu
+    Menu,
+    MenuItem
 } = require('electron');
 
 const Execute = require('./execute');
@@ -8,6 +9,7 @@ const Execute = require('./execute');
 const Path = require('./path');
 const Window = require('./window');
 const Communication = require('./communication');
+const Dialog = require('./dialog');
 
 const isMac = process.platform === 'darwin';
 
@@ -67,13 +69,25 @@ const menuTemplate = [
                 accelerator: 'CmdOrCtrl+Shift+P',
                 click: () => {
                     Execute.requestPackage().then(() => {
-                        if (mainWindow && !mainWindow.isNull()) {
-                            mainWindow.dispatchWebEvent('update-form-schemata', Path.formSchemata);
+                        if (Dialog.ask('Reiniciar?')) {
+                            app.relaunch();
+                            app.exit();
                         }
                     });
                 }
             },
-            { type: 'separator' }
+            { type: 'separator' },
+            ...Path.formSchemata.map(form => {
+                return {
+                    label: form.title,
+                    type: 'radio',
+                    checked: form.isDefault,
+                    id: form.packageName,
+                    click: item => {
+                        mainWindow.dispatchWebEvent('update-form', item.id);
+                    }
+                }
+            })
         ]
     },
     { role: 'windowMenu' },
