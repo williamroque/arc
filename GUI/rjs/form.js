@@ -1,5 +1,12 @@
-class Form {
+class Form extends ElementController {
     constructor(schema, container) {
+        super(
+            'DIV',
+            {
+                classList: new Set(['form'])
+            }
+        );
+
         this.schema = schema;
         this.container = container;
 
@@ -9,13 +16,6 @@ class Form {
     }
 
     seedTree() {
-        this.DOMController = new ElementController(
-            'DIV',
-            {
-                classList: new Set(['form'])
-            }
-        );
-
         this.schema.form.forEach(rowSchema => {
             const rowController = new ElementController(
                 'DIV',
@@ -31,7 +31,10 @@ class Form {
                         cellSchema
                     );
 
-                    rowController.addChild(inputCell.DOMController);
+                    rowController.addChild(
+                        inputCell,
+                        (cellSchema.group ? `${cellSchema.group}=` : '') + cellSchema.id
+                    );
                     inputCell.updateFormValue('');
                 });
             } else if (rowSchema.type === 'list') {
@@ -40,16 +43,17 @@ class Form {
                     rowSchema
                 );
 
-                rowController.addChild(list.DOMController);
+                rowController.addChild(list, rowSchema.id);
             } else if (rowSchema.type === 'file-input') {
                 const fileInput = new FileInput(
                     this.valuesContainer,
-                    rowSchema
+                    rowSchema,
+                    this
                 );
-                rowController.addChild(fileInput.DOMController);
+                rowController.addChild(fileInput, rowSchema.id);
             }
 
-            this.DOMController.addChild(rowController);
+            this.addChild(rowController);
         });
     }
 
@@ -60,8 +64,8 @@ class Form {
         }
     }
 
-    render() {
+    activate() {
         this.clearContainer();
-        this.container.appendChild(this.DOMController.element);
+        this.container.appendChild(this.element);
     }
 }

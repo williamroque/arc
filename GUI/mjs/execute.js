@@ -9,7 +9,7 @@ const Window = require('./window');
 const Path = require('./path');
 
 class Execute {
-    static runScript(args, input, closesOnFinish=false) {
+    static runScript(args, input, closesOnFinish = false) {
         const errorWindow = new Window({
             width: 820,
             height: 700,
@@ -70,7 +70,7 @@ class Execute {
                             Path.join(extractionPath, 'dist', 'manifest.json')
                         )
                     );
-                            
+
                     const targetPath = Path.join(Path.appPaths.appData, 'Packages', packageName);
 
                     if (Path.exists(targetPath)) {
@@ -87,7 +87,7 @@ class Execute {
                             '-m', 'pip', 'install', '--disable-pip-version-check', requirements[i]
                         ], '', true);
                     }
-                        
+
                     resolve();
                 } catch (error) {
                     reject(error);

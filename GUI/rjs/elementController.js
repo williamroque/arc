@@ -33,6 +33,7 @@ class ElementController {
             id = `unique-${this.childID++}`;
         }
         node.nodeID = id;
+
         this.DOMTree.children[id] = node;
 
         this.render();
@@ -50,8 +51,13 @@ class ElementController {
         this.render();
     }
 
-    getChild(id) {
-        return this.DOMTree.children[id];
+    query(id) {
+        if (id in this.DOMTree.children) {
+            return this.DOMTree.children[id];
+        }
+
+        const target = Object.values(this.DOMTree.children).find(child => child.query(id));
+        return target ? target.query(id) : undefined;
     }
 
     addEventListener(event, callback, context) {
@@ -80,9 +86,9 @@ class ElementController {
             });
         }
 
-        Object.values(this.DOMTree.children).forEach(childNodeController => {
-            childNodeController.render();
-            this.element.appendChild(childNodeController.element);
+        Object.values(this.DOMTree.children).forEach(childNode => {
+            childNode.render();
+            this.element.appendChild(childNode.element);
         });
     }
 

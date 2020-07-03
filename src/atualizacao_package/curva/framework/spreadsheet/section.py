@@ -18,7 +18,8 @@ class Section():
         self.structure[-1].append(group)
 
     def query(self, group_id):
-        search_generator = (group for group in self.groups if group.id == group_id)
+        search_generator = (
+            group for group in self.groups if group.id == group_id)
         try:
             return next(search_generator)
         except StopIteration:
@@ -35,12 +36,13 @@ class Section():
             group_horizontal_offset = self.horizontal_offset
 
             for group in row:
-                group.set_bounds(group_vertical_offset, group_horizontal_offset)
+                group.set_bounds(group_vertical_offset,
+                                 group_horizontal_offset)
 
                 height, width = group.get_dimensions()
                 max_row_height = max(max_row_height, height)
                 group_horizontal_offset += width
-            
+
             group_vertical_offset += max_row_height
 
     def get_dimensions(self):

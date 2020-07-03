@@ -29,7 +29,7 @@ def carencia_phase(self, F_i, tranche_list, tranche_i):
         row.fill('juros', juros, 'default')
         row.fill('amort', amort, 'carencia')
         row.fill('pmt', pmt, 'carencia')
-        row.fill('amort_perc', None, 'default')
+        row.fill('amort_perc', amort/self.saldo, 'default')
         self.queue = row
 
         return False
@@ -51,7 +51,7 @@ def dependent_phase(self, F_i, tranche_list, tranche_i):
     row.fill('juros', juros, 'default')
     row.fill('amort', amort, 'main')
     row.fill('pmt', pmt, 'dependent')
-    row.fill('amort_perc', None, 'default')
+    row.fill('amort_perc', amort/self.saldo, 'default')
     self.queue = row
 
 
@@ -70,7 +70,7 @@ def transition_phase(self, F_i, tranche_list, tranche_i):
     row.fill('juros', juros, 'default')
     row.fill('amort', amort, 'main')
     row.fill('pmt', pmt, 'transition')
-    row.fill('amort_perc', None, 'default')
+    row.fill('amort_perc', amort/self.saldo, 'default')
     self.queue = row
 
     self.next_phase()
@@ -89,7 +89,7 @@ def main_phase(self, F_i, tranche_list, tranche_i):
     row.fill('juros', juros, 'default')
     row.fill('amort', amort, 'main')
     row.fill('pmt', pmt, 'main')
-    row.fill('amort_perc', None, 'default')
+    row.fill('amort_perc', amort/self.saldo, 'default')
     self.queue = row
 
 
@@ -106,7 +106,7 @@ def final_phase(self, F_i, tranche_list, tranche_i):
     row.fill('juros', juros, 'default')
     row.fill('amort', amort, 'final')
     row.fill('pmt', pmt, 'final')
-    row.fill('amort_perc', None, 'default')
+    row.fill('amort_perc', amort/self.saldo, 'default')
     self.queue = row
 
     self.next_phase()

@@ -18,17 +18,44 @@
     ],
     "form": [
         {
-            "id": "planilha-curva",
-            "label": "Planilha Curva",
-            "type": "file-input",
-            "allowedExtensions": [
+            "id": "atual",
+            "label": "Adicionar Valores",
+            "type": "list",
+            "inputs": [
                 {
-                    "name": "Excel",
-                    "extensions": [
-                        "xlsx"
-                    ]
+                    "label": "Juros",
+                    "type": "float",
+                    "group": "atual-juros",
+                    "width": 33.3333
+                },
+                {
+                    "label": "Amortização",
+                    "type": "float",
+                    "group": "atual-amort",
+                    "width": 33.3333
+                },
+                {
+                    "label": "Amex",
+                    "type": "float",
+                    "group": "atual-amex",
+                    "width": 33.3333
                 }
             ]
+        },
+        {
+            "id": "arquivo-curva",
+            "label": "Arquivo Curva",
+            "type": "file-input",
+            "max": 1,
+            "allowedExtensions": [
+                {
+                    "name": "Curve",
+                    "extensions": [
+                        "curve"
+                    ]
+                }
+            ],
+            "readToList": "atual"
         },
         {
             "id": "planilhas-saldo",

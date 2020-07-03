@@ -3,7 +3,7 @@ import xlsxwriter
 
 class Spreadsheet():
     def __init__(self, inputs, props, padding):
-        self.inputs = inputs 
+        self.inputs = inputs
 
         self.sections = []
 
@@ -33,7 +33,8 @@ class Spreadsheet():
         self.sections.append(section)
 
     def query(self, section_id):
-        search_generator = (section for section in self.sections if section.id == section_id)
+        search_generator = (
+            section for section in self.sections if section.id == section_id)
         try:
             return next(search_generator)
         except StopIteration:

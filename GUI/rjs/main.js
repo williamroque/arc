@@ -17,12 +17,12 @@ formSchemata.forEach(schema => {
 });
 
 if (currentForm) {
-    currentForm.render();
+    currentForm.activate();
 }
 
 Communication.addListener('update-form', (_, formID) => {
     currentForm = forms.find(form => form.schema.packageName === formID);
-    currentForm.render();
+    currentForm.activate();
 });
 
 document.querySelector('#close').addEventListener('click', () => {

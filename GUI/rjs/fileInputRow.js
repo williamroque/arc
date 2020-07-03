@@ -1,5 +1,12 @@
-class FileInputRow {
+class FileInputRow extends ElementController {
     constructor(valuesContainer, deleteCallback, path, inputID) {
+        super(
+            'DIV',
+            {
+                classList: new Set(['file-input-path-container'])
+            }
+        );
+
         this.valuesContainer = valuesContainer;
         this.deleteCallback = deleteCallback;
 
@@ -10,7 +17,7 @@ class FileInputRow {
     }
 
     getIndex() {
-        let child = this.DOMController.element, nodeIndex = 0;
+        let child = this.element, nodeIndex = 0;
         while ((child = child.previousSibling) !== null) {
             nodeIndex++;
         }
@@ -19,13 +26,6 @@ class FileInputRow {
     }
 
     seedTree() {
-        this.DOMController = new ElementController(
-            'DIV',
-            {
-                classList: new Set(['file-input-path-container'])
-            }
-        );
-
         const pathText = new ElementController(
             'SPAN',
             {
@@ -33,7 +33,7 @@ class FileInputRow {
                 text: this.path
             }
         );
-        this.DOMController.addChild(pathText);
+        this.addChild(pathText);
 
         const deleteButton = new ElementController(
             'BUTTON',
@@ -43,9 +43,9 @@ class FileInputRow {
             }
         );
         deleteButton.addEventListener('click', e => {
-            this.deleteCallback(this.DOMController.nodeID, this.path);
-            this.DOMController.remove();
+            this.deleteCallback(this.nodeID, this.path);
+            this.remove();
         }, this);
-        this.DOMController.addChild(deleteButton);
+        this.addChild(deleteButton);
     }
 }

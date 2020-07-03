@@ -6,7 +6,7 @@ from curva.spreadsheet.style import stylesheet
 class DateGroup(Group):
     def __init__(self, parent_section, inputs, length, class_list):
         super().__init__(parent_section, inputs, 'date', [0, 0])
-        
+
         for i, date in enumerate(inputs.get('flux-months')[:length]):
             self.add_row()
 

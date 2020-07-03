@@ -1,10 +1,17 @@
-class Input {
+class Input extends ElementController {
     constructor(valuesContainer, properties, genericGroupID) {
+        super(
+            'DIV',
+            {
+                width: properties.width,
+                classList: new Set(['form-cell'])
+            }
+        );
+
         this.valuesContainer = valuesContainer;
 
         this.id = properties.id;
         this.label = properties.label;
-        this.width = properties.width;
         this.group = properties.group;
         this.type = properties.type;
 
@@ -16,14 +23,6 @@ class Input {
     }
 
     seedTree() {
-        this.DOMController = new ElementController(
-            'DIV',
-            {
-                width: this.width,
-                classList: new Set(['form-cell'])
-            }
-        );
-
         const labelController = new ElementController(
             'LABEL',
             {
@@ -31,7 +30,7 @@ class Input {
                 classList: new Set(['form-input-label'])
             }
         );
-        this.DOMController.addChild(labelController, 'label');
+        this.addChild(labelController, 'label');
 
         const inputController = new ElementController(
             'INPUT',
@@ -40,7 +39,7 @@ class Input {
             }
         );
         inputController.addEventListener('keydown', this.handleKeyEvent, this);
-        this.DOMController.addChild(inputController, 'input');
+        this.addChild(inputController, 'input');
 
         if (this.type === 'percentage') {
             const percentageLabelController = new ElementController(
@@ -50,15 +49,15 @@ class Input {
                     classList: new Set(['percentage-symbol'])
                 }
             );
-            this.DOMController.addChild(percentageLabelController, 'percentageSymbol');
+            this.addChild(percentageLabelController, 'percentageSymbol');
             inputController.addClass('percentage-input');
         }
     }
 
     setValidityClassCallback(isValid) {
-        const inputNode = this.DOMController.getChild('input');
-        const labelNode = this.DOMController.getChild('label');
-        const percentageLabelNode = this.DOMController.getChild('percentageSymbol');
+        const inputNode = this.query('input');
+        const labelNode = this.query('label');
+        const percentageLabelNode = this.query('percentageSymbol');
 
         if (!isValid) {
             inputNode.addClass('form-input-invalid');
@@ -78,7 +77,7 @@ class Input {
     }
 
     updateField(isDeletion, key) {
-        const target = this.DOMController.getChild('input').element;
+        const target = this.query('input').element;
 
         const selStart = target.selectionStart;
         const selEnd = target.selectionEnd;
@@ -110,7 +109,7 @@ class Input {
     }
 
     updateFormValue(value) {
-        const target = this.DOMController.element;
+        const target = this.element;
 
         this.value.update(value);
 
@@ -127,11 +126,11 @@ class Input {
     }
 
     updateStyling() {
-        const inputNode = this.DOMController.getChild('input');
-        const labelNode = this.DOMController.getChild('label');
-        const percentageLabelNode = this.DOMController.getChild('percentageSymbol');
+        const inputNode = this.query('input');
+        const labelNode = this.query('label');
+        const percentageLabelNode = this.query('percentageSymbol');
 
-        if (this.value.content) {
+        if (this.value.content !== '') {
             inputNode.addClass('form-input-active');
             labelNode.addClass('form-input-label-active');
 

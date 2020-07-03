@@ -8,7 +8,7 @@ class Message {
         this.messagePrompt.innerHTML = this.message;
         this.messagePrompt.style.display = 'block';
         this.setInterval(() => {
-            
+
         }, t);
     }
 }

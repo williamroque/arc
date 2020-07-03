@@ -1,17 +1,28 @@
-class FileInput {
-    constructor(valuesContainer, properties) {
-        this.valuesContainer = valuesContainer;
+const fs = require('fs');
 
-        this.label = properties.label;
+class FileInput extends ElementController {
+    constructor(valuesContainer, properties, parentNode) {
+        super(
+            'DIV',
+            {
+                text: properties.label,
+                classList: new Set(['file-input'])
+            }
+        );
+
+        this.valuesContainer = valuesContainer;
+        this.parentNode = parentNode;
+
         this.id = properties.id;
+        this.max = properties.max || Infinity;
+        this.readToList = properties.readToList;
         this.allowedExtensions = properties.allowedExtensions
             .map(x => x.extensions)
             .flat();
 
-        this.fileCount = 0;
-
         this.seedTree();
 
+        this.fileCount = 0;
         this.files = new Set();
 
         this.value = new InputValue(this.files, 'filePaths', this.setValidityClassCallback.bind(this));
@@ -19,25 +30,17 @@ class FileInput {
     }
 
     seedTree() {
-        this.DOMController = new ElementController(
-            'DIV',
-            {
-                text: this.label,
-                classList: new Set(['file-input'])
-            }
-        );
-
-        this.DOMController.addEventListener('dragover', e => {
+        this.addEventListener('dragover', e => {
             e.preventDefault();
-            this.DOMController.addClass('file-input-drag');
+            this.addClass('file-input-drag');
         }, this);
 
-        this.DOMController.addEventListener('drop', e => {
+        this.addEventListener('drop', e => {
             e.preventDefault();
 
             let allowedFiles = [];
             Array.from(e.dataTransfer.files).forEach(file => {
-                const filePattern = /^.+\.([a-z]{1,4})$/;
+                const filePattern = /^.+\.([a-z]+)$/;
 
                 const [path, extension] = file.path.match(filePattern);
 
@@ -46,9 +49,13 @@ class FileInput {
                 }
             });
 
+            if (this.files.size + allowedFiles.length > this.max) {
+                allowedFiles = allowedFiles.slice(0, this.max - this.files.size);
+            }
+
             if (this.fileCount === 0 && allowedFiles.length > 0) {
-                this.DOMController.toggleText();
-                this.DOMController.addClass('file-input-active');
+                this.toggleText();
+                this.addClass('file-input-active');
             }
 
             allowedFiles.forEach(file => {
@@ -60,7 +67,17 @@ class FileInput {
                     file,
                     this.id
                 );
-                this.DOMController.addChild(fileInputRow.DOMController);
+                this.addChild(fileInputRow);
+
+                if (typeof this.readToList !== 'undefined') {
+                    const data = JSON.parse(fs.readFileSync(file))[this.readToList];
+
+                    data.forEach(row => {
+                        this.parentNode
+                            .query(this.readToList)
+                            .addRow(row);
+                    });
+                }
 
                 this.files.add(file);
                 this.value.update(this.files);
@@ -68,12 +85,12 @@ class FileInput {
                 this.valuesContainer.update(this.value, null, this.id);
             });
 
-            this.DOMController.removeClass('file-input-drag');
+            this.removeClass('file-input-drag');
         }, this);
 
-        this.DOMController.addEventListener('dragleave', e => {
+        this.addEventListener('dragleave', e => {
             e.preventDefault();
-            this.DOMController.removeClass('file-input-drag');
+            this.removeClass('file-input-drag');
         }, this);
     }
 
@@ -81,17 +98,17 @@ class FileInput {
         this.files.delete(path);
 
         if (--this.fileCount < 1) {
-            this.DOMController.toggleText();
-            this.DOMController.removeClass('file-input-active');
+            this.toggleText();
+            this.removeClass('file-input-active');
         }
-        this.DOMController.removeChild(id);
+        this.removeChild(id);
     }
 
     setValidityClassCallback(isValid) {
         if (!isValid) {
-            this.DOMController.addClass('file-input-invalid');
+            this.addClass('file-input-invalid');
         } else {
-            this.DOMController.removeClass('file-input-invalid');
+            this.removeClass('file-input-invalid');
         }
     }
 }

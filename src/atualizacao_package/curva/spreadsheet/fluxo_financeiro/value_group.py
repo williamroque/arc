@@ -6,7 +6,7 @@ from curva.spreadsheet.style import stylesheet
 class ValueGroup(Group):
     def __init__(self, parent_section, inputs, tranche_list):
         super().__init__(parent_section, inputs, 'value', [0, 0])
-        
+
         self.create_cell({
             'text': '=-@0',
             'references': [

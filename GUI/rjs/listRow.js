@@ -1,5 +1,12 @@
-class ListRow {
+class ListRow extends ElementController {
     constructor(valuesContainer, deleteCallback, listID, inputSchemata) {
+        super(
+            'DIV',
+            {
+                classList: new Set(['form-row'])
+            }
+        );
+
         this.valuesContainer = valuesContainer;
         this.deleteCallback = deleteCallback;
 
@@ -12,21 +19,13 @@ class ListRow {
     }
 
     seedTree() {
-        this.DOMController = new ElementController(
-            'DIV',
-            {
-                classList: new Set(['form-row'])
-            }
-        );
-
         this.inputSchemata.forEach(cellSchema => {
             const inputCell = new Input(
                 this.valuesContainer,
                 cellSchema,
                 this.listID
             );
-
-            this.DOMController.addChild(inputCell.DOMController);
+            this.addChild(inputCell);
 
             this.inputs.push(inputCell);
         });
@@ -39,7 +38,7 @@ class ListRow {
             }
         );
         deleteButton.addEventListener('click', () => {
-            let nodeIndex = 0, child = this.DOMController.element;
+            let nodeIndex = 0, child = this.element;
             while ((child = child.previousSibling) !== null) {
                 nodeIndex++;
             }
@@ -48,15 +47,17 @@ class ListRow {
                 this.valuesContainer.removeAtIndex(cellSchema.group, this.listID, nodeIndex);
             });
 
-            this.deleteCallback(this.DOMController.nodeID);
-            this.DOMController.remove();
+            this.deleteCallback(this.nodeID);
+            this.remove();
         }, this);
-        this.DOMController.addChild(deleteButton);
+        this.addChild(deleteButton);
     }
 
-    setFormValues() {
-        this.inputs.forEach(input => {
-            input.updateFormValue('');
+    setFormValues(values = Array(this.inputs.length).fill('')) {
+        this.inputs.forEach((input, i) => {
+            input.query('input').element.value = new Intl.NumberFormat('pt-BR').format(values[i]);
+            input.updateFormValue(values[i]);
+            input.updateStyling();
         });
     }
 }
