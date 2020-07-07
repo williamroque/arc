@@ -14,6 +14,24 @@ class List extends ElementController {
         this.inputs = properties.inputs;
         this.max = properties.max || Infinity;
 
+        this.showStateComplementLabel = 'Esconder';
+
+        this.addEventListener('contextmenu', function (e) {
+            const button = new ElementController(
+                'BUTTON',
+                {
+                    classList: new Set(['toggle-button']),
+                    'text': this.showStateComplementLabel
+                }
+            )
+
+            button.addEventListener('click', function () {
+                this.toggleListItemsVisibility();
+            }, this);
+
+            Toggle.show([button], e.pageX, e.pageY);
+        }, this);
+
         this.seedTree();
     }
 
@@ -30,6 +48,25 @@ class List extends ElementController {
         );
         this.addChild(this.listController);
 
+        this.moreContainerController = new ElementController(
+            'DIV',
+            {
+                classList: new Set(['more-container', 'hidden'])
+            }
+        );
+        const moreController = new ElementController(
+            'SPAN',
+            {
+                classList: new Set(['more']),
+                text: '...'
+            }
+        );
+        this.moreContainerController.addChild(moreController);
+        this.moreContainerController.addEventListener('click', function() {
+            this.toggleListItemsVisibility();
+        }, this);
+        this.addChild(this.moreContainerController);
+
         const buttonController = new ElementController(
             'BUTTON',
             {
@@ -38,7 +75,7 @@ class List extends ElementController {
             }
         );
 
-        buttonController.addEventListener('click', () => {
+        buttonController.addEventListener('click', function() {
             this.addRow();
         }, this);
         this.addChild(buttonController);
@@ -49,6 +86,20 @@ class List extends ElementController {
             const listRow = new ListRow(this.valuesContainer, this.deleteCallback.bind(this), this.id, this.inputs);
             this.listController.addChild(listRow);
             listRow.setFormValues(values);
+        }
+    }
+
+    toggleListItemsVisibility() {
+        if (this.showStateComplementLabel === 'Esconder') {
+            this.listController.addClass('hidden');
+            this.moreContainerController.removeClass('hidden');
+
+            this.showStateComplementLabel = 'Mostrar';
+        } else {
+            this.listController.removeClass('hidden');
+            this.moreContainerController.addClass('hidden');
+
+            this.showStateComplementLabel = 'Esconder';
         }
     }
 }

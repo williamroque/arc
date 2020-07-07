@@ -24,25 +24,31 @@
                     "id": "indexador",
                     "label": "Indexador",
                     "type": "float",
-                    "width": 25
+                    "width": 20
                 },
                 {
                     "id": "pu-emis",
                     "label": "P.U. de Emissão",
                     "type": "float",
-                    "width": 25
+                    "width": 20
                 },
                 {
                     "id": "total",
                     "label": "Total",
                     "type": "float",
-                    "width": 25
+                    "width": 20
                 },
                 {
                     "id": "starting-date",
                     "label": "Data",
                     "type": "dateString",
-                    "width": 25
+                    "width": 20
+                },
+                {
+                    "id": "primeira-serie",
+                    "label": "Primeira Série",
+                    "type": "float",
+                    "width": 20
                 }
             ]
         },

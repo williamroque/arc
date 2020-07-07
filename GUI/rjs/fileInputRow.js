@@ -42,7 +42,7 @@ class FileInputRow extends ElementController {
                 text: 'close'
             }
         );
-        deleteButton.addEventListener('click', e => {
+        deleteButton.addEventListener('click', function(e) {
             this.deleteCallback(this.nodeID, this.path);
             this.remove();
         }, this);

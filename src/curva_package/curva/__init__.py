@@ -117,12 +117,17 @@ def main():
     path = file_name + '.curve'
     with open(path, 'w') as f:
         inputs.update('amort_percentages', {})
-        for tranche in inputs.get('tranche-list'):
+        inputs.update('atual', {})
+
+        tranche_list = inputs.get('tranche-list')
+        for i, tranche in enumerate(tranche_list):
             amort_percentages = list(map(
                 lambda row: row.get_value('amort_perc'),
                 tranche.row_list
             ))
             inputs.get('amort_percentages')[tranche.id] = amort_percentages
+            inputs.get('atual')[inputs.get('primeira-serie') + i] = []
+
         inputs.update('tranche-list', None)
         f.write(json.dumps(inputs.inputs))
 

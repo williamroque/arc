@@ -23,6 +23,7 @@ const input = {
         '/Users/jetblack-work/Documents/Curve/arc/samples/1/saldos/6.xlsx',
         '/Users/jetblack-work/Documents/Curve/arc/samples/1/saldos/7.xlsx'
     ],
+    'primeira-serie': 16,
     'output-path': '/Users/jetblack-work/Desktop/output.xlsx',
     'appdata-path': '/Users/jetblack-work/Library/Application Support/Arc'
 };

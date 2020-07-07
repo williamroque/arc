@@ -15,7 +15,7 @@ class FileInput extends ElementController {
 
         this.id = properties.id;
         this.max = properties.max || Infinity;
-        this.readToList = properties.readToList;
+        this.readToRows = properties.readToRows;
         this.allowedExtensions = properties.allowedExtensions
             .map(x => x.extensions)
             .flat();
@@ -30,12 +30,12 @@ class FileInput extends ElementController {
     }
 
     seedTree() {
-        this.addEventListener('dragover', e => {
+        this.addEventListener('dragover', function(e) {
             e.preventDefault();
             this.addClass('file-input-drag');
         }, this);
 
-        this.addEventListener('drop', e => {
+        this.addEventListener('drop', function(e) {
             e.preventDefault();
 
             let allowedFiles = [];
@@ -69,13 +69,35 @@ class FileInput extends ElementController {
                 );
                 this.addChild(fileInputRow);
 
-                if (typeof this.readToList !== 'undefined') {
-                    const data = JSON.parse(fs.readFileSync(file))[this.readToList];
+                if (typeof this.readToRows !== 'undefined') {
+                    const data = JSON.parse(fs.readFileSync(file))[this.readToRows.drawFrom];
 
-                    data.forEach(row => {
-                        this.parentNode
-                            .query(this.readToList)
-                            .addRow(row);
+                    Object.entries(data).forEach(([serie, rows]) => {
+                        const rowController = new ElementController(
+                            'DIV',
+                            {
+                                classList: new Set(['form-row'])
+                            }
+                        );
+
+                        const rowSchema = JSON.parse(JSON.stringify(this.readToRows));
+                        rowSchema.label = rowSchema.label.replace('{}', serie);
+                        rowSchema.id = rowSchema.id.replace('{}', serie);
+
+                        const list = new List(
+                            this.valuesContainer,
+                            rowSchema
+                        );
+
+                        rowController.addChild(
+                            list,
+                            rowSchema.id
+                        );
+                        this.parentNode.addChild(rowController);
+
+                        rows.forEach(row => {
+                            list.addRow(row);
+                        });
                     });
                 }
 
@@ -88,7 +110,7 @@ class FileInput extends ElementController {
             this.removeClass('file-input-drag');
         }, this);
 
-        this.addEventListener('dragleave', e => {
+        this.addEventListener('dragleave', function(e) {
             e.preventDefault();
             this.removeClass('file-input-drag');
         }, this);

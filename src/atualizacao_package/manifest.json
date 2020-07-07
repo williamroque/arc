@@ -18,31 +18,6 @@
     ],
     "form": [
         {
-            "id": "atual",
-            "label": "Adicionar Valores",
-            "type": "list",
-            "inputs": [
-                {
-                    "label": "Juros",
-                    "type": "float",
-                    "group": "atual-juros",
-                    "width": 33.3333
-                },
-                {
-                    "label": "Amortização",
-                    "type": "float",
-                    "group": "atual-amort",
-                    "width": 33.3333
-                },
-                {
-                    "label": "Amex",
-                    "type": "float",
-                    "group": "atual-amex",
-                    "width": 33.3333
-                }
-            ]
-        },
-        {
             "id": "arquivo-curva",
             "label": "Arquivo Curva",
             "type": "file-input",
@@ -55,7 +30,31 @@
                     ]
                 }
             ],
-            "readToList": "atual"
+            "readToRows": {
+                "id": "{}",
+                "label": "Adicionar Valores — {}ª Série",
+                "drawFrom": "atual",
+                "inputs": [
+                    {
+                        "label": "Juros",
+                        "type": "float",
+                        "group": "atual-juros",
+                        "width": 33.3333
+                    },
+                    {
+                        "label": "Amortização",
+                        "type": "float",
+                        "group": "atual-amort",
+                        "width": 33.3333
+                    },
+                    {
+                        "label": "Amex",
+                        "type": "float",
+                        "group": "atual-amex",
+                        "width": 33.3333
+                    }
+                ]
+            }
         },
         {
             "id": "planilhas-saldo",

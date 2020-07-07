@@ -37,7 +37,7 @@ class ListRow extends ElementController {
                 text: 'close'
             }
         );
-        deleteButton.addEventListener('click', () => {
+        deleteButton.addEventListener('click', function() {
             let nodeIndex = 0, child = this.element;
             while ((child = child.previousSibling) !== null) {
                 nodeIndex++;
@@ -53,11 +53,15 @@ class ListRow extends ElementController {
         this.addChild(deleteButton);
     }
 
-    setFormValues(values = Array(this.inputs.length).fill('')) {
+    setFormValues(values) {
         this.inputs.forEach((input, i) => {
-            input.query('input').element.value = new Intl.NumberFormat('pt-BR').format(values[i]);
-            input.updateFormValue(values[i]);
-            input.updateStyling();
+            if (typeof values !== 'undefined') {
+                input.query('input').element.value = new Intl.NumberFormat('pt-BR').format(values[i]);
+                input.updateFormValue(values[i]);
+                input.updateStyling();
+            } else {
+                input.updateFormValue('');
+            }
         });
     }
 }
