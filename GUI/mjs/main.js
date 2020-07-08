@@ -1,7 +1,9 @@
 const {
     app,
-    Menu
+    Menu,
+    shell
 } = require('electron');
+const settings = require('electron-settings');
 
 const Execute = require('./execute');
 
@@ -15,6 +17,51 @@ const isMac = process.platform === 'darwin';
 Path.setup();
 Communication.setDefault();
 
+const settingsSchemata = [
+    {
+        type: 'header',
+        title: 'Janela'
+    },
+    {
+        type: 'setting',
+        id: 'dataWindowClosesOnFinish',
+        label: 'Fechar janela de dados ao completar proceso',
+        inputType: 'checkbox',
+        defaultValue: true
+    },
+    {
+        type: 'header',
+        title: 'Formulário'
+    },
+    {
+        type: 'setting',
+        id: 'useDecimalDot',
+        label: 'Usar ponto em vez de vírgula como separador decimal',
+        inputType: 'checkbox',
+        defaultValue: false
+    }
+];
+
+for (const schema of settingsSchemata) {
+    if (schema.type === 'setting') {
+        if (!settings.hasSync(schema.id)) {
+            settings.setSync(schema.id, schema.defaultValue);
+        }
+    }
+}
+
+const preferencesWindow = new Window(
+    {
+        width: 400,
+        height: 500,
+        defaultWidth: 400,
+        defaultHeight: 500
+    },
+    'preferences.html',
+    false,
+    ['render', settingsSchemata]
+);
+
 let mainWindow;
 app.on('ready', () => {
     mainWindow = new Window({
@@ -24,7 +71,7 @@ app.on('ready', () => {
         minHeight: 610,
         maxWidth: 1150,
         maxHeight: 770,
-        fullscreen: false,
+        fullscreen: false
     }, 'index.html', true);
     mainWindow.createWindow();
 });
@@ -44,14 +91,42 @@ app.on('activate', () => {
 const menuTemplate = [
     ...(isMac ? [{
         label: app.name,
-        submenu: [
-            { role: 'about' },
-            { type: 'separator' },
-            { role: 'hide' },
-            { role: 'hideothers' },
-            { role: 'unhide' },
-            { role: 'close' },
-            { type: 'separator' },
+        submenu: [{
+                role: 'about'
+            },
+            {
+                type: 'separator'
+            },
+            {
+                label: 'Configurações',
+                accelerator: 'CmdOrCtrl+,',
+                click: () => {
+                    if (preferencesWindow.isNull()) {
+                        preferencesWindow.createWindow();
+                        preferencesWindow.dispatchWebEvent('render', settingsSchemata);
+                    } else {
+                        preferencesWindow.window.close();
+                    }
+                }
+            },
+            {
+                type: 'separator'
+            },
+            {
+                role: 'hide'
+            },
+            {
+                role: 'hideothers'
+            },
+            {
+                role: 'unhide'
+            },
+            {
+                role: 'close'
+            },
+            {
+                type: 'separator'
+            },
             {
                 label: 'Quit',
                 accelerator: 'Cmd+Q',
@@ -59,11 +134,12 @@ const menuTemplate = [
             }
         ]
     }] : []),
-    { role: 'editMenu' },
+    {
+        role: 'editMenu'
+    },
     {
         label: 'Packages',
-        submenu: [
-            {
+        submenu: [{
                 label: 'Add Package',
                 accelerator: 'CmdOrCtrl+Shift+P',
                 click: () => {
@@ -75,7 +151,9 @@ const menuTemplate = [
                     });
                 }
             },
-            { type: 'separator' },
+            {
+                type: 'separator'
+            },
             ...Path.formSchemata.map(form => {
                 return {
                     label: form.title,
@@ -89,14 +167,28 @@ const menuTemplate = [
             })
         ]
     },
-    { role: 'windowMenu' },
+    {
+        role: 'windowMenu'
+    },
     {
         label: 'Developer',
-        submenu: [
+        submenu: [{
+            label: 'Toggle Developer Tools',
+            accelerator: 'Cmd+Alt+I',
+            click: () => mainWindow.toggleDevTools()
+        }]
+    },
+    {
+        label: 'Help',
+        role: 'help',
+        submenu: [{
+                type: 'separator'
+            },
             {
-                label: 'Toggle Developer Tools',
-                accelerator: 'Cmd+Alt+I',
-                click: () => mainWindow.toggleDevTools()
+                label: 'Relatar problema',
+                click: () => shell.openExternal(
+                    `mailto:william.roque@ethosgroup.com.br?subject=Arc@${app.getVersion()}%20Issue`
+                )
             }
         ]
     }

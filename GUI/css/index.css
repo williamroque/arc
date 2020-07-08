@@ -110,6 +110,10 @@ button {
     user-select: none;
 }
 
+button:focus {
+    outline: #bba046 auto 2px;
+}
+
 .more-container {
     margin-bottom: 17px;
     line-height: 10px;

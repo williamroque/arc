@@ -1,6 +1,7 @@
 const fs = require('fs');
 const rimraf = require('rimraf');
 const unzipper = require('unzipper');
+const settings = require('electron-settings');
 
 const { spawn } = require('child_process');
 
@@ -9,7 +10,7 @@ const Window = require('./window');
 const Path = require('./path');
 
 class Execute {
-    static runScript(args, input, closesOnFinish = false) {
+    static runScript(args, input) {
         const errorWindow = new Window({
             width: 820,
             height: 700,
@@ -44,7 +45,7 @@ class Execute {
                 });
 
                 subprocess.on('close', () => {
-                    if (closesOnFinish) {
+                    if (settings.getSync('dataWindowClosesOnFinish')) {
                         progressWindow.window.close();
                     }
                     resolve(0);
@@ -85,7 +86,7 @@ class Execute {
                     for (let i = 0; i < requirements.length; i++) {
                         await Execute.runScript([
                             '-m', 'pip', 'install', '--disable-pip-version-check', requirements[i]
-                        ], '', true);
+                        ], '');
                     }
 
                     resolve();

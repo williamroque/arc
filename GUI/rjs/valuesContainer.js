@@ -71,10 +71,15 @@ class ValuesContainer {
     }
 
     clean(value) {
+        if (settings.getSync('useDecimalDot')) {
+            value = value.replace(/,/g, '');
+        } else {
+            value = value.replace(/\./g, '');
+            value = value.replace(/,/g, '.')
+        }
+
         return value
-            .replace(/\./g, '')
             .replace(/\s/g, '')
-            .replace(/,/g, '.')
             .replace(/-/g, '/');
     }
 

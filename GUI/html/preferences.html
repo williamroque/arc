@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preferences</title>
+    <style>
+        @font-face {
+            font-family: 'Material Icons';
+            font-style: normal;
+            font-weight: 400;
+            src: url(../assets/material_font.woff2) format('woff2');
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        #settings-wrapper {
+            width: 60%;
+            height: 100%;
+        }
+
+        .setting-row {
+            width: 100%;
+            margin-top: 17px;
+            display: flex;
+        }
+
+        .setting-label {
+            width: 50%;
+            margin: 0;
+            padding-right: 10px;
+            font-family: courier;
+            font-size: 11pt;
+            text-align: right;
+        }
+
+        .input-wrapper {
+            width: 50%;
+            margin: 0;
+            padding-left: 10px;
+            text-align: left;
+        }
+
+        .settings-header {
+            font-family: arial;
+            font-size: 12pt;
+            color: #C0B283;
+            border-bottom: solid 2px #C0B283;
+            width: 100%;
+            height: auto;
+            margin: 10px 0;
+            padding: 0;
+        }
+
+        .checkbox {
+            font-family: 'Material Icons';
+            font-size: 14pt;
+            cursor: pointer;
+        }
+
+        .text-input {
+            outline: none;
+            font-family: courier;
+            font-size: 9pt;
+            font-weight: 600;
+            border: none;
+            color: #333;
+            border-bottom: solid 2px #ccc;
+            width: 100%;
+        }
+
+        .text-input:focus {
+            border-bottom: solid 2px #C0B283;
+            color: #000;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="settings-wrapper"></div>
+
+    <script>
+        const settings = require('electron-settings');
+        const {
+            ipcRenderer
+        } = require('electron');
+
+        const settingsWrapper = document.querySelector('#settings-wrapper');
+
+        function addHeader(title) {
+            const headerElement = document.createElement('DIV');
+            const text = document.createTextNode(title);
+            headerElement.appendChild(text);
+
+            headerElement.classList.add('settings-header');
+
+            settingsWrapper.appendChild(headerElement);
+        }
+
+        function addSetting(id, label, type) {
+            const settingElement = document.createElement('DIV');
+            settingElement.classList.add('setting-row');
+
+            const labelElement = document.createElement('DIV');
+            labelElement.classList.add('setting-label');
+
+            const labelText = document.createTextNode(label);
+            labelElement.appendChild(labelText);
+
+            settingElement.appendChild(labelElement);
+
+            const inputWrapper = document.createElement('DIV');
+            inputWrapper.classList.add('input-wrapper');
+
+            const storedValue = settings.getSync(id);
+
+            if (type === 'checkbox') {
+                const inputElement = document.createElement('DIV');
+                inputElement.classList.add('checkbox');
+
+                if (storedValue) {
+                    inputElement.innerText = 'check_box';
+                } else {
+                    inputElement.innerText = 'check_box_outline_blank';
+                }
+
+                inputElement.addEventListener('click', function (e) {
+                    const text = e.currentTarget.innerText;
+
+                    if (text === 'check_box') {
+                        e.currentTarget.innerText = 'check_box_outline_blank';
+                        settings.setSync(id, false);
+                    } else {
+                        e.currentTarget.innerText = 'check_box';
+                        settings.setSync(id, true);
+                    }
+                }, false);
+
+                inputWrapper.appendChild(inputElement);
+            } else if (type === 'text') {
+                const inputElement = document.createElement('INPUT');
+                inputElement.classList.add('text-input');
+
+                inputElement.setAttribute('value', storedValue);
+
+                inputElement.addEventListener('keyup', function (e) {
+                    const value = e.currentTarget.value;
+
+                    settings.setSync(id, value);
+                }, false);
+
+                inputWrapper.appendChild(inputElement);
+            }
+
+            settingElement.appendChild(inputWrapper);
+
+            settingsWrapper.appendChild(settingElement);
+        }
+
+        ipcRenderer.on('render', (_, schemata) => {
+            for (const schema of schemata) {
+                switch (schema.type) {
+                    case 'header':
+                        addHeader(schema.title);
+                        break;
+                    case 'setting':
+                        addSetting(
+                            schema.id,
+                            schema.label,
+                            schema.inputType
+                        );
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

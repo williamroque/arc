@@ -1,9 +1,15 @@
+const settings = require('electron-settings');
+
 class InputValue {
     constructor(content, type, setValidityClassCallback) {
+        const floatPattern = settings.getSync('useDecimalDot') ?
+            /^\d[\d,]*(\.\d+)?$/ :
+            /^\d[\d\.]*(,\d+)?$/;
+
         this.typeSystem = {
             int: /^\d[\d\.]*$/,
-            float: /^\d[\d\.]*(\,\d+)?$/,
-            percentage: /^\d[\d\.]*(\,\d+)?$/,
+            float: floatPattern,
+            percentage: floatPattern,
             dateString: /^(Jan|Fev|Mar|Abr|Mai|Jun|Jul|Ago|Set|Out|Nov|Dez)\/\d{4}$/,
             filePaths: 'size'
         };

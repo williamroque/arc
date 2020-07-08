@@ -6,7 +6,7 @@ const url = require('url');
 const Path = require('./path');
 
 class Window {
-    constructor(properties, file, keepsState) {
+    constructor(properties, file, keepsState, dispatchOnReady) {
         this.properties = properties;
         this.file = file;
 
@@ -21,6 +21,10 @@ class Window {
             this.properties.width = this.windowState.width;
             this.properties.height = this.windowState.height;
         }
+
+        this.dispatchOnReady = dispatchOnReady;
+
+        this.window = null;
     }
 
     createWindow() {
@@ -36,6 +40,12 @@ class Window {
         }
 
         this.addListener('closed', e => this.window = null);
+
+        this.addWebListener('dom-ready', () => {
+            if (typeof this.dispatchOnReady !== 'undefined') {
+                this.dispatchWebEvent(...this.dispatchOnReady);
+            }
+        });
     }
 
     show() {
