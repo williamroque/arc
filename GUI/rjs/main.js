@@ -7,14 +7,14 @@ let formSchemata = Communication.requestFormSchemata();
 let forms = [];
 let currentForm;
 
-formSchemata.forEach(schema => {
+for (const schema of formSchemata) {
     const form = new Form(schema, formContainer);
     if (schema.isDefault) {
         currentForm = form;
     }
 
     forms.push(form);
-});
+}
 
 if (currentForm) {
     currentForm.activate();

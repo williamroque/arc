@@ -3,17 +3,7 @@ const { spawn } = require('child_process');
 const subprocess = spawn('python3', ['main.py']);
 
 const input = {
-    indexador: 0,
-    'pu-emis': 1000,
-    total: 14270000,
-    'starting-date': 'Set/2019',
-    razoes: { sub: .15, sen: .70, mezanino: [.15] },
-    'target-irr': .105,
-    'taxas-juros-anual': { sen: .07, mezanino: [.085] },
-    'c-period': 3,
-    'fr-previsto': 400000,
-    'pmt-proper': .92,
-    despesas: 10000,
+    "arquivo-curva": "/Users/jetblack-work/Desktop/output.curve",
     'planilhas-saldo': [
         '/Users/jetblack-work/Documents/Curve/arc/samples/1/saldos/1.xlsx',
         '/Users/jetblack-work/Documents/Curve/arc/samples/1/saldos/2.xlsx',
@@ -23,8 +13,10 @@ const input = {
         '/Users/jetblack-work/Documents/Curve/arc/samples/1/saldos/6.xlsx',
         '/Users/jetblack-work/Documents/Curve/arc/samples/1/saldos/7.xlsx'
     ],
-    'output-path': '/Users/jetblack-work/Desktop/output.xlsx',
-    'appdata-path': '/Users/jetblack-work/Library/Application Support/Arc'
+    'atual-juros': { 16: [9823, 1234], 17: [1000, 1234, 2356], 18: [] },
+    'atual-amort': { 16: [8123, 4321], 17: [1234, 2315, 2346], 18: [] },
+    'atual-amex': { 16: [9784, 9827], 17: [5678, 9487, 6243], 18: [] },
+    'output-path': '/Users/jetblack-work/Desktop/output.xlsx'
 };
 
 subprocess.stdin.write(JSON.stringify(input));

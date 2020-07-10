@@ -81,15 +81,15 @@ class ElementController {
 
         if ('classList' in this.DOMTree) {
             this.element.className = '';
-            this.DOMTree.classList.forEach(nodeClass => {
+            for (const nodeClass of this.DOMTree.classList) {
                 this.element.classList.add(nodeClass);
-            });
+            }
         }
 
-        Object.values(this.DOMTree.children).forEach(childNode => {
+        for (const childNode of Object.values(this.DOMTree.children)) {
             childNode.render();
             this.element.appendChild(childNode.element);
-        });
+        }
     }
 
     remove() {

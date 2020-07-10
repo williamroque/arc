@@ -33,6 +33,7 @@
             "readToRows": {
                 "id": "{}",
                 "label": "Adicionar Valores — {}ª Série",
+                "sync": true,
                 "drawFrom": "atual",
                 "inputs": [
                     {

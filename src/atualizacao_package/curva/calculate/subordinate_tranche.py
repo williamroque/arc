@@ -17,11 +17,11 @@ def presentation_phase(self, F_i, tranche_list, tranche_i):
 
 
 def carencia_phase(self, F_i, tranche_list, tranche_i):
-    if self.i < self.c_period + 1:
+    if self.i < self.inputs.get('c_period') + 1:
         juros = self.saldo * self.taxa_juros
         pmt = 0
         amort = 0
-        saldo = self.saldo + self.despesas + juros - pmt
+        saldo = self.saldo + self.inputs.get('despesas') + juros - pmt
 
         row = self.create_row()
         row.fill('n', None, 'default')
@@ -31,7 +31,7 @@ def carencia_phase(self, F_i, tranche_list, tranche_i):
         row.fill('juros', juros, 'default')
         row.fill('amort', amort, 'carencia')
         row.fill('pmt', pmt, 'carencia')
-        row.fill('amort_perc', None, 'default')
+        row.fill('amort_perc', amort/self.saldo, 'default')
         self.queue = row
 
         return False
@@ -42,9 +42,9 @@ def carencia_phase(self, F_i, tranche_list, tranche_i):
 
 def dependent_phase(self, F_i, tranche_list, tranche_i):
     juros = self.saldo * self.taxa_juros
-    pmt = juros + self.despesas
-    amort = pmt - juros - self.despesas
-    saldo = self.saldo + self.despesas + juros - pmt
+    pmt = juros + self.inputs.get('despesas')
+    amort = pmt - juros - self.inputs.get('despesas')
+    saldo = self.saldo + self.inputs.get('despesas') + juros - pmt
 
     row = self.create_row()
     row.fill('n', None, 'default')
@@ -54,7 +54,7 @@ def dependent_phase(self, F_i, tranche_list, tranche_i):
     row.fill('juros', juros, 'default')
     row.fill('amort', amort, 'main')
     row.fill('pmt', pmt, 'dependent')
-    row.fill('amort_perc', None, 'default')
+    row.fill('amort_perc', amort/self.saldo, 'default')
     self.queue = row
 
 
@@ -62,9 +62,9 @@ def transition_phase(self, F_i, tranche_list, tranche_i):
     next_queue = tranche_list[1].queue
 
     juros = self.saldo * self.taxa_juros
-    pmt = F_i * self.pmt_proper - next_queue.get_value('pmt')
-    amort = pmt - juros - self.despesas
-    saldo = self.saldo + self.despesas + juros - pmt
+    pmt = F_i * self.inputs.get('pmt_proper') - next_queue.get_value('pmt')
+    amort = pmt - juros - self.inputs.get('despesas')
+    saldo = self.saldo + self.inputs.get('despesas') + juros - pmt
 
     row = self.create_row()
     row.fill('n', None, 'default')
@@ -74,7 +74,7 @@ def transition_phase(self, F_i, tranche_list, tranche_i):
     row.fill('juros', juros, 'default')
     row.fill('amort', amort, 'main')
     row.fill('pmt', pmt, 'transition')
-    row.fill('amort_perc', None, 'default')
+    row.fill('amort_perc', amort/self.saldo, 'default')
     self.queue = row
 
     self.next_phase()
@@ -82,9 +82,9 @@ def transition_phase(self, F_i, tranche_list, tranche_i):
 
 def main_phase(self, F_i, tranche_list, tranche_i):
     juros = self.saldo * self.taxa_juros
-    pmt = F_i * self.pmt_proper
-    amort = pmt - juros - self.despesas
-    saldo = self.saldo + self.despesas + juros - pmt
+    pmt = F_i * self.inputs.get('pmt_proper')
+    amort = pmt - juros - self.inputs.get('despesas')
+    saldo = self.saldo + self.inputs.get('despesas') + juros - pmt
 
     row = self.create_row()
     row.fill('n', None, 'default')
@@ -94,15 +94,15 @@ def main_phase(self, F_i, tranche_list, tranche_i):
     row.fill('juros', juros, 'default')
     row.fill('amort', amort, 'main')
     row.fill('pmt', pmt, 'main')
-    row.fill('amort_perc', None, 'default')
+    row.fill('amort_perc', amort/self.saldo, 'default')
     self.queue = row
 
 
 def final_phase(self, F_i, tranche_list, tranche_i):
     juros = self.saldo * self.taxa_juros
     amort = self.saldo
-    pmt = self.despesas + juros + amort
-    saldo = self.saldo + self.despesas + juros - pmt
+    pmt = self.inputs.get('despesas') + juros + amort
+    saldo = self.saldo + self.inputs.get('despesas') + juros - pmt
 
     row = self.create_row()
     row.fill('n', None, 'default')
@@ -112,7 +112,7 @@ def final_phase(self, F_i, tranche_list, tranche_i):
     row.fill('juros', juros, 'default')
     row.fill('amort', amort, 'final')
     row.fill('pmt', pmt, 'final')
-    row.fill('amort_perc', None, 'default')
+    row.fill('amort_perc', amort/self.saldo, 'default')
     self.queue = row
 
     self.next_phase()
@@ -148,7 +148,7 @@ class SubordinateTranche(Tranche):
         row.add_column('despesas', 'Despesas', 10,
             {
                 'empty': '',
-                'default': f'={self.despesas}'
+                'default': f'={self.inputs.get('despesas')}'
             },
             set(['tranche_quantity'])
         )

@@ -11,12 +11,12 @@ class Toggle {
     static show(buttons, x, y) {
         Toggle.clearPrompt();
 
-        buttons.forEach(button => {
+        for (const button of buttons) {
             button.addEventListener('click', function() {
                 Toggle.hide();
             }, null);
             togglePrompt.appendChild(button.element);
-        });
+        }
 
         if (x + togglePrompt.offsetWidth > window.innerWidth) {
             x -= togglePrompt.offsetWidth;

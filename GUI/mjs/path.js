@@ -23,7 +23,7 @@ class Path {
             .filter(path => !/^.*\..*$/.test(path));
 
         let forms = [];
-        packageDirectories.forEach(directory => {
+        for (const directory of packageDirectories) {
             const form = JSON.parse(
                 fs.readFileSync(
                     Path.join(Path.appPaths.packages, directory, 'manifest.json')
@@ -31,7 +31,7 @@ class Path {
             );
 
             forms.push(form);
-        });
+        }
 
         return forms;
     }

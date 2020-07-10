@@ -4,11 +4,9 @@ class Tranche():
 
         self.saldo_original = inputs.get('total') * razao
 
+        self.inputs = inputs
         self.saldo = self.saldo_original
         self.taxa_juros = taxa_juros
-        self.pmt_proper = inputs.get('pmt-proper')
-        self.c_period = inputs.get('c-period')
-        self.despesas = inputs.get('despesas')
 
         self.is_finished = False
         self.phase_list = []

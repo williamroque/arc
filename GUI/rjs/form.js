@@ -16,7 +16,7 @@ class Form extends ElementController {
     }
 
     seedTree() {
-        this.schema.form.forEach(rowSchema => {
+        for (const rowSchema of this.schema.form) {
             const rowController = new ElementController(
                 'DIV',
                 {
@@ -25,7 +25,7 @@ class Form extends ElementController {
             );
 
             if (rowSchema.type === 'input-row') {
-                rowSchema.inputs.forEach(cellSchema => {
+                for (const cellSchema of rowSchema.inputs) {
                     const inputCell = new Input(
                         this.valuesContainer,
                         cellSchema
@@ -36,7 +36,7 @@ class Form extends ElementController {
                         (cellSchema.group ? `${cellSchema.group}=` : '') + cellSchema.id
                     );
                     inputCell.updateFormValue('');
-                });
+                }
             } else if (rowSchema.type === 'list') {
                 const list = new List(
                     this.valuesContainer,
@@ -54,7 +54,7 @@ class Form extends ElementController {
             }
 
             this.addChild(rowController);
-        });
+        }
     }
 
     clearContainer() {

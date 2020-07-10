@@ -52,7 +52,7 @@ class ValuesContainer {
     areAllValid(obj = this.values) {
         let areValid = true;
 
-        Object.values(obj).forEach(value => {
+        for (const value of Object.values(obj)) {
             if (value instanceof InputValue) {
                 const isValid = value.test();
 
@@ -65,7 +65,7 @@ class ValuesContainer {
                     areValid = false;
                 }
             }
-        });
+        }
 
         return areValid;
     }

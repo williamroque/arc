@@ -17,8 +17,12 @@ def presentation_phase(self, F_i, tranche_list, tranche_i):
     self.next_phase()
 
 
+def draw_phase(self, F_i, tranche_list, tranche_i):
+    juros = self.inputs.get('atual-juros')
+
+
 def carencia_phase(self, F_i, tranche_list, tranche_i):
-    if self.i < self.c_period + 1:
+    if self.i < self.inputs.get('c_period') + 1:
         juros = self.saldo * self.taxa_juros
         pmt = 0
         amort = 0
@@ -31,7 +35,7 @@ def carencia_phase(self, F_i, tranche_list, tranche_i):
         row.fill('juros', juros, 'default')
         row.fill('amort', amort, 'carencia')
         row.fill('pmt', pmt, 'carencia')
-        row.fill('amort_perc', None, 'default')
+        row.fill('amort_perc', amort/self.saldo, 'default')
         self.queue = row
 
         return False
@@ -48,7 +52,7 @@ def main_phase(self, F_i, tranche_list, tranche_i):
         row_sum += tranche.queue.get_value('pmt')
 
     juros = self.saldo * self.taxa_juros
-    pmt = F_i * self.pmt_proper - row_sum
+    pmt = F_i * self.inputs.get('pmt_proper') - row_sum
     amort = pmt - juros
     saldo = self.saldo + juros - pmt
 
@@ -59,7 +63,7 @@ def main_phase(self, F_i, tranche_list, tranche_i):
     row.fill('juros', juros, 'default')
     row.fill('amort', amort, 'main')
     row.fill('pmt', pmt, 'main')
-    row.fill('amort_perc', None, 'default')
+    row.fill('amort_perc', amort/self.saldo, 'default')
     self.queue = row
 
 
@@ -76,7 +80,7 @@ def final_phase(self, F_i, tranche_list, tranche_i):
     row.fill('juros', juros, 'default')
     row.fill('amort', amort, 'final')
     row.fill('pmt', pmt, 'final')
-    row.fill('amort_perc', None, 'default')
+    row.fill('amort_perc', amort/self.saldo, 'default')
     self.queue = row
 
     self.next_phase()

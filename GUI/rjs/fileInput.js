@@ -39,7 +39,7 @@ class FileInput extends ElementController {
             e.preventDefault();
 
             let allowedFiles = [];
-            Array.from(e.dataTransfer.files).forEach(file => {
+            for (const file of Array.from(e.dataTransfer.files)) {
                 const filePattern = /^.+\.([a-z]+)$/;
 
                 const [path, extension] = file.path.match(filePattern);
@@ -47,7 +47,7 @@ class FileInput extends ElementController {
                 if (this.allowedExtensions.indexOf(extension) > -1) {
                     allowedFiles.push(path);
                 }
-            });
+            }
 
             if (this.files.size + allowedFiles.length > this.max) {
                 allowedFiles = allowedFiles.slice(0, this.max - this.files.size);
@@ -58,7 +58,7 @@ class FileInput extends ElementController {
                 this.addClass('file-input-active');
             }
 
-            allowedFiles.forEach(file => {
+            for (const file of allowedFiles) {
                 this.fileCount++;
 
                 const fileInputRow = new FileInputRow(
@@ -72,7 +72,9 @@ class FileInput extends ElementController {
                 if (typeof this.readToRows !== 'undefined') {
                     const data = JSON.parse(fs.readFileSync(file))[this.readToRows.drawFrom];
 
-                    Object.entries(data).forEach(([serie, rows]) => {
+                    this.lists = [];
+
+                    for (const [serie, rows] of Object.entries(data)) {
                         const rowController = new ElementController(
                             'DIV',
                             {
@@ -86,8 +88,21 @@ class FileInput extends ElementController {
 
                         const list = new List(
                             this.valuesContainer,
-                            rowSchema
+                            rowSchema,
+                            this.lists
                         );
+
+                        if (this.readToRows.sync) {
+                            list.buttonController.addEventListener('click', function(e) {
+                                for (const list of this.lists) {
+                                    if (list.element !== e.currentTarget.parentNode) {
+                                        list.addRow();
+                                    }
+                                }
+                            }, this);
+                        }
+
+                        this.lists.push(list);
 
                         rowController.addChild(
                             list,
@@ -95,17 +110,17 @@ class FileInput extends ElementController {
                         );
                         this.parentNode.addChild(rowController);
 
-                        rows.forEach(row => {
+                        for (const row of rows) {
                             list.addRow(row);
-                        });
-                    });
+                        }
+                    }
                 }
 
                 this.files.add(file);
                 this.value.update(this.files);
 
                 this.valuesContainer.update(this.value, null, this.id);
-            });
+            }
 
             this.removeClass('file-input-drag');
         }, this);

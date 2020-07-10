@@ -77,9 +77,7 @@ app.on('ready', () => {
 });
 
 app.on('window-all-closed', () => {
-    if (!isMac) {
-        app.exit(0);
-    }
+    app.exit(0);
 });
 
 app.on('activate', () => {

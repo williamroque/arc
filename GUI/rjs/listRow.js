@@ -18,8 +18,19 @@ class ListRow extends ElementController {
         this.seedTree();
     }
 
+    delete() {
+        let nodeIndex = 0, child = this.element;
+        while ((child = child.previousSibling) !== null) {
+            nodeIndex++;
+        }
+
+        for (const cellSchema of this.inputSchemata) {
+            this.valuesContainer.removeAtIndex(cellSchema.group, this.listID, nodeIndex);
+        }
+    }
+
     seedTree() {
-        this.inputSchemata.forEach(cellSchema => {
+        for (const cellSchema of this.inputSchemata) {
             const inputCell = new Input(
                 this.valuesContainer,
                 cellSchema,
@@ -28,7 +39,7 @@ class ListRow extends ElementController {
             this.addChild(inputCell);
 
             this.inputs.push(inputCell);
-        });
+        }
 
         const deleteButton = new ElementController(
             'BUTTON',
@@ -38,17 +49,8 @@ class ListRow extends ElementController {
             }
         );
         deleteButton.addEventListener('click', function() {
-            let nodeIndex = 0, child = this.element;
-            while ((child = child.previousSibling) !== null) {
-                nodeIndex++;
-            }
-
-            this.inputSchemata.forEach(cellSchema => {
-                this.valuesContainer.removeAtIndex(cellSchema.group, this.listID, nodeIndex);
-            });
-
+            this.delete();
             this.deleteCallback(this.nodeID);
-            this.remove();
         }, this);
         this.addChild(deleteButton);
     }

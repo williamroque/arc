@@ -18,7 +18,7 @@ locale.setlocale(locale.LC_TIME, 'pt_BR')
 
 
 def main():
-    print('Processing inputs.')
+    print('Processing inputs.', flush=True)
 
     inputs = Input()
     inputs.apply_map(
@@ -26,6 +26,8 @@ def main():
         'taxas-juros',
         lambda x: (x + 1) ** (1/12) - 1
     )
+
+    original_date = inputs.get('starting-date')
 
     inputs.update(
         'starting-date',
@@ -48,10 +50,10 @@ def main():
     else:
         inputs.update('mezanine-layers-count', 0)
 
-    print('Inputs processed.\n')
+    print('Inputs processed.\n', flush=True)
 
 
-    print('Calculating curve.')
+    print('Calculating curve.', flush=True)
 
     taxa_juros_sub = .01
     negative_baseline = 0
@@ -77,7 +79,7 @@ def main():
         sess.run()
 
         fluxo_financeiro = sess.collapse_financial_flux()
-        irr = ((1 + np.irr(fluxo_financeiro)) ** 12 - 1)
+        irr = (1 + np.irr(fluxo_financeiro)) ** 12 - 1
 
     inputs.update('tranche-list', sess.tranche_list)
     inputs.update('sub-length', len(sess.tranche_list[0].row_list)),
@@ -87,31 +89,36 @@ def main():
     )
     inputs.update('sen-length', len(sess.tranche_list[-1].row_list))
 
-    print('Curve calculated.\n')
+    print('Curve calculated.\n', flush=True)
 
 
-    print('--- CURVE ---')
+    print('--- CURVE ---', flush=True)
 
     for tranche in sess.tranche_list:
-        print('\n', tranche.title)
+        print('\n', tranche.title, flush=True)
         for i, row in enumerate(tranche.row_list):
-            print(i + 1, end=' ')
+            print(i + 1, end=' ', flush=True)
             for value in row.get_values():
-                print(value, end=' ')
-            print()
+                print(value, end=' ', flush=True)
+            print('', flush=True)
 
-    print('--- END ---\n')
+    print('--- END ---\n', flush=True)
 
 
-    print('Rendering curve.')
+    print('Rendering curve.', flush=True)
 
     sheet = CurveSheet(inputs)
     sheet.render()
 
-    print('Curve rendered.')
+    print('Curve rendered.\n', flush=True)
 
 
-    print('Saving curve data.')
+    print('Saving curve data.', flush=True)
+
+    inputs.update(
+        'starting-date',
+        original_date
+    )
 
     file_name = os.path.splitext(inputs.get('output-path'))[0]
     path = file_name + '.curve'
@@ -131,4 +138,4 @@ def main():
         inputs.update('tranche-list', None)
         f.write(json.dumps(inputs.inputs))
 
-    print('Curve data saved.')
+    print('Curve data saved.', flush=True)

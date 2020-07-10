@@ -1,8 +1,7 @@
 class List extends ElementController {
-    constructor(valuesContainer, properties) {
+    constructor(valuesContainer, properties, syncedLists) {
         super(
-            'DIV',
-            {
+            'DIV', {
                 classList: new Set(['list-container'])
             }
         );
@@ -14,12 +13,13 @@ class List extends ElementController {
         this.inputs = properties.inputs;
         this.max = properties.max || Infinity;
 
+        this.syncedLists = syncedLists;
+
         this.showStateComplementLabel = 'Esconder';
 
         this.addEventListener('contextmenu', function (e) {
             const button = new ElementController(
-                'BUTTON',
-                {
+                'BUTTON', {
                     classList: new Set(['toggle-button']),
                     'text': this.showStateComplementLabel
                 }
@@ -36,49 +36,54 @@ class List extends ElementController {
     }
 
     deleteCallback(id) {
+        if (typeof this.syncedLists !== 'undefined') {
+            for (const syncedList of this.syncedLists) {
+                if (syncedList !== this) {
+                    const listRow = syncedList.query('list-items-container').query(id);
+                    listRow.delete.call(listRow);
+                    syncedList.listController.removeChild(id);
+                }
+            }
+        }
         this.listController.removeChild(id);
     }
 
     seedTree() {
         this.listController = new ElementController(
-            'DIV',
-            {
+            'DIV', {
                 classList: new Set(['list-items-container'])
             }
         );
-        this.addChild(this.listController);
+        this.addChild(this.listController, 'list-items-container');
 
         this.moreContainerController = new ElementController(
-            'DIV',
-            {
+            'DIV', {
                 classList: new Set(['more-container', 'hidden'])
             }
         );
         const moreController = new ElementController(
-            'SPAN',
-            {
+            'SPAN', {
                 classList: new Set(['more']),
                 text: '...'
             }
         );
         this.moreContainerController.addChild(moreController);
-        this.moreContainerController.addEventListener('click', function() {
+        this.moreContainerController.addEventListener('click', function () {
             this.toggleListItemsVisibility();
         }, this);
         this.addChild(this.moreContainerController);
 
-        const buttonController = new ElementController(
-            'BUTTON',
-            {
+        this.buttonController = new ElementController(
+            'BUTTON', {
                 text: this.label,
                 classList: new Set(['add-button'])
             }
         );
 
-        buttonController.addEventListener('click', function() {
+        this.buttonController.addEventListener('click', function () {
             this.addRow();
         }, this);
-        this.addChild(buttonController);
+        this.addChild(this.buttonController);
     }
 
     addRow(values) {
