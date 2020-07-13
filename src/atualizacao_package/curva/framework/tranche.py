@@ -2,7 +2,7 @@ class Tranche():
     def __init__(self, inputs, taxa_juros, razao, tranche_id):
         self.id = tranche_id
 
-        self.saldo_original = inputs.get('total') * razao
+        self.saldo_original = inputs.get('curve')['total'] * razao
 
         self.inputs = inputs
         self.saldo = self.saldo_original
@@ -15,12 +15,14 @@ class Tranche():
         self.queue = None
 
         self.i = 0
+        self.phase_first_index = 0
 
     def create_row(self):
         raise NotImplementedError
 
     def next_phase(self):
         self.phase_list = self.phase_list[1:]
+        self.phase_first_index = self.i + 1
 
     def integrate_row(self):
         if self.queue:
@@ -57,11 +59,11 @@ class TrancheRow():
             'style': style
         }
 
-    def fill(self, column_id, value, formula):
+    def fill(self, column_id, value, formula, substitution_map={}):
         self.columns[column_id]['value'] = value
 
         formulae = self.columns[column_id]['formulae']
-        self.columns[column_id]['formula'] = formulae[formula]
+        self.columns[column_id]['formula'] = (formulae[formula], substitution_map)
 
     def get_columns(self):
         return self.columns

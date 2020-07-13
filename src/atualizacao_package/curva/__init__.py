@@ -6,6 +6,8 @@ import numpy as np
 from curva.util.input import Input
 from curva.util.flux import Flux
 
+from curva.calculate.session import Session
+
 locale.setlocale(locale.LC_TIME, 'pt_BR')
 
 
@@ -38,11 +40,12 @@ def main():
                 inputs.get('curve')['atual'][serie].append([
                     taxa_juros,
                     inputs.get('atual-amort')[serie][i],
-                    inputs.get('atual-amex')[serie][i]
+                    inputs.get('atual-amex')[serie][i],
+                    inputs.get('atual-saldo')[serie][i]
                 ])
             if i + 1 > historical_period:
                 historical_period = i + 1
-    inputs.update('historical_period', historical_period)
+    inputs.update('historical-period', historical_period)
 
     print('Inputs processed.\n', flush=True)
 
@@ -59,6 +62,10 @@ def main():
 
         fluxo_financeiro = sess.collapse_financial_flux()
         irr = (1 + np.irr(fluxo_financeiro)) ** 12 - 1
+
+        for row in sess.tranche_list[-1].row_list:
+            print(row.get_values())
+        break
 
     print('Curve calculated.\n', flush=True)
 

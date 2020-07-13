@@ -15,8 +15,34 @@ def presentation_phase(self, F_i, tranche_list, tranche_i):
     self.next_phase()
 
 
+def draw_phase(self, F_i, tranche_list, tranche_i):
+    if self.i - self.phase_first_index < self.inputs.get('historical-period'):
+        serie = str(self.inputs.get('curve')['mezanine-layers-count'] + 2 - tranche_i + self.inputs.get('curve')['primeira-serie'])
+        historical_row = self.inputs.get('curve')['atual'][serie][self.i - self.phase_first_index]
+
+        juros = historical_row[0]
+        amort = historical_row[1] + historical_row[2]
+        pmt = juros + amort
+        saldo = historical_row[3]
+
+        row = self.create_row()
+        row.fill('n', None, 'default')
+        row.fill('data', None, 'default')
+        row.fill('saldo', saldo, 'historical', {'saldo-historical': saldo})
+        row.fill('juros', juros, 'historical', {'juros-historical': juros})
+        row.fill('amort', amort, 'historical', {'amort-historical': amort})
+        row.fill('pmt', pmt, 'historical')
+        row.fill('amort_perc', amort/saldo, 'default')
+        self.queue = row
+
+        return False
+    
+    self.next_phase()
+    return True
+
+
 def carencia_phase(self, F_i, tranche_list, tranche_i):
-    if self.i < self.inputs.get('c_period') + 1:
+    if self.i - self.phase_first_index < self.inputs.get('curve')['c-period']:
         juros = self.saldo * self.taxa_juros
         pmt = 0
         amort = 0
@@ -59,7 +85,7 @@ def transition_phase(self, F_i, tranche_list, tranche_i):
     next_queue = tranche_list[tranche_i + 1].queue
 
     juros = self.saldo * self.taxa_juros
-    pmt = F_i * self.inputs.get('pmt_proper') - next_queue.get_value('pmt')
+    pmt = F_i * self.inputs.get('curve')['pmt-proper'] - next_queue.get_value('pmt')
     amort = pmt - juros
     saldo = self.saldo + juros - pmt
 
@@ -78,7 +104,7 @@ def transition_phase(self, F_i, tranche_list, tranche_i):
 
 def main_phase(self, F_i, tranche_list, tranche_i):
     juros = self.saldo * self.taxa_juros
-    pmt = F_i * self.inputs.get('pmt_proper')
+    pmt = F_i * self.inputs.get('curve')['pmt-proper']
     amort = pmt - juros
     saldo = self.saldo + juros - pmt
 
@@ -135,6 +161,7 @@ class MezanineTranche(Tranche):
         row.add_column('saldo', 'Saldo Devedor', 13,
             {
                 'presentation': '={valor_total}*{razao}',
+                'historical': '={saldo_historical}',
                 'default': '={prev_saldo}+{juros}-{pmt}'
             },
             set(['tranche_quantity'])
@@ -142,6 +169,7 @@ class MezanineTranche(Tranche):
         row.add_column('juros', 'Juros', 12,
             {
                 'empty': '',
+                'historical': '={juros_historical}',
                 'default': '={prev_saldo}*{taxa_juros}'
             },
             set(['tranche_quantity'])
@@ -149,6 +177,7 @@ class MezanineTranche(Tranche):
         row.add_column('amort', 'Amortiz', 12,
             {
                 'empty': '',
+                'historical': '={amort_historical}',
                 'carencia': '=0',
                 'main': '={pmt}-{juros}',
                 'final': '={prev_saldo}'
@@ -158,6 +187,7 @@ class MezanineTranche(Tranche):
         row.add_column('pmt', 'PMT', 12,
             {
                 'empty': '',
+                'historical': '={juros}+{amort}',
                 'carencia': '=0',
                 'dependent': '={juros}',
                 'transition': '={F_i}*{pmt_proper}-{pmt_next}',

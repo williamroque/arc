@@ -24,7 +24,14 @@ class Communication {
                 return;
             }
 
+
             input['output-path'] = Dialog.createSaveDialog(currentPackage.allowedOutputExtensions);
+            if (!input['output-path']) {
+                event.returnValue = false;
+
+                return;
+            }
+
             input['appdata-path'] = Path.appPaths.appData;
 
             event.returnValue = await Execute.runScript([scriptPath], input);

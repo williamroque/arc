@@ -13,11 +13,11 @@ class Session():
         tranche_sub = SubordinateTranche(self.inputs)
         self.tranche_list.append(tranche_sub)
 
-        for i in range(self.inputs.get('mezanine-layers-count')):
+        for i in range(self.inputs.get('curve')['mezanine-layers-count']):
             tranche_mez = MezanineTranche(
                 self.inputs,
-                self.inputs.get('taxas-juros')['mezanino'][i],
-                self.inputs.get('razoes')['mezanino'][i],
+                self.inputs.get('curve')['taxas-juros']['mezanino'][i],
+                self.inputs.get('curve')['razoes']['mezanino'][i],
                 f'mezanino-{i}'
             )
             self.tranche_list.append(tranche_mez)
@@ -67,9 +67,9 @@ class Session():
             for i, row in enumerate(tranche.row_list[1:]):
                 collapsed[i] += row.get_value('juros') + row.get_value('amort')
 
-        c_period = self.inputs.get('c-period')
+        c_period = self.inputs.get('curve')['c-period']
 
-        total_list = [-self.inputs.get('total')]
+        total_list = [-self.inputs.get('curve')['total']]
         carencia_list = [0 for _ in range(c_period)]
 
         return total_list + carencia_list + collapsed[c_period:]

@@ -179,6 +179,7 @@
     text-transform: uppercase;
     color: #b7b5af;
     font-size: 10pt;
+    cursor: pointer;
 }
 
 .file-input-drag {
@@ -205,9 +206,11 @@
     align-items: center;
     width: 700px;
     box-sizing: border-box;
+    cursor: default;
 }
 
 .file-input-path-text {
     color: #C0B283;
     font-weight: 500;
+    cursor: text;
 }

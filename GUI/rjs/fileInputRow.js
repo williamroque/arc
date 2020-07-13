@@ -26,6 +26,10 @@ class FileInputRow extends ElementController {
     }
 
     seedTree() {
+        this.addEventListener('click', e => {
+            e.stopPropagation();
+        }, null);
+
         const pathText = new ElementController(
             'SPAN',
             {

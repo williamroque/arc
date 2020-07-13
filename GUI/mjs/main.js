@@ -133,7 +133,23 @@ const menuTemplate = [
         ]
     }] : []),
     {
-        role: 'editMenu'
+        label: 'Edit',
+        submenu: [
+            { role: 'undo' },
+            { role: 'redo' },
+            { type: 'separator' },
+            {
+                label: 'Cut',
+                accelerator: 'CmdOrCtrl+X'
+            },
+            { role: 'copy' },
+            {
+                label: 'Paste',
+                accelerator: 'CmdOrCtrl+V'
+            },
+            { type: 'separator' },
+            { role: 'selectAll' }
+        ]
     },
     {
         label: 'Packages',

@@ -1,10 +1,12 @@
 const fs = require('fs');
+const {
+    dialog
+} = require('electron').remote;
 
 class FileInput extends ElementController {
     constructor(valuesContainer, properties, parentNode) {
         super(
-            'DIV',
-            {
+            'DIV', {
                 text: properties.label,
                 classList: new Set(['file-input'])
             }
@@ -12,6 +14,8 @@ class FileInput extends ElementController {
 
         this.valuesContainer = valuesContainer;
         this.parentNode = parentNode;
+
+        this.properties = properties;
 
         this.id = properties.id;
         this.max = properties.max || Infinity;
@@ -29,13 +33,92 @@ class FileInput extends ElementController {
         this.valuesContainer.update(this.value, null, this.id);
     }
 
+    addFile(file) {
+        if (this.fileCount === 0) {
+            this.toggleText();
+            this.addClass('file-input-active');
+        }
+
+        this.fileCount++;
+
+        const fileInputRow = new FileInputRow(
+            this.valuesContainer,
+            this.deleteCallback.bind(this),
+            file,
+            this.id
+        );
+        this.addChild(fileInputRow);
+
+        if (typeof this.readToRows !== 'undefined') {
+            const data = JSON.parse(fs.readFileSync(file))[this.readToRows.drawFrom];
+
+            this.lists = [];
+
+            for (const [serie, rows] of Object.entries(data)) {
+                const rowController = new ElementController(
+                    'DIV', {
+                        classList: new Set(['form-row'])
+                    }
+                );
+
+                const rowSchema = JSON.parse(JSON.stringify(this.readToRows));
+                rowSchema.label = rowSchema.label.replace('{}', serie);
+                rowSchema.id = rowSchema.id.replace('{}', serie);
+
+                const list = new List(
+                    this.valuesContainer,
+                    rowSchema,
+                    this.lists
+                );
+
+                if (this.readToRows.sync) {
+                    list.buttonController.addEventListener('click', function (e) {
+                        for (const list of this.lists) {
+                            if (list.element !== e.currentTarget.parentNode) {
+                                list.addRow();
+                            }
+                        }
+                    }, this);
+                }
+
+                this.lists.push(list);
+
+                rowController.addChild(
+                    list,
+                    rowSchema.id
+                );
+                this.parentNode.addChild(rowController);
+
+                for (const row of rows) {
+                    list.addRow(row);
+                }
+            }
+        }
+
+        this.files.add(file);
+        this.value.update(this.files);
+
+        this.valuesContainer.update(this.value, null, this.id);
+    }
+
     seedTree() {
-        this.addEventListener('dragover', function(e) {
+        this.addEventListener('click', function (e) {
+            const file = dialog.showOpenDialogSync({
+                properties: ['openFile'],
+                filters: this.properties.allowedExtensions
+            });
+
+            if (file && this.files.size + 1 < this.max) {
+                this.addFile(file[0]);
+            }
+        }, this);
+
+        this.addEventListener('dragover', function (e) {
             e.preventDefault();
             this.addClass('file-input-drag');
         }, this);
 
-        this.addEventListener('drop', function(e) {
+        this.addEventListener('drop', function (e) {
             e.preventDefault();
 
             let allowedFiles = [];
@@ -53,79 +136,14 @@ class FileInput extends ElementController {
                 allowedFiles = allowedFiles.slice(0, this.max - this.files.size);
             }
 
-            if (this.fileCount === 0 && allowedFiles.length > 0) {
-                this.toggleText();
-                this.addClass('file-input-active');
-            }
-
             for (const file of allowedFiles) {
-                this.fileCount++;
-
-                const fileInputRow = new FileInputRow(
-                    this.valuesContainer,
-                    this.deleteCallback.bind(this),
-                    file,
-                    this.id
-                );
-                this.addChild(fileInputRow);
-
-                if (typeof this.readToRows !== 'undefined') {
-                    const data = JSON.parse(fs.readFileSync(file))[this.readToRows.drawFrom];
-
-                    this.lists = [];
-
-                    for (const [serie, rows] of Object.entries(data)) {
-                        const rowController = new ElementController(
-                            'DIV',
-                            {
-                                classList: new Set(['form-row'])
-                            }
-                        );
-
-                        const rowSchema = JSON.parse(JSON.stringify(this.readToRows));
-                        rowSchema.label = rowSchema.label.replace('{}', serie);
-                        rowSchema.id = rowSchema.id.replace('{}', serie);
-
-                        const list = new List(
-                            this.valuesContainer,
-                            rowSchema,
-                            this.lists
-                        );
-
-                        if (this.readToRows.sync) {
-                            list.buttonController.addEventListener('click', function(e) {
-                                for (const list of this.lists) {
-                                    if (list.element !== e.currentTarget.parentNode) {
-                                        list.addRow();
-                                    }
-                                }
-                            }, this);
-                        }
-
-                        this.lists.push(list);
-
-                        rowController.addChild(
-                            list,
-                            rowSchema.id
-                        );
-                        this.parentNode.addChild(rowController);
-
-                        for (const row of rows) {
-                            list.addRow(row);
-                        }
-                    }
-                }
-
-                this.files.add(file);
-                this.value.update(this.files);
-
-                this.valuesContainer.update(this.value, null, this.id);
+                this.addFile(file);
             }
 
             this.removeClass('file-input-drag');
         }, this);
 
-        this.addEventListener('dragleave', function(e) {
+        this.addEventListener('dragleave', function (e) {
             e.preventDefault();
             this.removeClass('file-input-drag');
         }, this);

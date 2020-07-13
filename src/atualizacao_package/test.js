@@ -13,9 +13,10 @@ const input = {
         '/Users/jetblack-work/Documents/Curve/arc/samples/1/saldos/6.xlsx',
         '/Users/jetblack-work/Documents/Curve/arc/samples/1/saldos/7.xlsx'
     ],
-    'atual-juros': { 16: [9823, 1234], 17: [1000, 1234, 2356], 18: [] },
-    'atual-amort': { 16: [8123, 4321], 17: [1234, 2315, 2346], 18: [] },
-    'atual-amex': { 16: [9784, 9827], 17: [5678, 9487, 6243], 18: [] },
+    'atual-saldo': { 16: [3453, 2155, 5312], 17: [5326, 3214, 4523], 18: [8839, 2349, 2393] },
+    'atual-juros': { 16: [9823, 1234, 3249], 17: [1000, 1234, 2356], 18: [1248, 3298, 1749] },
+    'atual-amort': { 16: [8123, 4321, 1244], 17: [1234, 2315, 2346], 18: [3291, 3892, 1048] },
+    'atual-amex': { 16: [9784, 9827, 0], 17: [5678, 9487, 6243], 18: [1938, 1734, 1983] },
     'output-path': '/Users/jetblack-work/Desktop/output.xlsx'
 };
 

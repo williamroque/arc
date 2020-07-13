@@ -1,3 +1,5 @@
+const { clipboard } = require('electron');
+
 class Input extends ElementController {
     constructor(valuesContainer, properties, genericGroupID) {
         super(
@@ -154,8 +156,23 @@ class Input extends ElementController {
             );
 
             e.preventDefault();
-        }
+        } else {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'v') {
+                this.updateFormValue(
+                    this.updateField(false, clipboard.readText())
+                );
+            } else if ((e.metaKey || e.ctrlKey) && e.key === 'x') {
+                const target = this.query('input').element;
 
+                const selStart = target.selectionStart;
+                const selEnd = target.selectionEnd;
+                clipboard.writeText(target.value.slice(selStart, selEnd));
+
+                this.updateFormValue(
+                    this.updateField(false, '')
+                );
+            }
+        }
         this.updateStyling();
     }
 }
