@@ -30,7 +30,7 @@ class Execute {
 
         return new Promise(resolve => {
             progressWindow.addWebListener('did-finish-load', () => {
-                const subprocess = spawn('python3', args);
+                const subprocess = spawn('python', args);
 
                 subprocess.stdin.write(JSON.stringify(input));
                 subprocess.stdin.end();
