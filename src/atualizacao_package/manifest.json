@@ -40,25 +40,31 @@
                         "label": "Juros",
                         "type": "float",
                         "group": "atual-juros",
-                        "width": 25
+                        "width": 20
                     },
                     {
                         "label": "Amortização",
                         "type": "float",
                         "group": "atual-amort",
-                        "width": 25
+                        "width": 20
                     },
                     {
                         "label": "Amex",
                         "type": "float",
                         "group": "atual-amex",
-                        "width": 25
+                        "width": 20
                     },
                     {
                         "label": "Saldo Devedor",
                         "type": "float",
                         "group": "atual-saldo",
-                        "width:": 25
+                        "width:": 20
+                    },
+                    {
+                        "label": "Fluxo Créditos",
+                        "type": "float",
+                        "group": "atual-fluxo",
+                        "width": 20
                     }
                 ]
             }

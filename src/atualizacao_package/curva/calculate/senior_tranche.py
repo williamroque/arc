@@ -3,7 +3,7 @@ from curva.framework.tranche import *
 from functools import reduce
 
 
-def presentation_phase(self, F_i, tranche_list, tranche_i):
+def presentation_phase(self, tranche_list, tranche_i):
     row = self.create_row()
     row.fill('n', None, 'default')
     row.fill('data', None, 'default')
@@ -17,43 +17,57 @@ def presentation_phase(self, F_i, tranche_list, tranche_i):
     self.next_phase()
 
 
-def draw_phase(self, F_i, tranche_list, tranche_i):
-    if self.i - self.phase_first_index < self.inputs.get('historical-period'):
-        serie = str(self.inputs.get('curve')['mezanine-layers-count'] + 2 - tranche_i + self.inputs.get('curve')['primeira-serie'])
+def draw_phase(self, tranche_list, tranche_i):
+    historical_period = self.inputs.get('historical-period')
+    adjusted_i = self.i - self.phase_first_index
+    layers_count = self.inputs.get('curve')['mezanine-layers-count'] + 2
+
+    if adjusted_i < historical_period:
+        serie = str(layers_count - 1 - tranche_i + self.inputs.get('curve')['primeira-serie'])
         historical_row = self.inputs.get('curve')['atual'][serie][self.i - self.phase_first_index]
 
-        juros = historical_row[0]
-        amort = historical_row[1] + historical_row[2]
-        pmt = juros + amort
         saldo = historical_row[3]
+        juros = historical_row[0]
 
         row = self.create_row()
         row.fill('n', None, 'default')
         row.fill('data', None, 'default')
         row.fill('saldo', saldo, 'historical', {'saldo-historical': saldo})
         row.fill('juros', juros, 'historical', {'juros-historical': juros})
-        row.fill('amort', amort, 'historical', {'amort-historical': amort})
-        row.fill('pmt', pmt, 'historical')
+
+        if self.i - 1 < self.inputs.get('curve')['c-period']:
+            amort = 0
+            pmt = 0
+
+            row.fill('amort', amort, 'carencia')
+            row.fill('pmt', pmt, 'carencia')
+        else:
+            amort = historical_row[1] + historical_row[2]
+            pmt = juros + amort
+
+            row.fill('amort', amort, 'historical', {'amort-historical': amort})
+            row.fill('pmt', pmt, 'main')
+
         row.fill('amort_perc', amort/saldo, 'default')
         self.queue = row
 
         return False
-    
+
     self.next_phase()
     return True
 
 
-def carencia_phase(self, F_i, tranche_list, tranche_i):
-    if self.i - self.phase_first_index < self.inputs.get('curve')['c-period']:
+def carencia_phase(self, tranche_list, tranche_i):
+    if self.i - 1 < self.inputs.get('curve')['c-period']:
         juros = self.saldo * self.taxa_juros
-        pmt = 0
         amort = 0
-        saldo = self.saldo + juros - pmt
+        pmt = 0
+        saldo = self.saldo + juros - amort
 
         row = self.create_row()
         row.fill('n', None, 'default')
         row.fill('data', None, 'default')
-        row.fill('saldo', saldo, 'default')
+        row.fill('saldo', saldo, 'carencia')
         row.fill('juros', juros, 'default')
         row.fill('amort', amort, 'carencia')
         row.fill('pmt', pmt, 'carencia')
@@ -66,17 +80,11 @@ def carencia_phase(self, F_i, tranche_list, tranche_i):
     return True
 
 
-def main_phase(self, F_i, tranche_list, tranche_i):
-    other_tranches = tranche_list[:-1]
-
-    row_sum = 0
-    for tranche in other_tranches:
-        row_sum += tranche.queue.get_value('pmt')
-
+def main_phase(self, tranche_list, tranche_i):
     juros = self.saldo * self.taxa_juros
-    pmt = F_i * self.inputs.get('curve')['pmt-proper'] - row_sum
-    amort = pmt - juros
-    saldo = self.saldo + juros - pmt
+    amort = self.inputs.get('curve')['amort-percentages']['senior'][self.i] * self.saldo
+    pmt = juros + amort
+    saldo = self.saldo - amort
 
     row = self.create_row()
     row.fill('n', None, 'default')
@@ -88,24 +96,8 @@ def main_phase(self, F_i, tranche_list, tranche_i):
     row.fill('amort_perc', amort/self.saldo, 'default')
     self.queue = row
 
-
-def final_phase(self, F_i, tranche_list, tranche_i):
-    juros = self.saldo * self.taxa_juros
-    amort = self.saldo
-    pmt = juros + amort
-    saldo = self.saldo + juros - pmt
-
-    row = self.create_row()
-    row.fill('n', None, 'default')
-    row.fill('data', None, 'default')
-    row.fill('saldo', saldo, 'default')
-    row.fill('juros', juros, 'default')
-    row.fill('amort', amort, 'final')
-    row.fill('pmt', pmt, 'final')
-    row.fill('amort_perc', amort/self.saldo, 'default')
-    self.queue = row
-
-    self.next_phase()
+    if saldo <= 0:
+        self.next_phase()
 
 
 class SeniorTranche(Tranche):
@@ -115,7 +107,7 @@ class SeniorTranche(Tranche):
         self.title = 'Tranche Sênior'
 
         self.phase_list = [
-            presentation_phase, draw_phase, carencia_phase, main_phase, final_phase
+            presentation_phase, draw_phase, carencia_phase, main_phase
         ]
 
     def create_row(self):
@@ -132,7 +124,8 @@ class SeniorTranche(Tranche):
             {
                 'presentation': '={valor_total}*{razao}',
                 'historical': '={saldo_historical}',
-                'default': '={prev_saldo}+{juros}-{pmt}'
+                'carencia': '={prev_saldo}+{juros}-{amort}',
+                'default': '={prev_saldo}-{amort}'
             },
             set(['tranche_quantity'])
         )
@@ -149,8 +142,7 @@ class SeniorTranche(Tranche):
                 'empty': '',
                 'historical': '={amort_historical}',
                 'carencia': '=0',
-                'main': '={pmt}-{juros}',
-                'final': '={prev_saldo}'
+                'main': '={amort_perc}*{prev_saldo}'
             },
             set(['tranche_quantity'])
         )
@@ -159,8 +151,7 @@ class SeniorTranche(Tranche):
                 'empty': '',
                 'historical': '={juros}+{amort}',
                 'carencia': '=0',
-                'main': '={F_i}*{pmt_proper}-{row_sum}',
-                'final': '={juros}+{amort}'
+                'main': '={juros}+{amort}',
             },
             set(['tranche_quantity'])
         )

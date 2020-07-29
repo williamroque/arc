@@ -33,9 +33,11 @@ def main():
     inputs.update('flux-total', flux_total)
     inputs.update('flux-months', months)
 
+    original_period = len(list(inputs.get('curve')['atual'].values())[0])
     historical_period = 0
     for serie in inputs.get('curve')['atual'].keys():
         if serie in inputs.get('atual-juros'):
+            i = -1
             for i, taxa_juros in enumerate(inputs.get('atual-juros')[serie]):
                 inputs.get('curve')['atual'][serie].append([
                     taxa_juros,
@@ -45,6 +47,7 @@ def main():
                 ])
             if i + 1 > historical_period:
                 historical_period = i + 1
+    historical_period += original_period
     inputs.update('historical-period', historical_period)
 
     print('Inputs processed.\n', flush=True)
@@ -63,9 +66,15 @@ def main():
         fluxo_financeiro = sess.collapse_financial_flux()
         irr = (1 + np.irr(fluxo_financeiro)) ** 12 - 1
 
-        for row in sess.tranche_list[-1].row_list:
-            print(row.get_values())
+
+        print(irr * 100)
         break
+
+    for tranche in sess.tranche_list:
+        print(tranche.title)
+        for row in tranche.row_list:
+            print(list(map(lambda x: round(x,2) if x != None else None,row.get_values())))
+        print()
 
     print('Curve calculated.\n', flush=True)
 

@@ -1,15 +1,15 @@
 const { spawn } = require('child_process');
 
-const subprocess = spawn('python3', ['main.py']);
+const subprocess = spawn('python', ['main.py']);
 
 const input = {
     indexador: 0,
     'pu-emis': 1000,
     total: 14270000,
     'starting-date': 'Set/2019',
-    razoes: { sub: .15, sen: .70, mezanino: [.15] },
+    razoes: { sub: .15, sen: .70 },
     'target-irr': .105,
-    'taxas-juros-anual': { sen: .07, mezanino: [.085] },
+    'taxas-juros-anual': { sen: .07 },
     'c-period': 3,
     'fr-previsto': 400000,
     'pmt-proper': .92,

@@ -1,3 +1,5 @@
+from itertools import zip_longest
+
 from curva.calculate.subordinate_tranche import SubordinateTranche
 from curva.calculate.mezanine_tranche import MezanineTranche
 from curva.calculate.senior_tranche import SeniorTranche
@@ -25,35 +27,16 @@ class Session():
         tranche_sen = SeniorTranche(self.inputs)
         self.tranche_list.append(tranche_sen)
 
-    def calculate_row(self, F_i, tranche_list):
+    def calculate_row(self, tranche_list):
         for tranche_i, tranche in enumerate(tranche_list):
-            tranche.calculate(F_i, self.tranche_list, tranche_i)
+            tranche.calculate(self.tranche_list, tranche_i)
 
     def run(self):
         fluxo_creditos = self.inputs.get('flux-total')
         for i in range(len(fluxo_creditos)):
             self.calculate_row(
-                fluxo_creditos[i - 1],
                 self.tranche_list
             )
-            for tranche_i, tranche in enumerate(self.tranche_list):
-                if tranche.queue and tranche.queue.get_value('saldo') <= 0:
-                    tranche.next_phase()
-                    if tranche_i > 0:
-                        self.tranche_list[tranche_i - 1].next_phase()
-
-                    tranche.calculate(
-                        fluxo_creditos[i - 1],
-                        self.tranche_list,
-                        tranche_i
-                    )
-
-                    self.calculate_row(
-                        fluxo_creditos[i - 1],
-                        self.tranche_list[:tranche_i]
-                    )
-
-                    break
 
             for tranche in self.tranche_list:
                 if tranche.queue:
@@ -65,11 +48,8 @@ class Session():
 
         for tranche in self.tranche_list:
             for i, row in enumerate(tranche.row_list[1:]):
-                collapsed[i] += row.get_value('juros') + row.get_value('amort')
+                collapsed[i] += row.get_value('pmt')
 
-        c_period = self.inputs.get('curve')['c-period']
+        total = [-self.inputs.get('curve')['total']]
 
-        total_list = [-self.inputs.get('curve')['total']]
-        carencia_list = [0 for _ in range(c_period)]
-
-        return total_list + carencia_list + collapsed[c_period:]
+        return total + collapsed

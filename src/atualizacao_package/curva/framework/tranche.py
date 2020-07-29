@@ -38,11 +38,11 @@ class Tranche():
             return True
         return False
 
-    def calculate(self, F_i, tranche_list, tranche_i):
+    def calculate(self, tranche_list, tranche_i):
         if len(self.phase_list):
-            repeats_calculation = self.phase_list[0](self, F_i, tranche_list, tranche_i)
+            repeats_calculation = self.phase_list[0](self, tranche_list, tranche_i)
             if repeats_calculation:
-                self.phase_list[0](self, F_i, tranche_list, tranche_i)
+                self.phase_list[0](self, tranche_list, tranche_i)
         else:
             self.queue = None
 
@@ -63,7 +63,8 @@ class TrancheRow():
         self.columns[column_id]['value'] = value
 
         formulae = self.columns[column_id]['formulae']
-        self.columns[column_id]['formula'] = (formulae[formula], substitution_map)
+        self.columns[column_id]['formula'] = (
+            formulae[formula], substitution_map)
 
     def get_columns(self):
         return self.columns

@@ -123,7 +123,7 @@ def main():
     file_name = os.path.splitext(inputs.get('output-path'))[0]
     path = file_name + '.curve'
     with open(path, 'w') as f:
-        inputs.update('amort_percentages', {})
+        inputs.update('amort-percentages', {})
         inputs.update('atual', {})
 
         tranche_list = inputs.get('tranche-list')
@@ -132,7 +132,7 @@ def main():
                 lambda row: row.get_value('amort_perc'),
                 tranche.row_list
             ))
-            inputs.get('amort_percentages')[tranche.id] = amort_percentages
+            inputs.get('amort-percentages')[tranche.id] = amort_percentages
             inputs.get('atual')[inputs.get('primeira-serie') + i] = []
 
         inputs.update('tranche-list', None)
