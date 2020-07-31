@@ -86,6 +86,7 @@ app.on('activate', () => {
     }
 });
 
+let selectedPackageIndex;
 const menuTemplate = [
     ...(isMac ? [{
         label: app.name,
@@ -166,9 +167,23 @@ const menuTemplate = [
                 }
             },
             {
+                label: 'Next Package',
+                accelerator: 'CmdOrCtrl+Shift+N',
+                click: () => {
+                    const schemata = Path.formSchemata;
+                    selectedPackageIndex = (selectedPackageIndex + 1) % schemata.length  || 0;
+
+                    selectPackage(schemata[selectedPackageIndex].packageName);
+                }
+            },
+            {
                 type: 'separator'
             },
-            ...Path.formSchemata.map(form => {
+            ...Path.formSchemata.map((form, i) => {
+                if (form.isDefault) {
+                    selectedPackageIndex = i;
+                }
+
                 return {
                     label: form.title,
                     type: 'radio',
@@ -210,3 +225,8 @@ const menuTemplate = [
 
 const menu = Menu.buildFromTemplate(menuTemplate);
 Menu.setApplicationMenu(menu);
+
+function selectPackage(packageID) {
+    menu.getMenuItemById(packageID).checked = true;
+    mainWindow.dispatchWebEvent('update-form', packageID);
+}

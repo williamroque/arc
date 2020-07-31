@@ -5,13 +5,16 @@ class InputValue {
         const floatPattern = settings.getSync('useDecimalDot') ?
             /^\d[\d,]*(\.\d+)?$/ :
             /^\d[\d\.]*(,\d+)?$/;
+        const datePattern = /^(Jan|Fev|Mar|Abr|Mai|Jun|Jul|Ago|Set|Out|Nov|Dez)\/\d{4}$/i;
 
         this.typeSystem = {
             int: /^\d[\d\.]*$/,
             float: floatPattern,
             percentage: floatPattern,
-            dateString: /^(Jan|Fev|Mar|Abr|Mai|Jun|Jul|Ago|Set|Out|Nov|Dez)\/\d{4}$/,
-            filePaths: 'size'
+            dateString: datePattern,
+            filePaths: 'size',
+            anualIncrement: /^\d{4}$/,
+            monthlyIncrement: datePattern
         };
 
         this.content = content;

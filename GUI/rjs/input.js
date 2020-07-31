@@ -1,7 +1,7 @@
 const { clipboard } = require('electron');
 
 class Input extends ElementController {
-    constructor(valuesContainer, properties, genericGroupID) {
+    constructor(valuesContainer, properties, genericGroupID, setAnchorCallback, getIndex) {
         super(
             'DIV',
             {
@@ -16,8 +16,12 @@ class Input extends ElementController {
         this.label = properties.label;
         this.group = properties.group;
         this.type = properties.type;
+        this.incrementGroup = properties.incrementGroup;
 
         this.genericGroupID = genericGroupID;
+
+        this.setAnchorCallback = setAnchorCallback;
+        this.getIndex = getIndex;
 
         this.seedTree();
 
@@ -84,47 +88,100 @@ class Input extends ElementController {
         const selStart = target.selectionStart;
         const selEnd = target.selectionEnd;
 
-        let targetValue = target.value.split('');
-
         const selLength = selEnd - selStart;
+
+        let targetValue;
+
         if (isDeletion) {
             let cursorOffset = 0;
+
             if (selLength > 0) {
-                targetValue.splice(selStart, selLength);
+                targetValue = this.setFieldValue('', [selStart, selEnd]);
             } else {
-                targetValue.splice(selStart - 1, 1);
+                targetValue = this.setFieldValue('', [selStart - 1, selEnd]);
                 cursorOffset = 1;
             }
-            targetValue = targetValue.join('');
 
-            target.value = targetValue;
             target.setSelectionRange(selStart - cursorOffset, selStart - cursorOffset);
         } else {
-            targetValue.splice(selStart, selEnd - selStart, key);
-            targetValue = targetValue.join('');
-
-            target.value = targetValue;
+            targetValue = this.setFieldValue(key, [selStart, selEnd]);
             target.setSelectionRange(selStart + 1, selStart + 1);
+        }
+
+        if (this.type === 'anualIncrement') {
+            if (this.value.test()) {
+                this.setAnchorCallback(
+                    this.incrementGroup,
+                    {
+                        anchor: (parseInt(targetValue) - this.getIndex()).toString(),
+                        getDisplacement: function (i) {
+                            return (parseInt(this.anchor) + i).toString();
+                        }
+                    }
+                );
+            }
+        } else if (this.type === 'monthlyIncrement') {
+            if (this.value.test()) {
+                this.setAnchorCallback(
+                    this.incrementGroup,
+                    {
+                        anchor: this.addToDate(targetValue, -this.getIndex()),
+                        getDisplacement: (function (i) {
+                            return this.addToDate(targetValue, i - this.getIndex());
+                        }).bind(this)
+                    }
+                );
+            }
         }
 
         return targetValue;
     }
 
-    updateFormValue(value) {
-        const target = this.element;
+    setFieldValue(value, range=[0, value.length]) {
+        const target = this.query('input').element;
+        let targetValue = target.value.split('');
 
+        targetValue.splice(range[0], range[1] - range[0], value);
+        targetValue = targetValue.join('');
+
+        target.value = targetValue;
+
+        this.updateFormValue(targetValue);
+
+        return targetValue;
+    }
+
+    addToDate(date, i) {
+        const MONTHS = 'Jan|Fev|Mar|Abr|Mai|Jun|Jul|Ago|Set|Out|Nov|Dez'.split('|').map(m => m.toLowerCase());
+        let [month, year] = date.split('/');
+
+        const monthIndex = MONTHS.indexOf(month.toLowerCase());
+
+        year |= 0;
+        if (i < 0) {
+            year -= Math.ceil(-((monthIndex + i) / 12));
+        } else {
+            year += (monthIndex + i) / 12 | 0;
+        }
+
+        month = MONTHS[(12 + monthIndex + i % 12) % 12];
+
+        return `${month}/${year}`;
+
+    }
+
+    updateFormValue(value) {
         this.value.update(value);
 
-        if (typeof this.genericGroupID !== 'undefined') {
-            let nodeIndex = 0, child = target.parentNode;
-            while ((child = child.previousSibling) !== null) {
-                nodeIndex++;
+        if (this.type !== 'anualIncrement' && this.type !== 'monthlyIncrement') {
+            if (typeof this.genericGroupID !== 'undefined') {
+                this.valuesContainer.update(this.value, this.group, this.genericGroupID, this.getIndex());
+            } else {
+                this.valuesContainer.update(this.value, this.group, this.id);
             }
-
-            this.valuesContainer.update(this.value, this.group, this.genericGroupID, nodeIndex);
-        } else {
-            this.valuesContainer.update(this.value, this.group, this.id);
         }
+
+        this.updateStyling();
     }
 
     updateStyling() {
@@ -151,16 +208,12 @@ class Input extends ElementController {
 
     handleKeyEvent(e) {
         if (e.key.length === 1 && !e.metaKey && !e.ctrlKey || e.key === 'Backspace') {
-            this.updateFormValue(
-                this.updateField(e.key === 'Backspace', e.key)
-            );
+            this.updateField(e.key === 'Backspace', e.key)
 
             e.preventDefault();
         } else {
             if ((e.metaKey || e.ctrlKey) && e.key === 'v') {
-                this.updateFormValue(
-                    this.updateField(false, clipboard.readText())
-                );
+                this.updateField(false, clipboard.readText())
             } else if ((e.metaKey || e.ctrlKey) && e.key === 'x') {
                 const target = this.query('input').element;
 
@@ -168,11 +221,8 @@ class Input extends ElementController {
                 const selEnd = target.selectionEnd;
                 clipboard.writeText(target.value.slice(selStart, selEnd));
 
-                this.updateFormValue(
-                    this.updateField(false, '')
-                );
+                this.updateField(false, '')
             }
         }
-        this.updateStyling();
     }
 }

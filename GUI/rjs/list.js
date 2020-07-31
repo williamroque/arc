@@ -13,7 +13,7 @@ class List extends ElementController {
         this.inputs = properties.inputs;
         this.max = properties.max || Infinity;
 
-        this.syncedLists = syncedLists;
+        this.syncedLists = syncedLists || [this];
 
         this.showStateComplementLabel = 'Esconder';
 
@@ -33,19 +33,32 @@ class List extends ElementController {
         }, this);
 
         this.seedTree();
+
+        this.listRows = [];
+        this.incrementAnchors = {};
     }
 
-    deleteCallback(id) {
-        if (typeof this.syncedLists !== 'undefined') {
-            for (const syncedList of this.syncedLists) {
-                if (syncedList !== this) {
-                    const listRow = syncedList.query('list-items-container').query(id);
-                    listRow.delete.call(listRow);
-                    syncedList.listController.removeChild(id);
-                }
+    calibrateIndices() {
+        this.syncedLists.forEach(syncedList => {
+            syncedList.incrementAnchors = this.incrementAnchors;
+            syncedList.listRows.forEach((listRow, i) => {
+                listRow.index = i;
+            });
+        });
+    }
+
+    deleteCallback(i, id) {
+        this.syncedLists.forEach(syncedList => {
+            const listRow = syncedList.query('list-items-container').query(id);
+            syncedList.listController.removeChild(id);
+            syncedList.listRows.splice(i, 1);
+            syncedList.calibrateIndices();
+
+            if (syncedList !== this) {
+                listRow.delete.call(listRow);
             }
-        }
-        this.listController.removeChild(id);
+        });
+        this.calibrateIndices();
     }
 
     seedTree() {
@@ -88,9 +101,13 @@ class List extends ElementController {
 
     addRow(values) {
         if (Object.values(this.listController.DOMTree.children).length < this.max) {
-            const listRow = new ListRow(this.valuesContainer, this.deleteCallback.bind(this), this.id, this.inputs);
+            const listRow = new ListRow(this.valuesContainer, this.deleteCallback.bind(this), this.id, this.inputs, this.listRows.length, this.incrementAnchors, this.calibrateIndices.bind(this));
             this.listController.addChild(listRow);
             listRow.setFormValues(values);
+
+            this.listRows.push(listRow);
+
+            this.calibrateIndices();
         }
     }
 
@@ -108,3 +125,5 @@ class List extends ElementController {
         }
     }
 }
+
+// ADD DYNAMIC HISTORICAL SALDO CALCULATION BASED on PU, as WELL as PROJECTED INTEREST RATES with IPCU (LAST VALUE BECOMES "à PARTIR de")

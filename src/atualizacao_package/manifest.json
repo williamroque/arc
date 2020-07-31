@@ -18,6 +18,26 @@
     ],
     "form": [
         {
+            "id": "ipca-anual",
+            "label": "Adicionar Projeção",
+            "type": "list",
+            "inputs": [
+                {
+                    "label": "Período",
+                    "type": "anualIncrement",
+                    "incrementGroup": "period",
+                    "width": 50
+                },
+                {
+                    "label": "IPCA Anual",
+                    "type": "percentage",
+                    "group": "ipca-anual",
+                    "width": 50
+                }
+            ],
+            "min": 1
+        },
+        {
             "id": "arquivo-curva",
             "label": "Arquivo Curva",
             "type": "file-input",
@@ -37,6 +57,12 @@
                 "drawFrom": "atual",
                 "inputs": [
                     {
+                        "label": "Data",
+                        "type": "monthlyIncrement",
+                        "incrementGroup": "date",
+                        "width": 20
+                    },
+                    {
                         "label": "Juros",
                         "type": "float",
                         "group": "atual-juros",
@@ -55,16 +81,10 @@
                         "width": 20
                     },
                     {
-                        "label": "Saldo Devedor",
+                        "label": "PU",
                         "type": "float",
-                        "group": "atual-saldo",
+                        "group": "atual-pu",
                         "width:": 20
-                    },
-                    {
-                        "label": "Fluxo Créditos",
-                        "type": "float",
-                        "group": "atual-fluxo",
-                        "width": 20
                     }
                 ]
             }
