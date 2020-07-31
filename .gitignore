@@ -9,3 +9,4 @@ testdir/
 
 __pycache__/
 .vscode/
+arc.code-workspace
