@@ -60,6 +60,8 @@
                         "label": "Data",
                         "type": "monthlyIncrement",
                         "incrementGroup": "date",
+                        "drawDefault": "starting-date",
+                        "disabled": true,
                         "width": 20
                     },
                     {

@@ -17,10 +17,12 @@ class Input extends ElementController {
         this.group = properties.group;
         this.type = properties.type;
         this.incrementGroup = properties.incrementGroup;
+        this.disabled = properties.disabled;
 
         this.genericGroupID = genericGroupID;
 
         this.setAnchorCallback = setAnchorCallback;
+
         this.getIndex = getIndex;
 
         this.seedTree();
@@ -36,6 +38,9 @@ class Input extends ElementController {
                 classList: new Set(['form-input-label'])
             }
         );
+        if (this.disabled) {
+            labelController.element.setAttribute('disabled', 'disabled');
+        }
         this.addChild(labelController, 'label');
 
         const inputController = new ElementController(
@@ -44,6 +49,9 @@ class Input extends ElementController {
                 classList: new Set(['form-input'])
             }
         );
+        if (this.disabled) {
+            inputController.element.setAttribute('disabled', 'disabled');
+        }
         inputController.addEventListener('keydown', this.handleKeyEvent, this);
         this.addChild(inputController, 'input');
 
@@ -55,6 +63,9 @@ class Input extends ElementController {
                     classList: new Set(['percentage-symbol'])
                 }
             );
+            if (this.disabled) {
+                percentageLabelController.element.setAttribute('disabled', 'disabled');
+            }
             this.addChild(percentageLabelController, 'percentageSymbol');
             inputController.addClass('percentage-input');
         }
@@ -108,28 +119,12 @@ class Input extends ElementController {
             target.setSelectionRange(selStart + 1, selStart + 1);
         }
 
-        if (this.type === 'anualIncrement') {
+        if (this.type === 'anualIncrement' || this.type === 'monthlyIncrement') {
             if (this.value.test()) {
                 this.setAnchorCallback(
                     this.incrementGroup,
-                    {
-                        anchor: (parseInt(targetValue) - this.getIndex()).toString(),
-                        getDisplacement: function (i) {
-                            return (parseInt(this.anchor) + i).toString();
-                        }
-                    }
-                );
-            }
-        } else if (this.type === 'monthlyIncrement') {
-            if (this.value.test()) {
-                this.setAnchorCallback(
-                    this.incrementGroup,
-                    {
-                        anchor: this.addToDate(targetValue, -this.getIndex()),
-                        getDisplacement: (function (i) {
-                            return this.addToDate(targetValue, i - this.getIndex());
-                        }).bind(this)
-                    }
+                    targetValue,
+                    this.type
                 );
             }
         }
@@ -149,25 +144,6 @@ class Input extends ElementController {
         this.updateFormValue(targetValue);
 
         return targetValue;
-    }
-
-    addToDate(date, i) {
-        const MONTHS = 'Jan|Fev|Mar|Abr|Mai|Jun|Jul|Ago|Set|Out|Nov|Dez'.split('|').map(m => m.toLowerCase());
-        let [month, year] = date.split('/');
-
-        const monthIndex = MONTHS.indexOf(month.toLowerCase());
-
-        year |= 0;
-        if (i < 0) {
-            year -= Math.ceil(-((monthIndex + i) / 12));
-        } else {
-            year += (monthIndex + i) / 12 | 0;
-        }
-
-        month = MONTHS[(12 + monthIndex + i % 12) % 12];
-
-        return `${month}/${year}`;
-
     }
 
     updateFormValue(value) {

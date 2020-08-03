@@ -50,11 +50,11 @@ class FileInput extends ElementController {
         this.addChild(fileInputRow);
 
         if (typeof this.readToRows !== 'undefined') {
-            const data = JSON.parse(fs.readFileSync(file))[this.readToRows.drawFrom];
+            const data = JSON.parse(fs.readFileSync(file));
 
             this.lists = [];
 
-            for (const [serie, rows] of Object.entries(data)) {
+            Object.entries(data[this.readToRows.drawFrom]).forEach(([serie, rows]) => {
                 const rowController = new ElementController(
                     'DIV', {
                         classList: new Set(['form-row'])
@@ -68,7 +68,8 @@ class FileInput extends ElementController {
                 const list = new List(
                     this.valuesContainer,
                     rowSchema,
-                    this.lists
+                    this.lists,
+                    data
                 );
 
                 if (this.readToRows.sync) {
@@ -92,7 +93,7 @@ class FileInput extends ElementController {
                 for (const row of rows) {
                     list.addRow(row);
                 }
-            }
+            });
         }
 
         this.files.add(file);

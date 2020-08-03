@@ -111,6 +111,19 @@
     color: #7d5353;
 }
 
+.form-input[disabled] {
+    color: #797575;
+    border-bottom-color: #b5b5b5 !important;
+}
+
+.form-input-label[disabled] {
+    color: #8e8d8d !important;
+}
+
+.percentage-symbol[disabled] {
+    color: #908f8f;
+}
+
 .add-button {
     width: 100%;
     height: 45px;
