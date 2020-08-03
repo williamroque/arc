@@ -12,6 +12,7 @@ class List extends ElementController {
         this.label = properties.label;
         this.inputs = properties.inputs;
         this.max = properties.max || Infinity;
+        this.min = properties.min || 0;
 
         this.syncedLists = syncedLists || [this];
 
@@ -34,10 +35,10 @@ class List extends ElementController {
             Toggle.show([button], e.pageX, e.pageY);
         }, this);
 
-        this.seedTree();
-
         this.listRows = [];
         this.incrementAnchors = {};
+
+        this.seedTree();
     }
 
     calibrateIndices() {
@@ -50,17 +51,17 @@ class List extends ElementController {
     }
 
     deleteCallback(i, id) {
-        this.syncedLists.forEach(syncedList => {
-            const listRow = syncedList.query('list-items-container').query(id);
-            syncedList.listController.removeChild(id);
-            syncedList.listRows.splice(i, 1);
-            syncedList.calibrateIndices();
+        if (this.listRows.length > this.min) {
+            this.syncedLists.forEach(syncedList => {
+                const listRow = syncedList.query('list-items-container').query(id);
+                syncedList.listController.removeChild(id);
+                syncedList.listRows.splice(i, 1);
+                syncedList.calibrateIndices();
 
-            if (syncedList !== this) {
                 listRow.delete.call(listRow);
-            }
-        });
-        this.calibrateIndices();
+            });
+            this.calibrateIndices();
+        }
     }
 
     seedTree() {
@@ -99,6 +100,10 @@ class List extends ElementController {
             this.addRow();
         }, this);
         this.addChild(this.buttonController);
+
+        while (this.listRows.length < this.min) {
+            this.addRow();
+        }
     }
 
     addRow(values) {

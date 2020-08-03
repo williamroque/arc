@@ -31,8 +31,6 @@ class ListRow extends ElementController {
         }
     }
 
-
-
     seedTree() {
         for (const cellSchema of this.inputSchemata) {
             const inputCell = new Input(
@@ -65,7 +63,6 @@ class ListRow extends ElementController {
             }
         );
         deleteButton.addEventListener('click', function() {
-            this.delete();
             this.deleteCallback(this._index, this.nodeID);
         }, this);
         this.addChild(deleteButton);

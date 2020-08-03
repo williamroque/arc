@@ -18,7 +18,7 @@
     ],
     "form": [
         {
-            "id": "ipca-anual",
+            "id": "ipca",
             "label": "Adicionar Projeção",
             "type": "list",
             "inputs": [
@@ -26,6 +26,7 @@
                     "label": "Período",
                     "type": "anualIncrement",
                     "incrementGroup": "period",
+                    "group": "ipca-periodo",
                     "width": 50
                 },
                 {
@@ -62,31 +63,38 @@
                         "incrementGroup": "date",
                         "drawDefault": "starting-date",
                         "disabled": true,
-                        "width": 20
+                        "group": "atual-data",
+                        "width": 15
+                    },
+                    {
+                        "label": "Saldo",
+                        "type": "float",
+                        "group": "atual-saldo",
+                        "width": 21
                     },
                     {
                         "label": "Juros",
                         "type": "float",
                         "group": "atual-juros",
-                        "width": 20
+                        "width": 21
                     },
                     {
                         "label": "Amortização",
                         "type": "float",
                         "group": "atual-amort",
-                        "width": 20
+                        "width": 21
                     },
                     {
                         "label": "Amex",
                         "type": "float",
                         "group": "atual-amex",
-                        "width": 20
+                        "width": 21
                     },
                     {
                         "label": "PU",
                         "type": "float",
                         "group": "atual-pu",
-                        "width:": 20
+                        "width:": 21
                     }
                 ]
             }

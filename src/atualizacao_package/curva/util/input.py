@@ -6,6 +6,8 @@ import copy
 class Input():
     def __init__(self):
         self.inputs = json.loads(sys.stdin.readlines()[0])
+        print(self.inputs)
+        sys.exit(0)
 
     def apply_map(self, source, target, callback):
         self.inputs[target] = {}

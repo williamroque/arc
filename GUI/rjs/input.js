@@ -1,7 +1,7 @@
 const { clipboard } = require('electron');
 
 class Input extends ElementController {
-    constructor(valuesContainer, properties, genericGroupID, setAnchorCallback, getIndex) {
+    constructor(valuesContainer, properties, listID, setAnchorCallback, getIndex) {
         super(
             'DIV',
             {
@@ -19,7 +19,7 @@ class Input extends ElementController {
         this.incrementGroup = properties.incrementGroup;
         this.disabled = properties.disabled;
 
-        this.genericGroupID = genericGroupID;
+        this.listID = listID;
 
         this.setAnchorCallback = setAnchorCallback;
 
@@ -149,12 +149,11 @@ class Input extends ElementController {
     updateFormValue(value) {
         this.value.update(value);
 
-        if (this.type !== 'anualIncrement' && this.type !== 'monthlyIncrement') {
-            if (typeof this.genericGroupID !== 'undefined') {
-                this.valuesContainer.update(this.value, this.group, this.genericGroupID, this.getIndex());
-            } else {
-                this.valuesContainer.update(this.value, this.group, this.id);
-            }
+        if (typeof this.listID !== 'undefined') {
+            console.log(this.value, this.group, this.listID, this.getIndex());
+            this.valuesContainer.update(this.value, this.group, this.listID, this.getIndex());
+        } else {
+            this.valuesContainer.update(this.value, this.group, this.id);
         }
 
         this.updateStyling();
@@ -189,7 +188,15 @@ class Input extends ElementController {
             e.preventDefault();
         } else {
             if ((e.metaKey || e.ctrlKey) && e.key === 'v') {
-                this.updateField(false, clipboard.readText())
+                const target = this.query('input').element;
+
+                const selStart = target.selectionStart;
+                const selEnd = target.selectionEnd;
+
+                const text = clipboard.readText();
+
+                this.setFieldValue(text, [selStart, selEnd])
+                target.setSelectionRange(selStart + text.length, selStart + text.length);
             } else if ((e.metaKey || e.ctrlKey) && e.key === 'x') {
                 const target = this.query('input').element;
 

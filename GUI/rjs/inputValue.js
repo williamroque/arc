@@ -2,19 +2,19 @@ const settings = require('electron-settings');
 
 class InputValue {
     constructor(content, type, setValidityClassCallback) {
-        const floatPattern = settings.getSync('useDecimalDot') ?
-            /^\d[\d,]*(\.\d+)?$/ :
-            /^\d[\d\.]*(,\d+)?$/;
+        const testFloat = s => settings.getSync('useDecimalDot') ?
+            /^\d[\d,]*(\.\d+)?$/.test(s) :
+            /^\d[\d\.]*(,\d+)?$/.test(s);
         const datePattern = /^(Jan|Fev|Mar|Abr|Mai|Jun|Jul|Ago|Set|Out|Nov|Dez)\/\d{4}$/i;
 
         this.typeSystem = {
-            int: /^\d[\d\.]*$/,
-            float: floatPattern,
-            percentage: floatPattern,
-            dateString: datePattern,
-            filePaths: 'size',
-            anualIncrement: /^\d{4}$/,
-            monthlyIncrement: datePattern
+            int: s => /^\d[\d\.]*$/.test(s),
+            float: testFloat,
+            percentage: testFloat,
+            dateString: s => datePattern.test(s),
+            filePaths: s => this.content.size > 0,
+            anualIncrement: s => /^\d{4}$/.test(s),
+            monthlyIncrement: s => datePattern.test(s)
         };
 
         this.content = content;
@@ -34,10 +34,6 @@ class InputValue {
     }
 
     test() {
-        if (typeof this.typeValid === 'string') {
-            return !!this.content[this.typeValid];
-        } else {
-            return this.typeValid.test(this.content);
-        }
+        return this.typeValid(this.content);
     }
 }
