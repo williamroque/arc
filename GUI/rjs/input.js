@@ -150,7 +150,6 @@ class Input extends ElementController {
         this.value.update(value);
 
         if (typeof this.listID !== 'undefined') {
-            console.log(this.value, this.group, this.listID, this.getIndex());
             this.valuesContainer.update(this.value, this.group, this.listID, this.getIndex());
         } else {
             this.valuesContainer.update(this.value, this.group, this.id);

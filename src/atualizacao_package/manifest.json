@@ -64,13 +64,8 @@
                         "drawDefault": "starting-date",
                         "disabled": true,
                         "group": "atual-data",
+                        "initialOffset": 1,
                         "width": 15
-                    },
-                    {
-                        "label": "Saldo",
-                        "type": "float",
-                        "group": "atual-saldo",
-                        "width": 21
                     },
                     {
                         "label": "Juros",
@@ -95,6 +90,12 @@
                         "type": "float",
                         "group": "atual-pu",
                         "width:": 21
+                    },
+                    {
+                        "label": "Quantidade",
+                        "type": "float",
+                        "group": "atual-quantidade",
+                        "width": 21
                     }
                 ]
             }

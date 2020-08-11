@@ -109,7 +109,7 @@ class FileInput extends ElementController {
                 filters: this.properties.allowedExtensions
             });
 
-            if (file && this.files.size + 1 < this.max) {
+            if (file && this.files.size + 1 <= this.max) {
                 this.addFile(file[0]);
             }
         }, this);

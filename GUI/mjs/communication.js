@@ -32,8 +32,6 @@ class Communication {
                 return;
             }
 
-            input['appdata-path'] = Path.appPaths.appData;
-
             event.returnValue = await Execute.runScript([scriptPath], input);
         });
     }

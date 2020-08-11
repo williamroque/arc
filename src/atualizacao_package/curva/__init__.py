@@ -2,6 +2,7 @@ import json
 import locale
 import time
 import numpy as np
+from scipy.optimize import minimize, Bounds
 
 from curva.util.input import Input
 from curva.util.flux import Flux
@@ -16,7 +17,7 @@ def main():
 
     inputs = Input()
 
-    with open(inputs.get('arquivo-curva')) as f:
+    with open(inputs.get('arquivo-curva')[0]) as f:
         inputs.update('curve', json.loads(f.read()))
 
     original_date = inputs.get('curve')['starting-date']
@@ -33,32 +34,31 @@ def main():
     inputs.update('flux-total', flux_total)
     inputs.update('flux-months', months)
 
-    original_period = len(list(inputs.get('curve')['atual'].values())[0])
-    historical_period = 0
+    atual = inputs.get('curve')['atual']
     for serie in inputs.get('curve')['atual'].keys():
         if serie in inputs.get('atual-juros'):
             i = -1
-            for i, taxa_juros in enumerate(inputs.get('atual-juros')[serie]):
-                inputs.get('curve')['atual'][serie].append([
-                    taxa_juros,
-                    inputs.get('atual-amort')[serie][i],
-                    inputs.get('atual-amex')[serie][i],
-                    inputs.get('atual-saldo')[serie][i]
-                ])
-            if i + 1 > historical_period:
-                historical_period = i + 1
-    historical_period += original_period
-    inputs.update('historical-period', historical_period)
+            for i, atual_row in enumerate(atual[serie][::-1]):
+                inputs.get('atual-juros')[serie] = atual_row[0] + inputs.get('atual-juros')
+                inputs.get('atual-amort')[serie] = atual_row[1] + inputs.get('atual-amort')
+                inputs.get('atual-amex')[serie] = atual_row[2] + inputs.get('atual-amex')
+                inputs.get('atual-pu')[serie] = atual_row[3] + inputs.get('atual-pu')
+                inputs.get('atual-quantidade')[serie] = atual_row[4] + inputs.get('atual-quantidade')
+    inputs.update('historical-period', len(inputs.get('atual-juros')[serie]))
 
     print('Inputs processed.\n', flush=True)
 
     print('Calculating curve.', flush=True)
 
-    irr = None
-    while not irr or abs(inputs.get('curve')['target-irr'] - irr) >= .00005:
-        if irr:
-            pass
-            
+    sess = None
+
+    primeira_serie = inputs.get('curve')['primeira-serie']
+
+    amex_total = sum([row[-1] for row in inputs.get('atual-amex').values()])
+    def irr_at_distribution(distribution):
+        for i, _ in enumerate(inputs.get('atual-amex')[str(primeira_serie)]):
+            inputs.get('atual-amex')[str(primeira_serie)][i] = amex_total * distribution[i]
+            inputs.get('atual-amex')[str(primeira_serie + 1)][i] = amex_total * (1 - distribution[i])
 
         sess = Session(inputs)
         sess.run()
@@ -66,15 +66,23 @@ def main():
         fluxo_financeiro = sess.collapse_financial_flux()
         irr = (1 + np.irr(fluxo_financeiro)) ** 12 - 1
 
+        return abs(inputs.get('curve')['target-irr'] - irr)
 
-        print(irr * 100)
-        break
+    x_0 = np.ones(len(inputs.get('atual-amex')[str(primeira_serie)]))
+    minimize(irr_at_distribution, x_0, method='Powell', bounds=Bounds(x_0 * 0, x_0))
 
+    # Write own optimization function
+
+    sess = Session(inputs)
+    sess.run()
+    fluxo_financeiro = sess.collapse_financial_flux()
+    print((1 + np.irr(fluxo_financeiro)) ** 12 - 1)
     for tranche in sess.tranche_list:
         print(tranche.title)
         for row in tranche.row_list:
-            print(list(map(lambda x: round(x,2) if x != None else None,row.get_values())))
+            print(list(map(lambda x: round(x, 2) if x != None else None, row.get_values())))
         print()
+
 
     print('Curve calculated.\n', flush=True)
 

@@ -132,5 +132,3 @@ class List extends ElementController {
         }
     }
 }
-
-// ADD DYNAMIC HISTORICAL SALDO CALCULATION BASED on PU, as WELL as PROJECTED INTEREST RATES with IPCU (LAST VALUE BECOMES "à PARTIR de")

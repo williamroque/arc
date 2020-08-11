@@ -1,0 +1,1 @@
+- Fix file input dialog for curve file input

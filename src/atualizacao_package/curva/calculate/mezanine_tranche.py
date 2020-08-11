@@ -1,5 +1,10 @@
 from curva.framework.tranche import *
 
+import time
+import locale
+
+locale.setlocale(locale.LC_TIME, 'pt_BR')
+
 
 def presentation_phase(self, tranche_list, tranche_i):
     row = self.create_row()
@@ -22,15 +27,17 @@ def draw_phase(self, tranche_list, tranche_i):
 
     if adjusted_i < historical_period:
         serie = str(layers_count - 1 - tranche_i + self.inputs.get('curve')['primeira-serie'])
-        historical_row = self.inputs.get('curve')['atual'][serie][self.i - self.phase_first_index]
+        historical_juros = self.inputs.get('atual-juros')[serie][adjusted_i]
+        historical_amort = self.inputs.get('atual-amort')[serie][adjusted_i]
+        historical_amex = self.inputs.get('atual-amex')[serie][adjusted_i]
+        historical_pu = self.inputs.get('atual-pu')[serie][adjusted_i]
+        historical_quantidade = self.inputs.get('atual-quantidade')[serie][adjusted_i]
 
-        juros = historical_row[0]
-        saldo = historical_row[3]
+        juros = historical_juros
 
         row = self.create_row()
         row.fill('n', None, 'default')
         row.fill('data', None, 'default')
-        row.fill('saldo', saldo, 'historical', {'saldo-historical': saldo})
         row.fill('juros', juros, 'historical', {'juros-historical': juros})
 
         if self.i - 1 < self.inputs.get('curve')['c-period']:
@@ -40,27 +47,36 @@ def draw_phase(self, tranche_list, tranche_i):
             row.fill('amort', amort, 'carencia')
             row.fill('pmt', pmt, 'carencia')
         else:
-            amort = historical_row[1] + historical_row[2]
+            amort = historical_amort + historical_amex
             pmt = juros + amort
 
             row.fill('amort', amort, 'historical', {'amort-historical': amort})
-            row.fill('pmt', pmt, 'historical')
+            row.fill('pmt', pmt, 'main')
+
+        saldo = historical_pu * historical_quantidade - juros - amort
+        row.fill('saldo', saldo, 'historical', {'saldo-historical': saldo})
 
         row.fill('amort_perc', amort/saldo, 'default')
         self.queue = row
 
-        return True
+        return False
 
     self.next_phase()
-    return False
+    return True
 
 
 def carencia_phase(self, tranche_list, tranche_i):
     if self.i - 1 < self.inputs.get('curve')['c-period']:
-        juros = self.saldo * self.taxa_juros
+        try:
+            ipca_index = self.inputs.get('ipca-periodo')['ipca'].index(str(year))
+        except ValueError:
+            ipca_index = -1
+        ipca_mensal = (1 + self.inputs.get('ipca-anual')['ipca'][ipca_index]) ** (1/12) - 1
+
+        juros = self.saldo * ((1 + ipca_mensal) * (1 + self.taxa_juros) - 1)
         pmt = 0
         amort = 0
-        saldo = self.saldo + juros - pmt
+        saldo = self.saldo + juros - amort
 
         row = self.create_row()
         row.fill('n', None, 'default')
@@ -79,10 +95,17 @@ def carencia_phase(self, tranche_list, tranche_i):
 
 
 def main_phase(self, tranche_list, tranche_i):
-    juros = self.saldo * self.taxa_juros
-    amort = self.inputs.get('curve')['amort-percentages'][f'mezanino-{tranche_i - 1}'][self.i - 1] * self.saldo
+    year = time.strptime(self.inputs.get('flux-months')[self.i], '%b-%y').tm_year
+    try:
+        ipca_index = self.inputs.get('ipca-periodo')['ipca'].index(str(year))
+    except ValueError:
+        ipca_index = -1
+    ipca_mensal = (1 + self.inputs.get('ipca-anual')['ipca'][ipca_index]) ** (1/12) - 1
+
+    juros = self.saldo * ((1 + ipca_mensal) * (1 + self.taxa_juros) - 1)
+    amort = self.inputs.get('curve')['amort-percentages']['subordinado'][self.i] * self.saldo
     pmt = juros + amort
-    saldo = self.saldo + juros - pmt
+    saldo = self.saldo - amort
 
     row = self.create_row()
     row.fill('n', None, 'default')

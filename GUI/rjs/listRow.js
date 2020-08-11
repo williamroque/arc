@@ -46,7 +46,7 @@ class ListRow extends ElementController {
                 const group = cellSchema.incrementGroup;
 
                 if ('drawDefault' in cellSchema) {
-                    this.setAnchor(group, this.data[cellSchema.drawDefault], cellSchema.type);
+                    this.setAnchor(group, this.addToDate(this.data[cellSchema.drawDefault], cellSchema.initialOffset), cellSchema.type);
                 }
 
                 this.incrementInputs[group] = inputCell;

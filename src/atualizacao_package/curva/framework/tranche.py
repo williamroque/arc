@@ -40,9 +40,8 @@ class Tranche():
 
     def calculate(self, tranche_list, tranche_i):
         if len(self.phase_list):
-            repeats_calculation = self.phase_list[0](self, tranche_list, tranche_i)
-            if repeats_calculation:
-                self.phase_list[0](self, tranche_list, tranche_i)
+            while self.phase_list[0](self, tranche_list, tranche_i):
+                pass
         else:
             self.queue = None
 

@@ -1,5 +1,3 @@
-from itertools import zip_longest
-
 from curva.calculate.subordinate_tranche import SubordinateTranche
 from curva.calculate.mezanine_tranche import MezanineTranche
 from curva.calculate.senior_tranche import SeniorTranche
