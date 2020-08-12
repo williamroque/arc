@@ -2,7 +2,6 @@ import json
 import locale
 import time
 import numpy as np
-from scipy.optimize import minimize, Bounds
 
 from curva.util.input import Input
 from curva.util.flux import Flux
@@ -10,6 +9,26 @@ from curva.util.flux import Flux
 from curva.calculate.session import Session
 
 locale.setlocale(locale.LC_TIME, 'pt_BR')
+
+
+def minimize(func, bounds=(0, 1), step=.05):
+    f_0 = func(bounds[0])
+    f_1 = func(bounds[1])
+
+    if f_0 < f_1:
+        x = bounds[0]
+        y = f_0
+    else:
+        x = bounds[1]
+        y = f_1
+
+        step = -step
+
+    while (f_x := func(x + step)) < y:
+        x += step
+        y = f_x
+
+    return x
 
 
 def main():
@@ -55,10 +74,9 @@ def main():
     primeira_serie = inputs.get('curve')['primeira-serie']
 
     amex_total = sum([row[-1] for row in inputs.get('atual-amex').values()])
-    def irr_at_distribution(distribution):
-        for i, _ in enumerate(inputs.get('atual-amex')[str(primeira_serie)]):
-            inputs.get('atual-amex')[str(primeira_serie)][i] = amex_total * distribution[i]
-            inputs.get('atual-amex')[str(primeira_serie + 1)][i] = amex_total * (1 - distribution[i])
+    def irr_at_distribution(perc_sen):
+        inputs.get('atual-amex')[str(primeira_serie)][-1] = amex_total * perc_sen
+        inputs.get('atual-amex')[str(primeira_serie + 1)][-1] = amex_total * (1 - perc_sen)
 
         sess = Session(inputs)
         sess.run()
@@ -68,21 +86,19 @@ def main():
 
         return abs(inputs.get('curve')['target-irr'] - irr)
 
-    x_0 = np.ones(len(inputs.get('atual-amex')[str(primeira_serie)]))
-    minimize(irr_at_distribution, x_0, method='Powell', bounds=Bounds(x_0 * 0, x_0))
-
-    # Write own optimization function
+    print('Optimized distribution:', minimize(irr_at_distribution), flush=True)
 
     sess = Session(inputs)
     sess.run()
     fluxo_financeiro = sess.collapse_financial_flux()
-    print((1 + np.irr(fluxo_financeiro)) ** 12 - 1)
+
     for tranche in sess.tranche_list:
         print(tranche.title)
         for row in tranche.row_list:
             print(list(map(lambda x: round(x, 2) if x != None else None, row.get_values())))
         print()
 
+    print('IRR:', (1 + np.irr(fluxo_financeiro)) ** 12 - 1, flush=True)
 
     print('Curve calculated.\n', flush=True)
 
