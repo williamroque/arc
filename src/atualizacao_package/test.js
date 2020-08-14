@@ -13,7 +13,7 @@ const input = {
     'atual-amex': { '16': [0, 0, 0, 50000, 60_000], '17': [0, 0, 0, 25000, 0] },
     'atual-pu': { '16': [7_700, 7_702, 7_704, 7_706, 7_708], '17': [1_990, 1_992, 1_994, 1_996, 1_998] },
     'atual-quantidade': { '16': [1_500, 1_500, 1_500, 1_500, 1_500], '17': [1_500, 1_500, 1_500, 1_500, 1_500] },
-    'output-path': '/Users/jetblack-work/Desktop/output.xlsx'
+    'output-path': '/Users/jetblack-work/Desktop/Untitled.xlsx'
 };
 
 

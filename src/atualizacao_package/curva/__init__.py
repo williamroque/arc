@@ -5,8 +5,8 @@ import numpy as np
 
 from curva.util.input import Input
 from curva.util.flux import Flux
-
 from curva.calculate.session import Session
+from curva.spreadsheet.curve_sheet import CurveSheet
 
 locale.setlocale(locale.LC_TIME, 'pt_BR')
 
@@ -92,17 +92,24 @@ def main():
     sess.run()
     fluxo_financeiro = sess.collapse_financial_flux()
 
-    for tranche in sess.tranche_list:
-        print(tranche.title)
-        for row in tranche.row_list:
-            print(list(map(lambda x: round(x, 2) if x != None else None, row.get_values())))
-        print()
+    inputs.update('tranche-list', sess.tranche_list)
 
-    print('IRR:', (1 + np.irr(fluxo_financeiro)) ** 12 - 1, flush=True)
+    #for tranche in sess.tranche_list:
+    #    print(tranche.title)
+    #    for row in tranche.row_list:
+    #        print([c['formula'] for c in row.get_columns().values()])
+    #    print()
+
+    irr = (1 + np.irr(fluxo_financeiro)) ** 12 - 1
+    print('IRR:', f'{irr * 100}%', f'({round(irr * 100, 2)}%)', flush=True)
 
     print('Curve calculated.\n', flush=True)
 
     print('Rendering curve.', flush=True)
+
+    sheet = CurveSheet(inputs)
+    sheet.render()
+
     print('Curve rendered.\n', flush=True)
 
     print('Saving curve data.', flush=True)

@@ -38,7 +38,7 @@ def draw_phase(self, tranche_list, tranche_i):
         row = self.create_row()
         row.fill('n', None, 'default')
         row.fill('data', None, 'default')
-        row.fill('juros', juros, 'historical', {'juros-historical': juros})
+        row.fill('juros', juros, 'historical', {'juros_historical': juros})
 
         if self.i - 1 < self.inputs.get('curve')['c-period']:
             amort = 0
@@ -50,13 +50,16 @@ def draw_phase(self, tranche_list, tranche_i):
             amort = historical_amort + historical_amex
             pmt = juros + amort
 
-            row.fill('amort', amort, 'historical', {'amort-historical': amort})
-            row.fill('pmt', pmt, 'main')
+            row.fill('amort', amort, 'historical', {'amort_historical': amort})
+            row.fill('pmt', pmt, 'historical')
 
         saldo = historical_pu * historical_quantidade - juros - amort
-        row.fill('saldo', saldo, 'historical', {'saldo-historical': saldo})
+        row.fill('saldo', saldo, 'historical', {
+            'historical_pu': historical_pu,
+            'historical_quantidade': historical_quantidade
+        })
 
-        row.fill('amort_perc', amort/saldo, 'default')
+        row.fill('amort_perc', amort/saldo, 'historical')
         self.queue = row
 
         return False
@@ -78,6 +81,7 @@ def carencia_phase(self, tranche_list, tranche_i):
         amort = 0
         pmt = 0
         saldo = self.saldo + juros - amort
+        amort_perc = self.inputs.get('curve')['amort-percentages']['senior'][self.i]
 
         row = self.create_row()
         row.fill('n', None, 'default')
@@ -86,7 +90,9 @@ def carencia_phase(self, tranche_list, tranche_i):
         row.fill('juros', juros, 'default')
         row.fill('amort', amort, 'carencia')
         row.fill('pmt', pmt, 'carencia')
-        row.fill('amort_perc', amort/self.saldo, 'default')
+        row.fill('amort_perc', amort_perc, 'default', {
+            'projected_amort_perc': amort_perc
+        })
         self.queue = row
 
         return False
@@ -103,8 +109,9 @@ def main_phase(self, tranche_list, tranche_i):
         ipca_index = -1
     ipca_mensal = (1 + self.inputs.get('ipca-anual')['ipca'][ipca_index]) ** (1/12) - 1
 
+    amort_perc = self.inputs.get('curve')['amort-percentages']['senior'][self.i]
+    amort = amort_perc * self.saldo
     juros = self.saldo * ((1 + ipca_mensal) * (1 + self.taxa_juros) - 1)
-    amort = self.inputs.get('curve')['amort-percentages']['senior'][self.i] * self.saldo
     pmt = juros + amort
     saldo = self.saldo - amort
 
@@ -115,7 +122,9 @@ def main_phase(self, tranche_list, tranche_i):
     row.fill('juros', juros, 'default')
     row.fill('amort', amort, 'main')
     row.fill('pmt', pmt, 'main')
-    row.fill('amort_perc', amort/self.saldo, 'default')
+    row.fill('amort_perc', amort_perc, 'default', {
+        'projected_amort_perc': amort_perc
+    })
     self.queue = row
 
     if saldo <= 0:
@@ -145,11 +154,14 @@ class SeniorTranche(Tranche):
         row.add_column('saldo', 'Saldo Devedor', 13,
             {
                 'presentation': '={valor_total}*{razao}',
-                'historical': '={saldo_historical}',
+                'historical': '={historical_pu}*{historical_quantidade}-{juros}-{amort}',
                 'carencia': '={prev_saldo}+{juros}-{amort}',
                 'default': '={prev_saldo}-{amort}'
             },
-            set(['tranche_quantity'])
+            {
+                '.*': set(['tranche_quantity']),
+                'historical': set(['historical_font'])
+            }
         )
         row.add_column('juros', 'Juros', 12,
             {
@@ -157,7 +169,10 @@ class SeniorTranche(Tranche):
                 'historical': '={juros_historical}',
                 'default': '={prev_saldo}*{taxa_juros}'
             },
-            set(['tranche_quantity'])
+            {
+                '.*': set(['tranche_quantity']),
+                'historical': set(['historical_font'])
+            }
         )
         row.add_column('amort', 'Amortiz', 12,
             {
@@ -166,8 +181,11 @@ class SeniorTranche(Tranche):
                 'carencia': '=0',
                 'main': '={amort_perc}*{prev_saldo}'
             },
-            set(['tranche_quantity'])
-            )
+            {
+                '.*': set(['tranche_quantity']),
+                'historical': set(['historical_font'])
+            }
+        )
         row.add_column('pmt', 'PMT', 12,
             {
                 'empty': '',
@@ -175,14 +193,21 @@ class SeniorTranche(Tranche):
                 'carencia': '=0',
                 'main': '={juros}+{amort}',
             },
-            set(['tranche_quantity'])
+            {
+                '.*': set(['tranche_quantity']),
+                'historical': set(['historical_font'])
+            }
         )
         row.add_column('amort_perc', '% AM', 10,
             {
                 'empty': '',
-                'default': '={amort}/{prev_saldo}'
+                'historical': '={amort}/{prev_saldo}',
+                'default': '={projected_amort_perc}'
             },
-            set(['tranche_percentage'])
+            {
+                '.*': set(['tranche_percentage']),
+                'historical': set(['historical_font'])
+            }
         )
 
         return row

@@ -62,8 +62,8 @@ class TrancheRow():
         self.columns[column_id]['value'] = value
 
         formulae = self.columns[column_id]['formulae']
-        self.columns[column_id]['formula'] = (
-            formulae[formula], substitution_map)
+
+        self.columns[column_id]['formula'] = (formulae[formula], substitution_map, formula)
 
     def get_columns(self):
         return self.columns

@@ -1,3 +1,5 @@
+import re
+
 from curva.framework.spreadsheet.section import Section
 from curva.framework.spreadsheet.cell import Cell
 from curva.spreadsheet.util.header_group import HeaderGroup
@@ -54,24 +56,39 @@ class TrancheSection(Section):
 
                 tranche_list = self.inputs.get('tranche-list')
                 substitution_map = {
-                    **{
-                        'i': row_i + 1,
-                        'data': self.inputs.get('flux-months')[row_i],
-                        'valor_total': '@0',
-                        'razao': '@1',
-                        'prev_saldo': '@2',
-                        'despesas': '@3',
-                        'juros': '@4',
-                        'amort': '@5',
-                        'pmt': '@6',
-                        'taxa_juros': '@7',
-                        'F_i': '@8',
-                        'pmt_proper': '@9',
-                        'pmt_next': '@10',
-                        'row_sum': '-'.join([f'@{i + 11}' for i in range(len(tranche_list[:-1]))])
-                    },
-                    **column['formula'][1]
+                    'i': row_i + 1,
+                    'data': self.inputs.get('flux-months')[row_i],
+                    'valor_total': '@0',
+                    'razao': '@1',
+                    'prev_saldo': '@2',
+                    'despesas': '@3',
+                    'juros': '@4',
+                    'amort': '@5',
+                    'pmt': '@6',
+                    'taxa_juros': '@7',
+                    'amort_perc': '@8'
                 }
+
+                formula = column['formula']
+
+                substitution_map = {
+                    **substitution_map,
+                    **formula[1]
+                }
+
+                if type(column['style']) == dict:
+                    style = set()
+                    for pattern in column['style']:
+                        if re.match(pattern, formula[2]):
+                            style |= column['style'][pattern]
+                else:
+                    style = column['style']
+
+                if border:
+                    style.add(border)
+
+                if row_i == len(tranche.row_list) - 1:
+                    style.add('s')
 
                 row_cell = Cell(
                     column_group,
@@ -113,31 +130,13 @@ class TrancheSection(Section):
                                 'static': True
                             },
                             {
-                                'path': ['fluxo-creditos', 'value', f'row_{row_i - 1}'],
-                                'static': False
-                            },
-                            {
-                                'path': ['prelude', 'pmt-proper', 0],
+                                'path': [self.id, 'amort_perc', f'row_{row_i}'],
                                 'static': True
-                            },
-                            {
-                                'path': [
-                                    tranche_list[tranche_i + 1].id if tranche_i < len(tranche_list) - 1 else None,
-                                    'pmt',
-                                    f'row_{row_i}'
-                                ],
-                                'static': False
-                            },
-                            *[{
-                                'path': [tranche.id, 'pmt', f'row_{row_i}'],
-                                'static': False
-                            } for tranche in tranche_list[:-1]]
+                            }
                         ]
                     },
                     set([
-                        *column['style'],
-                        *([border] if border else []),
-                        *(['s'] if row_i == len(tranche.row_list) - 1 else [])
+                        *style,
                     ]),
                     column['column_width'],
                     {
@@ -148,3 +147,4 @@ class TrancheSection(Section):
                 column_group.add_cell(row_cell)
 
             self.add_group(column_group)
+
