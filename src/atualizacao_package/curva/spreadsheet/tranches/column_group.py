@@ -1,6 +1,5 @@
 from curva.framework.spreadsheet.group import Group
 from curva.framework.spreadsheet.cell import Cell
-from curva.spreadsheet.util.empty_cell import EmptyCell
 from curva.spreadsheet.style import stylesheet
 from curva.spreadsheet.tranches.style import stylesheet as tranches_stylesheet
 

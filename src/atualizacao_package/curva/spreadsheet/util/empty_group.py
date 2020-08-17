@@ -17,23 +17,30 @@ class EmptyGroup(Group):
     def get_dimensions(self):
         return self.dimensions
 
-    def add_border(self, x, y, direction):
+    def add_borders(self, row, col, borders):
+        stylesheet_borders = {k: v for d in borders for k, v in stylesheet[d].items()}
         self.sheet.write(
-            self.vertical_offset + y,
-            self.horizontal_offset + x,
+            self.vertical_offset + row,
+            self.horizontal_offset + col,
             '',
-            self.workbook.add_format(stylesheet[direction])
+            self.workbook.add_format(stylesheet_borders)
         )
 
     def render(self, sheet, workbook):
         self.sheet, self.workbook = sheet, workbook
 
-        for y in range(self.dimensions[0]):
-            if 'w' in self.borders:
-                self.add_border(0, y, 'w')
-
-            if 'e' in self.borders:
-                self.add_border(self.dimensions[1] - 1, y, 'e')
+        for row in range(self.dimensions[0]):
+            for col in range(self.dimensions[1]):
+                cell_borders = set()
+                if row == 0 and 'n' in self.borders:
+                    cell_borders.add('n')
+                if col == 0 and 'w' in self.borders:
+                    cell_borders.add('w')
+                if row == self.dimensions[0] - 1 and 's' in self.borders:
+                    cell_borders.add('s')
+                if col == self.dimensions[1] - 1 and 'e' in self.borders:
+                    cell_borders.add('e')
+                self.add_borders(row, col, cell_borders)
 
         if self.column_width:
             self.sheet.set_column(

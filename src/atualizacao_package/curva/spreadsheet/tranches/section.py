@@ -135,9 +135,7 @@ class TrancheSection(Section):
                             }
                         ]
                     },
-                    set([
-                        *style,
-                    ]),
+                    style,
                     column['column_width'],
                     {
                         **stylesheet,

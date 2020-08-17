@@ -1,6 +1,7 @@
 from curva.framework.spreadsheet.spreadsheet import Spreadsheet
 from curva.spreadsheet.util.empty_section import EmptySection
 from curva.spreadsheet.prelude.section import PreludeSection
+from curva.spreadsheet.taxa_emissao.section import TaxaEmissaoSection
 from curva.spreadsheet.fluxo_creditos.section import FluxoCreditosSection
 from curva.spreadsheet.tranches.section import TrancheSection
 from curva.spreadsheet.fluxo_financeiro.section import FluxoFinanceiroSection
@@ -40,6 +41,15 @@ class CurveSheet(Spreadsheet):
                 'y_offset': -10
             }
         )
+
+        taxa_emissao_section = TaxaEmissaoSection(
+            self,
+            self.inputs
+        )
+        self.add_section(taxa_emissao_section)
+
+        empty_section = EmptySection((1, 1), 4)
+        self.add_section(empty_section)
 
         fluxo_creditos_section = FluxoCreditosSection(
             self,

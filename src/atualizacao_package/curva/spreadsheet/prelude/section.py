@@ -36,7 +36,6 @@ class PreludeSection(Section):
 
         empty_group = EmptyGroup()
         self.add_group(empty_group)
-        self.add_group(empty_group)
 
         series_label_group = PreludeGroup(
             self,
@@ -60,38 +59,6 @@ class PreludeSection(Section):
         )
         self.add_group(series_label_group)
 
-        pu_emis_group = PreludeGroup(
-            self,
-            self.inputs,
-            'PU Emissão',
-            [
-                {
-                    'text': '={item}',
-                    'repeat': [self.inputs.get('curve')['pu-emis']] * layers_count
-                }
-            ],
-            set(['prelude_currency']),
-            'pu-emis',
-            19
-        )
-        self.add_group(pu_emis_group)
-
-        indexador_group = PreludeGroup(
-            self,
-            self.inputs,
-            'Indexador',
-            [
-                {
-                    'text': '={item}',
-                    'repeat': [self.inputs.get('curve')['indexador']] * layers_count
-                }
-            ],
-            set(['prelude_text']),
-            'indexador',
-            12
-        )
-        self.add_group(indexador_group)
-
         taxas_juros_group = PreludeGroup(
             self,
             self.inputs,
@@ -113,10 +80,6 @@ class PreludeSection(Section):
             13.5
         )
         self.add_group(taxas_juros_group)
-
-        self.add_row()
-
-        self.add_group(copy.deepcopy(series_label_group))
 
         razoes_group = PreludeGroup(
             self,
@@ -140,47 +103,6 @@ class PreludeSection(Section):
         )
         self.add_group(razoes_group)
 
-        pu_liquidacao_group = PreludeGroup(
-            self,
-            self.inputs,
-            'PU Liquidação',
-            [
-                {
-                    'text': '={item}',
-                    'repeat': [self.inputs.get('curve')['pu-emis']] * layers_count
-                }
-            ],
-            set(['prelude_currency']),
-            'pu-liquidacao',
-            14
-        )
-        self.add_group(pu_liquidacao_group)
-
-        quantidades_group = PreludeGroup(
-            self,
-            self.inputs,
-            'Quantidades',
-            [
-                {
-                    'text': '=@1/@0',
-                    'repeat': layers_count,
-                    'references': [
-                        {
-                            'path': ['prelude', 'pu-liquidacao'],
-                            'static': True
-                        },
-                        {
-                            'path': ['prelude', 'montante'],
-                            'static': True
-                        }
-                    ]
-                }
-            ],
-            set(['prelude_quantity']),
-            'quantidades'
-        )
-        self.add_group(quantidades_group)
-
         montante_group = PreludeGroup(
             self,
             self.inputs,
@@ -202,7 +124,8 @@ class PreludeSection(Section):
                 }
             ],
             set(['prelude_currency']),
-            'montante'
+            'montante',
+            17.5
         )
         self.add_group(montante_group)
 
@@ -223,23 +146,10 @@ class PreludeSection(Section):
                 }
             ],
             set(['prelude_text']),
-            'prazo'
+            'prazo',
+            12
         )
         self.add_group(prazo_group)
-
-        pmt_proper_group = PreludeGroup(
-            self,
-            self.inputs,
-            '% PMT',
-            [
-                {
-                    'text': self.inputs.get('curve')['pmt-proper']
-                }
-            ],
-            set(['prelude_percentage_0']),
-            'pmt-proper'
-        )
-        self.add_group(pmt_proper_group)
 
         self.add_row()
 
@@ -280,7 +190,8 @@ class PreludeSection(Section):
                 }
             ],
             set(['prelude_percentage_4']),
-            'senior-juros'
+            'senior-juros',
+            17.5
         )
         self.add_group(senior_juros_group)
 
@@ -378,12 +289,8 @@ class PreludeSection(Section):
             'FR 3 PMTs',
             [
                 {
-                    'text': '=SUM(@1:@2)*@0-SUM(@3:@4)',
+                    'text': '=SUM(@0:@1)-SUM(@2:@3)',
                     'references': [
-                        {
-                            'path': ['prelude', 'pmt-proper', 0],
-                            'static': True
-                        },
                         {
                             'path': ['fluxo-creditos', 'value', 'row_0'],
                             'static': True
@@ -422,10 +329,3 @@ class PreludeSection(Section):
         )
         self.add_group(fr_previsto_group)
 
-
-"""
-[6, 18, 15.5, 14, 17.5, 19, 12, 13.5, 8, 6,
-    11, 8, 4, 6, 8, 13, 10, 12, 12, 11, 10, 4]
-[6, 8, 13, 12, 12, 11, 10, 4]
-[6, 14, 8]
-"""

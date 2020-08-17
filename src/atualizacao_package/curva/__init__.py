@@ -94,11 +94,11 @@ def main():
 
     inputs.update('tranche-list', sess.tranche_list)
 
-    #for tranche in sess.tranche_list:
-    #    print(tranche.title)
-    #    for row in tranche.row_list:
-    #        print([c['formula'] for c in row.get_columns().values()])
-    #    print()
+    for tranche in sess.tranche_list:
+        print(tranche.title)
+        for row in tranche.row_list:
+            print(row.get_values())
+        print()
 
     irr = (1 + np.irr(fluxo_financeiro)) ** 12 - 1
     print('IRR:', f'{irr * 100}%', f'({round(irr * 100, 2)}%)', flush=True)

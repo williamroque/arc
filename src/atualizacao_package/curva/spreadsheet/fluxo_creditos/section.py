@@ -11,8 +11,8 @@ class FluxoCreditosSection(Section):
             parent_sheet,
             inputs,
             'fluxo-creditos',
-            [0, 1],
-            [2, 1]
+            [0, 0],
+            [2, 0]
         )
 
         self.add_row()
