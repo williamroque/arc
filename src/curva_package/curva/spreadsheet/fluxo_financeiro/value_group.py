@@ -31,7 +31,7 @@ class ValueGroup(Group):
         for i in range(max_tranche_length - row_offset):
             row_i = i + row_offset
 
-            text = '='
+            text = ''
             references = []
             for tranche_i, tranche in enumerate(tranche_list):
                 if row_i < len(tranche.row_list):
@@ -46,7 +46,7 @@ class ValueGroup(Group):
                     })
 
             self.create_cell({
-                'text': text,
+                'text': f'={text[1:]}',
                 'references': references
             }, f'row_{row_i}')
 

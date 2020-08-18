@@ -31,22 +31,18 @@ class ValueGroup(Group):
         for i in range(max_tranche_length - row_offset):
             row_i = i + row_offset
 
-            text = '='
+            text = ''
             references = []
             for tranche_i, tranche in enumerate(tranche_list):
                 if row_i < len(tranche.row_list):
-                    text += f'+@{tranche_i * 2}+@{tranche_i * 2 + 1}'
+                    text += f'+@{tranche_i}'
                     references.append({
-                        'path': [tranche.id, 'juros', f'row_{row_i}'],
-                        'static': False
-                    })
-                    references.append({
-                        'path': [tranche.id, 'amort', f'row_{row_i}'],
+                        'path': [tranche.id, 'pmt', f'row_{row_i}'],
                         'static': False
                     })
 
             self.create_cell({
-                'text': text,
+                'text': f'={text[1:]}',
                 'references': references
             }, f'row_{row_i}')
 

@@ -8,7 +8,7 @@ locale.setlocale(locale.LC_TIME, 'pt_BR')
 
 def presentation_phase(self, tranche_list, tranche_i):
     row = self.create_row()
-    row.fill('n', None, 'default')
+    row.fill('n', self.i + 1, 'default')
     row.fill('data', None, 'default')
     row.fill('saldo', self.saldo, 'presentation')
     row.fill('despesas', None, 'empty')
@@ -37,7 +37,7 @@ def draw_phase(self, tranche_list, tranche_i):
         juros = historical_juros
 
         row = self.create_row()
-        row.fill('n', None, 'default')
+        row.fill('n', self.i + 1, 'default')
         row.fill('data', None, 'default')
         row.fill('despesas', None, 'historical')
         row.fill('juros', juros, 'historical', {'juros_historical': juros})
@@ -86,7 +86,7 @@ def carencia_phase(self, tranche_list, tranche_i):
         amort_perc = self.inputs.get('curve')['amort-percentages']['subordinado'][self.i]
 
         row = self.create_row()
-        row.fill('n', None, 'default')
+        row.fill('n', self.i + 1, 'default')
         row.fill('data', None, 'default')
         row.fill('saldo', saldo, 'carencia')
         row.fill('despesas', None, 'default')
@@ -118,7 +118,7 @@ def main_phase(self, tranche_list, tranche_i):
     saldo = self.saldo - amort
 
     row = self.create_row()
-    row.fill('n', None, 'default')
+    row.fill('n', self.i + 1, 'default')
     row.fill('data', None, 'default')
     row.fill('saldo', saldo, 'default')
     row.fill('despesas', None, 'default')

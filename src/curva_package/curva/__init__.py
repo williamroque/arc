@@ -95,12 +95,10 @@ def main():
     print('--- CURVE ---', flush=True)
 
     for tranche in sess.tranche_list:
-        print('\n', tranche.title, flush=True)
-        for i, row in enumerate(tranche.row_list):
-            print(i + 1, end=' ', flush=True)
-            for value in row.get_values():
-                print(value, end=' ', flush=True)
-            print('', flush=True)
+        print(tranche.title.center(26, '-'))
+        for row in tranche.row_list:
+            print(' '.join(map(str, row.get_values())))
+        print()
 
     print('--- END ---\n', flush=True)
 

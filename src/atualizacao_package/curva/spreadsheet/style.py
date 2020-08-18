@@ -27,7 +27,8 @@ stylesheet = {
     },
 
     'date': {
-        'align': 'left'
+        'align': 'left',
+        'num_format': '[$-pt-BR]mmm-yy;@'
     },
 
     'n': {

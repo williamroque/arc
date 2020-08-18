@@ -9,6 +9,12 @@ from curva.spreadsheet.tranches.column_group import ColumnGroup
 from curva.spreadsheet.style import stylesheet
 from curva.spreadsheet.tranches.style import stylesheet as tranches_stylesheet
 
+import datetime
+import locale
+
+locale.setlocale(locale.LC_TIME, 'pt_BR')
+epoch = datetime.datetime(1899, 12, 30)
+
 
 class TrancheSection(Section):
     def __init__(self, parent_sheet, inputs, tranche, tranche_i):
@@ -57,7 +63,7 @@ class TrancheSection(Section):
                 tranche_list = self.inputs.get('tranche-list')
                 substitution_map = {
                     'i': row_i + 1,
-                    'data': self.inputs.get('flux-months')[row_i],
+                    'data': '={}'.format((datetime.datetime.strptime(self.inputs.get('flux-months')[row_i], '%b-%y') - epoch).days),
                     'valor_total': '@0',
                     'razao': '@1',
                     'prev_saldo': '@2',
@@ -90,12 +96,18 @@ class TrancheSection(Section):
                 if row_i == len(tranche.row_list) - 1:
                     style.add('s')
 
+                ipca_periodo = self.inputs.get('ipca-periodo')['ipca']
+                try:
+                    ipca_index = ipca_periodo.index(self.get_year(row_i))
+                except ValueError:
+                    ipca_index = len(ipca_periodo) - 1
+
                 row_cell = Cell(
                     column_group,
                     self.inputs,
                     f'row_{row_i}',
                     {
-                        'text': column['formula'][0].format(**substitution_map),
+                        'text': column['formula'][0].format_map(substitution_map),
                         'references': [
                             {
                                 'path': ['prelude', 'valor-total', 0],
@@ -126,7 +138,7 @@ class TrancheSection(Section):
                                 'static': False
                             },
                             {
-                                'path': ['prelude', f'{self.id}-juros', 0],
+                                'path': ['taxa-emissao', f'mensal-{self.id}', f'row_{ipca_index}'],
                                 'static': True
                             },
                             {
@@ -145,4 +157,18 @@ class TrancheSection(Section):
                 column_group.add_cell(row_cell)
 
             self.add_group(column_group)
+
+    def get_year(self, i):
+        MONTHS = list(map(lambda x: x.lower(), 'Jan|Fev|Mar|Abr|Mai|Jun|Jul|Ago|Set|Out|Nov|Dez'.split('|')))
+        month, year = self.inputs.get('curve')['starting-date'].split('/')
+
+        monthIndex = MONTHS.index(month.lower())
+
+        year = int(year)
+        if (i < 0):
+            year -= Math.ceil(-((monthIndex + i) / 12))
+        else:
+            year += int((monthIndex + i) / 12)
+
+        return str(year)
 

@@ -3,7 +3,7 @@ from curva.framework.tranche import *
 
 def presentation_phase(self, F_i, tranche_list, tranche_i):
     row = self.create_row()
-    row.fill('n', None, 'default')
+    row.fill('n', self.i + 1, 'default')
     row.fill('data', None, 'default')
     row.fill('saldo', self.saldo, 'presentation')
     row.fill('juros', None, 'empty')
@@ -23,7 +23,7 @@ def carencia_phase(self, F_i, tranche_list, tranche_i):
         saldo = self.saldo + juros - pmt
 
         row = self.create_row()
-        row.fill('n', None, 'default')
+        row.fill('n', self.i + 1, 'default')
         row.fill('data', None, 'default')
         row.fill('saldo', saldo, 'default')
         row.fill('juros', juros, 'default')
@@ -45,7 +45,7 @@ def dependent_phase(self, F_i, tranche_list, tranche_i):
     saldo = self.saldo + juros - pmt
 
     row = self.create_row()
-    row.fill('n', None, 'default')
+    row.fill('n', self.i + 1, 'default')
     row.fill('data', None, 'default')
     row.fill('saldo', saldo, 'default')
     row.fill('juros', juros, 'default')
@@ -64,7 +64,7 @@ def transition_phase(self, F_i, tranche_list, tranche_i):
     saldo = self.saldo + juros - pmt
 
     row = self.create_row()
-    row.fill('n', None, 'default')
+    row.fill('n', self.i + 1, 'default')
     row.fill('data', None, 'default')
     row.fill('saldo', saldo, 'default')
     row.fill('juros', juros, 'default')
@@ -83,7 +83,7 @@ def main_phase(self, F_i, tranche_list, tranche_i):
     saldo = self.saldo + juros - pmt
 
     row = self.create_row()
-    row.fill('n', None, 'default')
+    row.fill('n', self.i + 1, 'default')
     row.fill('data', None, 'default')
     row.fill('saldo', saldo, 'default')
     row.fill('juros', juros, 'default')
@@ -100,7 +100,7 @@ def final_phase(self, F_i, tranche_list, tranche_i):
     saldo = self.saldo + juros - pmt
 
     row = self.create_row()
-    row.fill('n', None, 'default')
+    row.fill('n', self.i + 1, 'default')
     row.fill('data', None, 'default')
     row.fill('saldo', saldo, 'default')
     row.fill('juros', juros, 'default')

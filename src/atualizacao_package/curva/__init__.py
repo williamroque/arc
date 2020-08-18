@@ -94,11 +94,15 @@ def main():
 
     inputs.update('tranche-list', sess.tranche_list)
 
+    print('--- CURVE ---', flush=True)
+
     for tranche in sess.tranche_list:
-        print(tranche.title)
+        print(tranche.title.center(26, '-'))
         for row in tranche.row_list:
-            print(row.get_values())
+            print(' '.join(map(str, row.get_values())))
         print()
+
+    print('--- END ---\n', flush=True)
 
     irr = (1 + np.irr(fluxo_financeiro)) ** 12 - 1
     print('IRR:', f'{irr * 100}%', f'({round(irr * 100, 2)}%)', flush=True)

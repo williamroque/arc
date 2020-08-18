@@ -176,13 +176,19 @@ class PreludeSection(Section):
             'Sênior',
             [
                 {
-                    'text': self.inputs.get('curve')['taxas-juros']['sen'],
-                },
-                {
-                    'text': '=(@0+1)^12-1',
+                    'text': '=(@0+1)^(1/12)-1',
                     'references': [
                         {
-                            'path': ['prelude', 'senior-juros', 0],
+                            'path': ['prelude', 'senior-juros', 1],
+                            'static': True
+                        }
+                    ]
+                },
+                {
+                    'text': '=@0',
+                    'references': [
+                        {
+                            'path': ['prelude', 'taxas-juros', 0],
                             'static': True
                         }
                     ],
@@ -204,13 +210,19 @@ class PreludeSection(Section):
                     'Mezanino',
                     [
                         {
-                            'text': taxa
-                        },
-                        {
-                            'text': '=(@0+1)^12-1',
+                            'text': '=(@0+1)^(1/12)-1',
                             'references': [
                                 {
-                                    'path': ['prelude', group_id, 0],
+                                    'path': ['prelude', group_id, 1],
+                                    'static': True
+                                }
+                            ]
+                        },
+                        {
+                            'text': '=@0',
+                            'references': [
+                                {
+                                    'path': ['prelude', 'taxas-juros', layers_count - i - 1],
                                     'static': True
                                 }
                             ],
@@ -228,13 +240,19 @@ class PreludeSection(Section):
             'Subordinado',
             [
                 {
-                    'text': self.inputs.get('curve')['taxas-juros']['sub'],
-                },
-                {
-                    'text': '=(@0+1)^12-1',
+                    'text': '=(@0+1)^(1/12)-1',
                     'references': [
                         {
-                            'path': ['prelude', 'subordinado-juros', 0],
+                            'path': ['prelude', 'subordinado-juros', 1],
+                            'static': True
+                        }
+                    ]
+                },
+                {
+                    'text': '=@0',
+                    'references': [
+                        {
+                            'path': ['prelude', 'taxas-juros', layers_count - 1],
                             'static': True
                         }
                     ],
