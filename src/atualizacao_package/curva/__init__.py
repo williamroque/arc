@@ -1,6 +1,7 @@
 import json
 import locale
 import time
+import os
 import numpy as np
 
 from curva.util.input import Input
@@ -58,12 +59,14 @@ def main():
         if serie in inputs.get('atual-juros'):
             i = -1
             for i, atual_row in enumerate(atual[serie][::-1]):
-                inputs.get('atual-juros')[serie] = atual_row[0] + inputs.get('atual-juros')
-                inputs.get('atual-amort')[serie] = atual_row[1] + inputs.get('atual-amort')
-                inputs.get('atual-amex')[serie] = atual_row[2] + inputs.get('atual-amex')
-                inputs.get('atual-pu')[serie] = atual_row[3] + inputs.get('atual-pu')
-                inputs.get('atual-quantidade')[serie] = atual_row[4] + inputs.get('atual-quantidade')
+                inputs.get('atual-juros')[serie].insert(0, atual_row[0])
+                inputs.get('atual-amort')[serie].insert(0, atual_row[1])
+                inputs.get('atual-amex')[serie].insert(0, atual_row[2])
+                inputs.get('atual-pu')[serie].insert(0, atual_row[3])
+                inputs.get('atual-quantidade')[serie].insert(0, atual_row[4])
     inputs.update('historical-period', len(inputs.get('atual-juros')[serie]))
+
+    print(inputs.get('atual-amort'))
 
     print('Inputs processed.\n', flush=True)
 
@@ -73,20 +76,21 @@ def main():
 
     primeira_serie = inputs.get('curve')['primeira-serie']
 
-    amex_total = sum([row[-1] for row in inputs.get('atual-amex').values()])
-    def irr_at_distribution(perc_sen):
-        inputs.get('atual-amex')[str(primeira_serie)][-1] = amex_total * perc_sen
-        inputs.get('atual-amex')[str(primeira_serie + 1)][-1] = amex_total * (1 - perc_sen)
+    if len(list(inputs.get('atual-amex').values())[0]) > 0:
+        amex_total = sum([row[-1] for row in inputs.get('atual-amex').values()])
+        def irr_at_distribution(perc_sen):
+            inputs.get('atual-amex')[str(primeira_serie)][-1] = amex_total * perc_sen
+            inputs.get('atual-amex')[str(primeira_serie + 1)][-1] = amex_total * (1 - perc_sen)
 
-        sess = Session(inputs)
-        sess.run()
+            sess = Session(inputs)
+            sess.run()
 
-        fluxo_financeiro = sess.collapse_financial_flux()
-        irr = (1 + np.irr(fluxo_financeiro)) ** 12 - 1
+            fluxo_financeiro = sess.collapse_financial_flux()
+            irr = (1 + np.irr(fluxo_financeiro)) ** 12 - 1
 
-        return abs(inputs.get('curve')['target-irr'] - irr)
+            return abs(inputs.get('curve')['target-irr'] - irr)
 
-    print('Optimized distribution:', minimize(irr_at_distribution), flush=True)
+        print('Optimized distribution:', minimize(irr_at_distribution), flush=True)
 
     sess = Session(inputs)
     sess.run()
@@ -117,4 +121,20 @@ def main():
     print('Curve rendered.\n', flush=True)
 
     print('Saving curve data.', flush=True)
+
+    file_name = os.path.splitext(inputs.get('output-path'))[0]
+    path = file_name + '.curve'
+    with open(path, 'w') as f:
+        atual = {}
+        for serie in inputs.get('curve')['atual'].keys():
+            atual[serie] = list(zip(
+                inputs.get('atual-juros')[serie],
+                inputs.get('atual-amort')[serie],
+                inputs.get('atual-amex')[serie],
+                inputs.get('atual-pu')[serie],
+                inputs.get('atual-quantidade')[serie]
+            ))
+        inputs.get('curve')['atual'] = atual
+        f.write(json.dumps(inputs.get('curve')))
+
     print('Curve data saved.', flush=True)

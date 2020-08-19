@@ -2,7 +2,21 @@ const { spawn } = require('child_process');
 
 const subprocess = spawn('python', ['main.py']);
 
-const input = {
+const withoutHistorical = {
+    'arquivo-curva': ['/Users/jetblack-work/Desktop/Untitled.curve'],
+    'planilhas-saldo': ['/Users/jetblack-work/Desktop/saldo_atual.xlsx'],
+    'ipca-periodo': { 'ipca': ['2019', '2020', '2021', '2022'] },
+    'ipca-anual': { 'ipca': [0, 0, 0, 0] },
+    'atual-data': { '16': [], '17': [] },
+    'atual-juros': { '16': [], '17': [] },
+    'atual-amort': { '16': [], '17': [] },
+    'atual-amex': { '16': [], '17': [] },
+    'atual-pu': { '16': [], '17': [] },
+    'atual-quantidade': { '16': [], '17': [] },
+    'output-path': '/Users/jetblack-work/Desktop/Untitled.xlsx'
+};
+
+const withHistorical = {
     'arquivo-curva': ['/Users/jetblack-work/Desktop/output.curve'],
     'planilhas-saldo': ['/Users/jetblack-work/Desktop/saldo_atual.xlsx'],
     'ipca-periodo': { 'ipca': ['2019', '2020', '2021', '2022'] },
@@ -17,7 +31,7 @@ const input = {
 };
 
 
-subprocess.stdin.write(JSON.stringify(input));
+subprocess.stdin.write(JSON.stringify(withHistorical));
 subprocess.stdin.end();
 
 subprocess.stderr.on('data', err => {
