@@ -71,16 +71,17 @@ class ValuesContainer {
     }
 
     clean(value) {
-        if (settings.getSync('useDecimalDot')) {
-            value = value.replace(/,/g, '');
-        } else {
-            value = value.replace(/\./g, '');
-            value = value.replace(/,/g, '.')
+        if (typeof value === 'string') {
+            if (settings.getSync('useDecimalDot')) {
+                value = value.replace(/,/g, '');
+            } else {
+                value = value.replace(/\./g, '');
+                value = value.replace(/,/g, '.')
+            }
+            return value.replace(/\s/g, '').replace(/-/g, '/');
         }
-
         return value
-            .replace(/\s/g, '')
-            .replace(/-/g, '/');
+
     }
 
     cast(inputValue) {

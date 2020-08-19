@@ -54,27 +54,14 @@ def main():
     inputs.update('flux-total', flux_total)
     inputs.update('flux-months', months)
 
-    atual = inputs.get('curve')['atual']
-    for serie in inputs.get('curve')['atual'].keys():
-        if serie in inputs.get('atual-juros'):
-            i = -1
-            for i, atual_row in enumerate(atual[serie][::-1]):
-                inputs.get('atual-juros')[serie].insert(0, atual_row[0])
-                inputs.get('atual-amort')[serie].insert(0, atual_row[1])
-                inputs.get('atual-amex')[serie].insert(0, atual_row[2])
-                inputs.get('atual-pu')[serie].insert(0, atual_row[3])
-                inputs.get('atual-quantidade')[serie].insert(0, atual_row[4])
-    inputs.update('historical-period', len(inputs.get('atual-juros')[serie]))
-
-    print(inputs.get('atual-amort'))
+    primeira_serie = inputs.get('curve')['primeira-serie']
+    inputs.update('historical-period', len(inputs.get('atual-juros')[str(primeira_serie)]))
 
     print('Inputs processed.\n', flush=True)
 
     print('Calculating curve.', flush=True)
 
     sess = None
-
-    primeira_serie = inputs.get('curve')['primeira-serie']
 
     if len(list(inputs.get('atual-amex').values())[0]) > 0:
         amex_total = sum([row[-1] for row in inputs.get('atual-amex').values()])
@@ -128,6 +115,7 @@ def main():
         atual = {}
         for serie in inputs.get('curve')['atual'].keys():
             atual[serie] = list(zip(
+                inputs.get('atual-data')[serie],
                 inputs.get('atual-juros')[serie],
                 inputs.get('atual-amort')[serie],
                 inputs.get('atual-amex')[serie],

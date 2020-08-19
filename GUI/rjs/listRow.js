@@ -71,7 +71,7 @@ class ListRow extends ElementController {
     setFormValues(values) {
         this.inputs.forEach((input, i) => {
             if (typeof values !== 'undefined') {
-                formattedNum = values[i].toString();
+                let formattedNum = values[i].toString();
                 if ((input.type === 'float' || input.type === 'percentage') && settings.getSync('useDecimalDot')) {
                     formattedNum = values[i].replace(/\./g, ',');
                 }
