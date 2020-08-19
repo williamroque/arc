@@ -17,7 +17,7 @@ const withoutHistorical = {
 };
 
 const withHistorical = {
-    'arquivo-curva': ['/Users/jetblack-work/Desktop/output.curve'],
+    'arquivo-curva': ['/Users/jetblack-work/Desktop/curva_original.curve'],
     'planilhas-saldo': ['/Users/jetblack-work/Desktop/saldo_atual.xlsx'],
     'ipca-periodo': { 'ipca': ['2019', '2020', '2021', '2022'] },
     'ipca-anual': { 'ipca': [0, 0, 0, 0] },

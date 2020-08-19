@@ -27,7 +27,10 @@ stylesheet = {
     },
 
     'date': {
-        'align': 'left'
+        'align': 'center',
+        'num_format': '[$-pt-BR]mmm-yy;@',
+        'font_name': 'Lucida Sans Typewriter',
+        'font_size': 9
     },
 
     'n': {

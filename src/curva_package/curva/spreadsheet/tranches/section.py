@@ -7,6 +7,12 @@ from curva.spreadsheet.tranches.column_group import ColumnGroup
 from curva.spreadsheet.style import stylesheet
 from curva.spreadsheet.tranches.style import stylesheet as tranches_stylesheet
 
+import datetime
+import locale
+
+locale.setlocale(locale.LC_TIME, 'pt_BR')
+epoch = datetime.datetime(1899, 12, 30)
+
 
 class TrancheSection(Section):
     def __init__(self, parent_sheet, inputs, tranche, tranche_i):
@@ -55,7 +61,7 @@ class TrancheSection(Section):
                 tranche_list = self.inputs.get('tranche-list')
                 substitution_map = {
                     'i': row_i + 1,
-                    'data': self.inputs.get('flux-months')[row_i],
+                    'data': '={}'.format((datetime.datetime.strptime(self.inputs.get('flux-months')[row_i], '%b-%y') - epoch).days),
                     'valor_total': '@0',
                     'razao': '@1',
                     'prev_saldo': '@2',
