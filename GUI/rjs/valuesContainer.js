@@ -97,6 +97,8 @@ class ValuesContainer {
                 return parseFloat(content);
             case 'percentage':
                 return parseFloat(content) / 100;
+            case 'percentageOptional':
+                return content === '' ? -1 : parseFloat(content) / 100;
             default:
                 return content;
         }

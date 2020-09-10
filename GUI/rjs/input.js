@@ -55,7 +55,7 @@ class Input extends ElementController {
         inputController.addEventListener('keydown', this.handleKeyEvent, this);
         this.addChild(inputController, 'input');
 
-        if (this.type === 'percentage') {
+        if (this.type === 'percentage' || this.type === 'percentageOptional') {
             const percentageLabelController = new ElementController(
                 'LABEL',
                 {
@@ -80,14 +80,14 @@ class Input extends ElementController {
             inputNode.addClass('form-input-invalid');
             labelNode.addClass('form-input-label-invalid');
 
-            if (this.type === 'percentage') {
+            if (this.type === 'percentage' || this.type === 'percentageOptional') {
                 percentageLabelNode.addClass('percentage-symbol-invalid');
             }
         } else {
             inputNode.removeClass('form-input-invalid');
             labelNode.removeClass('form-input-label-invalid');
 
-            if (this.type === 'percentage') {
+            if (this.type === 'percentage' || this.type === 'percentageOptional') {
                 percentageLabelNode.removeClass('percentage-symbol-invalid');
             }
         }
@@ -167,14 +167,14 @@ class Input extends ElementController {
             inputNode.addClass('form-input-active');
             labelNode.addClass('form-input-label-active');
 
-            if (this.type === 'percentage') {
+            if (this.type === 'percentage' || this.type === 'percentageOptional') {
                 percentageLabelNode.addClass('percentage-symbol-active');
             }
         } else {
             inputNode.removeClass('form-input-active');
             labelNode.removeClass('form-input-label-active');
 
-            if (this.type === 'percentage') {
+            if (this.type === 'percentage' || this.type === 'percentageOptional') {
                 percentageLabelNode.removeClass('percentage-symbol-active');
             }
         }

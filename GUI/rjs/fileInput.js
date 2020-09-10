@@ -104,13 +104,17 @@ class FileInput extends ElementController {
 
     seedTree() {
         this.addEventListener('click', function (e) {
-            const file = dialog.showOpenDialogSync({
-                properties: ['openFile'],
+            const files = dialog.showOpenDialogSync({
+                properties: ['openFile', 'multiSelections'],
                 filters: this.properties.allowedExtensions
             });
 
-            if (file && this.files.size + 1 <= this.max) {
-                this.addFile(file[0]);
+            if (files) {
+                files.forEach(file => {
+                    if (this.files.size + 1 <= this.max) {
+                        this.addFile(file);
+                    }
+                });
             }
         }, this);
 

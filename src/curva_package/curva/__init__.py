@@ -55,31 +55,37 @@ def main():
 
     print('Calculating curve.', flush=True)
 
-    taxa_juros_sub = .01
-    negative_baseline = 0
+    print(inputs.get('taxas-juros-anual')['sub'])
 
-    irr = None
-    while not irr or abs(inputs.get('target-irr') - irr) >= .00005:
-        if irr:
-            if irr < 0:
-                negative_baseline = taxa_juros_sub
+    if inputs.get('taxas-juros-anual')['sub'] == -1:
+        taxa_juros_sub = .01 
+        negative_baseline = 0
 
-            taxa_juros_sub *= inputs.get('target-irr') / abs(irr) ** (abs(irr) / irr)
-            taxa_juros_sub += negative_baseline
+        irr = None
+        while not irr or abs(inputs.get('target-irr') - irr) >= .00005:
+            if irr:
+                if irr < 0:
+                    negative_baseline = taxa_juros_sub
 
-        taxas_juros = inputs.get('taxas-juros')
-        taxas_juros['sub'] = taxa_juros_sub
-        inputs.update('taxas-juros', taxas_juros)
+                taxa_juros_sub *= inputs.get('target-irr') / abs(irr) ** (abs(irr) / irr)
+                taxa_juros_sub += negative_baseline
 
-        taxas_juros_anual = inputs.get('taxas-juros-anual')
-        taxas_juros_anual['sub'] = (taxa_juros_sub + 1) ** 12 - 1
-        inputs.update('taxas-juros-anual', taxas_juros_anual)
+            taxas_juros = inputs.get('taxas-juros')
+            taxas_juros['sub'] = taxa_juros_sub
+            inputs.update('taxas-juros', taxas_juros)
 
+            taxas_juros_anual = inputs.get('taxas-juros-anual')
+            taxas_juros_anual['sub'] = (taxa_juros_sub + 1) ** 12 - 1
+            inputs.update('taxas-juros-anual', taxas_juros_anual)
+
+            sess = Session(inputs)
+            sess.run()
+
+            fluxo_financeiro = sess.collapse_financial_flux()
+            irr = (1 + np.irr(fluxo_financeiro)) ** 12 - 1
+    else:
         sess = Session(inputs)
         sess.run()
-
-        fluxo_financeiro = sess.collapse_financial_flux()
-        irr = (1 + np.irr(fluxo_financeiro)) ** 12 - 1
 
     inputs.update('tranche-list', sess.tranche_list)
     inputs.update('sub-length', len(sess.tranche_list[0].row_list)),

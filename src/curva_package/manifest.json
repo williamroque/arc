@@ -60,27 +60,34 @@
                     "label": "R. Subordinado",
                     "type": "percentage",
                     "group": "razoes",
-                    "width": 25
+                    "width": 20
                 },
                 {
                     "id": "sen",
                     "label": "R. Sênior",
                     "type": "percentage",
                     "group": "razoes",
-                    "width": 25
+                    "width": 20
                 },
                 {
                     "id": "target-irr",
                     "label": "TIR Projetado",
                     "type": "percentage",
-                    "width": 25
+                    "width": 20
+                },
+                {
+                    "id": "sub",
+                    "label": "T.A. Subordinado",
+                    "type": "percentageOptional",
+                    "group": "taxas-juros-anual",
+                    "width": 20
                 },
                 {
                     "id": "sen",
-                    "label": "T.A. Emissão Sênior",
+                    "label": "T.A. Sênior",
                     "type": "percentage",
                     "group": "taxas-juros-anual",
-                    "width": 25
+                    "width": 20
                 }
             ]
         },

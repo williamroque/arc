@@ -9,7 +9,7 @@ const input = {
     'starting-date': 'Set/2019',
     razoes: { sub: .2, sen: .8 },
     'target-irr': .105,
-    'taxas-juros-anual': { sen: .085 },
+    'taxas-juros-anual': { sen: .085, sub: 0.149249257 },
     'c-period': 3,
     'fr-previsto': 400000,
     'pmt-proper': .92,
