@@ -84,15 +84,16 @@ def main():
             fluxo_financeiro = sess.collapse_financial_flux()
             irr = (1 + np.irr(fluxo_financeiro)) ** 12 - 1
 
-            if all([len(tranche.row_list) == inputs.get('target-prazos')[i] for i, tranche in enumerate(sess.tranche_list)]):
-                if abs(inputs.get('target-irr') - irr) < .00005:
-                    break
+            if len(sess.tranche_list[0].row_list) == inputs.get('target-prazos')['sub']:
+                if len(sess.tranche_list[1].row_list) == inputs.get('target-prazos')['sen']:
+                    if abs(inputs.get('target-irr') - irr) < .00005:
+                        break
             else:
                 sen_prazo = len(sess.tranche_list[1].row_list)
-                target_sen_prazo = inputs.get('target-prazos')[1]
+                target_sen_prazo = inputs.get('target-prazos')['sen']
 
                 sub_prazo = len(sess.tranche_list[0].row_list)
-                target_sub_prazo = inputs.get('target-prazos')[0]
+                target_sub_prazo = inputs.get('target-prazos')['sub']
 
                 if sen_prazo != target_sen_prazo:
                     print('sen_prazo', sen_prazo, flush=True)

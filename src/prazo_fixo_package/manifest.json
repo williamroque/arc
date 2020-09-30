@@ -1,7 +1,7 @@
 {
-    "title": "Curva",
+    "title": "Prazo Fixo",
     "programName": "Arc",
-    "packageName": "curva",
+    "packageName": "prazo_fixo",
     "isDefault": true,
     "requirements": [
         "XlsxWriter==1.2.2",
@@ -17,6 +17,28 @@
             ]
         }
     ],
+    "defaultSettings": {
+        "janela": {
+            "title": "Janela",
+            "entries": {
+                "dataWindowClosesOnFinish": {
+                    "title": "Fechar j. de dados ao completar",
+                    "setting": true,
+                    "type": "checkbox"
+                }
+            }
+        },
+        "formulario": {
+            "title": "Formulário",
+            "entries": {
+                "useDecimalDot": {
+                    "title": "Usar ponto decimal",
+                    "setting": false,
+                    "type": "checkbox"
+                }
+            }
+        }
+    },
     "form": [
         {
             "type": "input-row",
