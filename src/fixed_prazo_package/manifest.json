@@ -17,28 +17,6 @@
             ]
         }
     ],
-    "defaultSettings": {
-        "janela": {
-            "title": "Janela",
-            "entries": {
-                "dataWindowClosesOnFinish": {
-                    "title": "Fechar j. de dados ao completar",
-                    "setting": true,
-                    "type": "checkbox"
-                }
-            }
-        },
-        "formulario": {
-            "title": "Formulário",
-            "entries": {
-                "useDecimalDot": {
-                    "title": "Usar ponto decimal",
-                    "setting": false,
-                    "type": "checkbox"
-                }
-            }
-        }
-    },
     "form": [
         {
             "type": "input-row",
@@ -121,47 +99,41 @@
                     "id": "c-period",
                     "label": "P. Carência",
                     "type": "int",
-                    "width": 25
+                    "width": 16.6666
                 },
                 {
                     "id": "fr-previsto",
                     "label": "F.R. Previsto",
                     "type": "float",
-                    "width": 25
+                    "width": 16.6666
                 },
                 {
                     "id": "pmt-proper",
                     "label": "PMT Projetado",
                     "type": "percentage",
-                    "width": 25
+                    "width": 16.6666
                 },
                 {
                     "id": "despesas",
                     "label": "Despesas",
                     "type": "float",
-                    "width": 25
-                }
-            ]
-        },
-        {
-            "id": "mezanino",
-            "label": "Adicionar Mezanino",
-            "type": "list",
-            "inputs": [
-                {
-                    "label": "Razão",
-                    "type": "percentage",
-                    "group": "razoes",
-                    "width": 50
+                    "width": 16.6666
                 },
                 {
-                    "label": "T.A. Emissão",
-                    "type": "percentage",
-                    "group": "taxas-juros-anual",
-                    "width": 50
+                    "id": "sub",
+                    "label": "Prazo Sub.",
+                    "type": "int",
+                    "group": "target-prazos",
+                    "width": 16.6666
+                },
+                {
+                    "id": "sen",
+                    "label": "Prazo Sen.",
+                    "type": "int",
+                    "group": "target-prazos",
+                    "width": 16.6666
                 }
-            ],
-            "max": 1
+            ]
         },
         {
             "id": "planilhas-saldo",

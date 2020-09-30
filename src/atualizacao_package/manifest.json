@@ -1,5 +1,6 @@
 {
     "title": "Curva Atualização",
+    "programName": "Arc",
     "packageName": "atualizacao",
     "isDefault": false,
     "requirements": [
@@ -16,6 +17,28 @@
             ]
         }
     ],
+    "defaultSettings": {
+        "janela": {
+            "title": "Janela",
+            "entries": {
+                "dataWindowClosesOnFinish": {
+                    "title": "Fechar j. de dados ao completar",
+                    "setting": true,
+                    "type": "checkbox"
+                }
+            }
+        },
+        "formulario": {
+            "title": "Formulário",
+            "entries": {
+                "useDecimalDot": {
+                    "title": "Usar ponto decimal",
+                    "setting": false,
+                    "type": "checkbox"
+                }
+            }
+        }
+    },
     "form": [
         {
             "id": "ipca",
